@@ -1,0 +1,2 @@
+from .customer_repository import CustomerRepository
+from .tag_repository import CustomerTagRepository

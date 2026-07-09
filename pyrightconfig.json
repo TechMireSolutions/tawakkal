@@ -1,0 +1,18 @@
+{
+  "include": [
+    "tawakkal-backend/**/*.py"
+  ],
+  "exclude": [
+    "**/node_modules",
+    "**/__pycache__"
+  ],
+  "extraPaths": [
+    "tawakkal-backend"
+  ],
+  "executionEnvironments": [
+    {
+      "root": "tawakkal-backend",
+      "extraPaths": ["tawakkal-backend"]
+    }
+  ]
+}

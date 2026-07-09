@@ -1,0 +1,23 @@
+# --- Python / Backend ---
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env
+.env.production
+db.sqlite3
+
+# --- Node / Frontend ---
+node_modules/
+dist/
+build/
+.next/
+.nuxt/
+*.log
+
+# --- VS Code / System ---
+.vscode/
+.DS_Store
+Thumbs.db
