@@ -10,6 +10,8 @@ import Home from "./pages/Home";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
 import CategoryPage from "./pages/CategoryPage";
+import BrandDetail from "./pages/BrandDetail";
+import BadgeDetail from "./pages/BadgeDetail";
 import Cart from "./pages/Cart";
 import Wishlist from "./pages/Wishlist";
 import Auth from "./pages/Auth";
@@ -63,6 +65,8 @@ function App() {
                 path="/category/:categorySlug"
                 element={<CategoryPage />}
               />
+              <Route path="/brand/:slug" element={<BrandDetail />} />
+              <Route path="/badge/:slug" element={<BadgeDetail />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
               <Route path="/privacy-policy" element={<PrivacyPolicy />} />

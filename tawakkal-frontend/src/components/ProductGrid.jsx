@@ -9,7 +9,7 @@ import { useCurrency } from '../context/CurrencyContext';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const ProductGrid = ({ id, limit = null, category = 'All', sortBy = 'Featured', badge = null, gridView = '4col' }) => {
+const ProductGrid = ({ id, limit = null, category = 'All', sortBy = 'Featured', badge = null, brand = null, search = null, gridView = '4col' }) => {
   const navigate = useNavigate();
   const { addToCart, toggleWishlist, wishlistItems } = useCart();
   const { convertPrice } = useCurrency();
@@ -20,7 +20,7 @@ const ProductGrid = ({ id, limit = null, category = 'All', sortBy = 'Featured', 
     const getProducts = async () => {
       setLoading(true);
       try {
-        const data = await fetchProducts({ category, badge });
+        const data = await fetchProducts({ category, badge, brand, search });
         setProducts(data);
       } catch (error) {
         console.error("Backend not reached", error);
@@ -30,7 +30,7 @@ const ProductGrid = ({ id, limit = null, category = 'All', sortBy = 'Featured', 
       }
     };
     getProducts();
-  }, [category, badge]);
+  }, [category, badge, brand, search]);
 
   const handleQuickAdd = (e, product) => {
     e.stopPropagation();
@@ -108,14 +108,18 @@ const ProductGrid = ({ id, limit = null, category = 'All', sortBy = 'Featured', 
               {/* Image Container */}
               <div className="relative aspect-[3/4] overflow-hidden mb-3 sm:mb-5 bg-white rounded-lg sm:rounded-2xl shadow-sm sm:shadow-md group-hover:shadow-xl transition-all duration-500">
                 <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-10 flex flex-col gap-2">
-                  {product.badge && (
-                    <div className="bg-gold text-white text-[8px] sm:text-[10px] font-bold uppercase tracking-widest px-2 py-1 sm:px-3 sm:py-1.5 rounded-full shadow-lg">
-                      {product.badge}
+                  {product.badges && product.badges.map(badge => (
+                    <div 
+                      key={badge.id}
+                      className="text-white text-[8px] sm:text-[10px] font-bold uppercase tracking-widest px-2 py-1 sm:px-3 sm:py-1.5 rounded-full shadow-lg"
+                      style={{ backgroundColor: badge.background_color || 'var(--admin-primary)', color: badge.text_color || '#fff' }}
+                    >
+                      {badge.name}
                     </div>
-                  )}
-                  {product.discount_percent > 0 && (
+                  ))}
+                  {product.discount_percentage && product.discount_percentage > 0 && (
                     <div className="bg-[#ff3333] text-white text-[8px] sm:text-[10px] font-bold uppercase tracking-widest px-2 py-1 sm:px-3 sm:py-1.5 rounded-full shadow-lg">
-                      {product.discount_percent}% OFF
+                      {product.discount_percentage}% OFF
                     </div>
                   )}
                 </div>

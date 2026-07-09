@@ -20,7 +20,7 @@ export default function ProductForm({ title, subtitle, breadcrumbs, initialData,
   const navigate = useNavigate();
   const toast = useToast();
 
-  const methods = useForm({
+    const methods = useForm({
     defaultValues: {
       name: '',
       sku: '',
@@ -28,6 +28,7 @@ export default function ProductForm({ title, subtitle, breadcrumbs, initialData,
       description: '',
       category_id: '',
       brand: '',
+      badges: [],
       base_price: '',
       compare_at_price: '',
       stock: 0,
@@ -51,7 +52,12 @@ export default function ProductForm({ title, subtitle, breadcrumbs, initialData,
 
   useEffect(() => {
     if (initialData) {
-      reset(initialData);
+      // Map badge objects back to IDs if they exist
+      const dataToReset = { ...initialData };
+      if (dataToReset.badges && dataToReset.badges.length > 0 && typeof dataToReset.badges[0] === 'object') {
+          dataToReset.badges = dataToReset.badges.map(b => b.id);
+      }
+      reset(dataToReset);
     }
   }, [initialData, reset]);
 
@@ -75,6 +81,8 @@ export default function ProductForm({ title, subtitle, breadcrumbs, initialData,
     // Convert string prices to numbers to match schema
     const payload = {
       ...data,
+      brand: data.brand || null,
+      badge_ids: data.badges || [],
       base_price: parseFloat(data.base_price),
       compare_at_price: data.compare_at_price ? parseFloat(data.compare_at_price) : null,
       wholesale_price: data.wholesale_price ? parseFloat(data.wholesale_price) : null,

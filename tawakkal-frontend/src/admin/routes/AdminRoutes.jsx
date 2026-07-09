@@ -15,6 +15,8 @@ import CustomerList from '../features/customers/CustomerList';
 import CategoryList from '../features/categories/CategoryList';
 import Settings from '../features/settings/Settings';
 import SystemConfig from '../features/settings/SystemConfig';
+import BrandList from '../features/brands/BrandList';
+import BadgeList from '../features/badges/BadgeList';
 import CMSDashboard from "../features/cms/CMSDashboard";
 import PageList from "../features/cms/pages/PageList";
 import PageForm from "../features/cms/pages/PageForm";
@@ -46,6 +48,8 @@ export default function AdminRoutes() {
               <Route path="orders" element={<OrderList />} />
               <Route path="customers" element={<CustomerList />} />
               <Route path="categories" element={<CategoryList />} />
+              <Route path="brands" element={<BrandList />} />
+              <Route path="badges" element={<BadgeList />} />
               <Route path="analytics" element={<Analytics />} />
               <Route path="inquiries" element={<ContactInquiries />} />
               <Route path="cms" element={<CMSDashboard />} />

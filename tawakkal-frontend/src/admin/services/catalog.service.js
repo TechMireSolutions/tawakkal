@@ -39,5 +39,39 @@ export const catalogService = {
   },
   deleteCategory: async (id) => {
     return await api.delete(`/catalog/categories/${id}/`);
-  }
+  },
+
+  // Brands
+  getBrands: async (params) => {
+    return await api.get('/catalog/brands/', { params });
+  },
+  getBrand: async (id) => {
+    return await api.get(`/catalog/brands/${id}/`);
+  },
+  createBrand: async (data) => {
+    return await api.post('/catalog/brands/', data);
+  },
+  updateBrand: async (id, data) => {
+    return await api.patch(`/catalog/brands/${id}/`, data);
+  },
+  deleteBrand: async (id) => {
+    return await api.delete(`/catalog/brands/${id}/`);
+  },
+
+  // Badges
+  getBadges: async (params) => {
+    return await api.get('/catalog/badges/', { params });
+  },
+  getBadge: async (id) => {
+    return await api.get(`/catalog/badges/${id}/`);
+  },
+  createBadge: async (data) => {
+    return await api.post('/catalog/badges/', data);
+  },
+  updateBadge: async (id, data) => {
+    return await api.patch(`/catalog/badges/${id}/`, data);
+  },
+  deleteBadge: async (id) => {
+    return await api.delete(`/catalog/badges/${id}/`);
+  },
 };

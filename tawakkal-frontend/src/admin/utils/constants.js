@@ -13,6 +13,8 @@ import {
   HiOutlineWrenchScrewdriver,
   HiOutlineUserCircle,
   HiOutlineBell,
+  HiOutlineStar,
+  HiOutlineBriefcase,
 } from 'react-icons/hi2';
 
 export const PLACEHOLDER_IMAGE = "https://placehold.co/600x400/1b3622/ffffff?text=No+Image";
@@ -47,6 +49,18 @@ export const SIDEBAR_NAVIGATION = [
         path: '/admin/categories',
         icon: HiOutlineTag,
         permission: 'categories',
+      },
+      {
+        label: 'Brands',
+        path: '/admin/brands',
+        icon: HiOutlineBriefcase,
+        permission: 'products',
+      },
+      {
+        label: 'Badges',
+        path: '/admin/badges',
+        icon: HiOutlineStar,
+        permission: 'products',
       },
     ],
   },

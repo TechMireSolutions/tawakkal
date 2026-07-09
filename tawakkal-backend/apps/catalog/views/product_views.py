@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.filters import SearchFilter, OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
+from django.db import models
 from django.core.exceptions import ValidationError
 from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
 
@@ -43,7 +44,37 @@ class ProductViewSet(SoftDeleteModelMixin, RestoreModelMixin, viewsets.ModelView
         qs = ProductRepository.get_optimized_queryset()
         if not self.request.user.is_authenticated:
             qs = qs.filter(status='ACTIVE')
-        return qs
+            
+        # Custom Multi-Filter Engine
+        query_params = self.request.query_params
+        
+        brands = query_params.getlist('brand')
+        if not brands and 'brand' in query_params:
+            brands = [query_params.get('brand')]
+            
+        categories = query_params.getlist('category')
+        if not categories and 'category' in query_params:
+            categories = [query_params.get('category')]
+            
+        badges = query_params.getlist('badge')
+        if not badges and 'badge' in query_params:
+            badges = [query_params.get('badge')]
+            
+        if brands and brands[0]:
+            # Can be slugs or ids
+            brands_clean = [b for b in brands if b]
+            qs = qs.filter(brand__slug__in=brands_clean) | qs.filter(brand__id__in=brands_clean)
+            
+        if categories and categories[0]:
+            categories_clean = [c for c in categories if c]
+            qs = qs.filter(category__slug__in=categories_clean) | qs.filter(category__id__in=categories_clean)
+            
+        if badges and badges[0]:
+            badges_clean = [b for b in badges if b]
+            for b in badges_clean:
+                qs = qs.filter(badges__slug=b) | qs.filter(badges__id=b)
+
+        return qs.distinct()
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -63,7 +94,8 @@ class ProductViewSet(SoftDeleteModelMixin, RestoreModelMixin, viewsets.ModelView
         if low_stock and low_stock.lower() == 'true':
             # Rely on repository low_stock implementation
             from apps.catalog.repositories.product_repository import ProductRepository
-            queryset = ProductRepository.low_stock()
+            # Since repository low_stock uses the base queryset, we need to apply it on top of our filtered qs
+            queryset = queryset.filter(stock__lte=models.F('low_stock_threshold'))
 
         page = self.paginate_queryset(queryset)
         

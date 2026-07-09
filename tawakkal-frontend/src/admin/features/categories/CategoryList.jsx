@@ -23,25 +23,37 @@ export default function CategoryList() {
   const [showModal, setShowModal] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState({ open: false, category: null });
   
-  const [newCat, setNewCat] = useState({ name: '', slug: '' });
+  const [newCat, setNewCat] = useState({ name: '', slug: '', brand: null });
   const [newCatImage, setNewCatImage] = useState(null);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
   
   const [showEditModal, setShowEditModal] = useState(false);
-  const [editCat, setEditCat] = useState({ id: '', name: '', slug: '', description: '', parent: null, status: true, display_order: 0, seo_title: '', seo_description: '', seo_keywords: '', is_featured: false });
+  const [editCat, setEditCat] = useState({ id: '', name: '', slug: '', description: '', parent: null, status: true, display_order: 0, seo_title: '', seo_description: '', seo_keywords: '', is_featured: false, brand: null });
   const [editCatImage, setEditCatImage] = useState(null);
   const [editSubmitting, setEditSubmitting] = useState(false);
+
+  const [brands, setBrands] = useState([]);
 
   const fetchCategories = async () => {
     try {
       setLoading(true);
       const data = await getCategories();
-      setCategories(data);
+      setCategories(data?.results || data);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchBrandsData = async () => {
+    try {
+      const { getBrands } = await import('../../services/api');
+      const data = await getBrands();
+      setBrands(data?.results || data);
+    } catch(err) {
+      console.error(err);
     }
   };
 
@@ -50,6 +62,7 @@ export default function CategoryList() {
     if (isMounted) {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchCategories();
+      fetchBrandsData();
     }
     return () => { isMounted = false; };
   }, []);
@@ -72,12 +85,13 @@ export default function CategoryList() {
       await createCategory({
         name: newCat.name,
         slug: newCat.slug,
+        brand: newCat.brand,
         image: imageId
       });
       
       toast.success('Category created successfully');
       setShowModal(false);
-      setNewCat({ name: '', slug: '' });
+      setNewCat({ name: '', slug: '', brand: null });
       setNewCatImage(null);
       fetchCategories();
     } catch (err) {
@@ -105,6 +119,7 @@ export default function CategoryList() {
       seo_description: cat.seo_description || '',
       seo_keywords: cat.seo_keywords || '',
       is_featured: cat.is_featured || false,
+      brand: cat.brand || null,
     });
     setEditCatImage(null);
     setShowEditModal(true);
@@ -136,6 +151,7 @@ export default function CategoryList() {
         seo_keywords: editCat.seo_keywords,
         is_featured: editCat.is_featured,
         parent: editCat.parent,
+        brand: editCat.brand,
       };
       
       if (imageId) payload.image = imageId;
@@ -256,7 +272,21 @@ export default function CategoryList() {
             onChange={(e) => { setNewCat(p => ({...p, slug: e.target.value})); if(errors.slug) setErrors({}); }}
             error={errors.slug}
           />
-          {errors.slug && <p style={{ color: 'var(--admin-danger)', fontSize: '13px', marginTop: '-12px', marginBottom: '8px' }}>{errors.slug}</p>}<ImageUploader 
+          {errors.slug && <p style={{ color: 'var(--admin-danger)', fontSize: '13px', marginTop: '-12px', marginBottom: '8px' }}>{errors.slug}</p>}
+          <div>
+            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: 'var(--admin-text)', marginBottom: '8px' }}>Brand (Optional)</label>
+            <select 
+                style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--admin-border)', borderRadius: 'var(--admin-radius-md)', outline: 'none', background: '#fff' }}
+                value={newCat.brand || ''} 
+                onChange={e => setNewCat({...newCat, brand: e.target.value || null})}
+            >
+                <option value="">None</option>
+                {brands.map(b => (
+                    <option key={b.id} value={b.id}>{b.name}</option>
+                ))}
+            </select>
+          </div>
+          <ImageUploader 
             label="Category Image"
             onChange={(file) => setNewCatImage(file)}
             onRemove={() => setNewCatImage(null)}
@@ -290,18 +320,33 @@ export default function CategoryList() {
               error={errors.slug}
             />
             {errors.slug && <p style={{ color: 'var(--admin-danger)', fontSize: '13px', marginTop: '-12px', marginBottom: '8px' }}>{errors.slug}</p>}  </div>
-          <div>
-            <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: 'var(--admin-text)', marginBottom: '8px' }}>Parent Category (Optional)</label>
-            <select 
-                style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--admin-border)', borderRadius: 'var(--admin-radius-md)', outline: 'none', background: '#fff' }}
-                value={editCat.parent || ''} 
-                onChange={e => setEditCat({...editCat, parent: e.target.value || null})}
-            >
-                <option value="">None</option>
-                {categories.filter(c => c.id !== editCat.id).map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-            </select>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: 'var(--admin-text)', marginBottom: '8px' }}>Parent Category (Optional)</label>
+              <select 
+                  style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--admin-border)', borderRadius: 'var(--admin-radius-md)', outline: 'none', background: '#fff' }}
+                  value={editCat.parent || ''} 
+                  onChange={e => setEditCat({...editCat, parent: e.target.value || null})}
+              >
+                  <option value="">None</option>
+                  {categories.filter(c => c.id !== editCat.id).map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                  ))}
+              </select>
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: 'var(--admin-text)', marginBottom: '8px' }}>Brand (Optional)</label>
+              <select 
+                  style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--admin-border)', borderRadius: 'var(--admin-radius-md)', outline: 'none', background: '#fff' }}
+                  value={editCat.brand || ''} 
+                  onChange={e => setEditCat({...editCat, brand: e.target.value || null})}
+              >
+                  <option value="">None</option>
+                  {brands.map(b => (
+                      <option key={b.id} value={b.id}>{b.name}</option>
+                  ))}
+              </select>
+            </div>
           </div>
           <Input label="Description" as="textarea" rows={3} value={editCat.description} onChange={e => setEditCat({...editCat, description: e.target.value})} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>

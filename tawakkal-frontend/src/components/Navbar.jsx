@@ -17,6 +17,8 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [activeMenu, setActiveMenu] = useState(null);
   const [categories, setCategories] = useState([]);
+  const [brands, setBrands] = useState([]);
+  const [badges, setBadges] = useState([]);
   const [pages, setPages] = useState([]);
   const closeTimeout = useRef(null);
 
@@ -46,10 +48,18 @@ const Navbar = () => {
     };
     window.addEventListener("scroll", handleScroll);
 
-    const loadCategories = async () => {
+    const loadData = async () => {
       try {
-        const data = await fetchCategories();
-        setCategories(data.filter((cat) => cat.status === true));
+        const { fetchCategories, fetchPages, fetchBrands, fetchBadges } = await import('../api');
+        
+        const catData = await fetchCategories();
+        setCategories(catData.filter((cat) => cat.status === true));
+        
+        const brandData = await fetchBrands();
+        setBrands(brandData.filter(b => b.status === true));
+
+        const badgeData = await fetchBadges();
+        setBadges(badgeData.filter(b => b.status === true));
         
         const pagesData = await fetchPages();
         setPages(pagesData.filter((p) => p.status === 'published'));
@@ -57,7 +67,7 @@ const Navbar = () => {
         console.error("Error fetching data for navbar:", err);
       }
     };
-    loadCategories();
+    loadData();
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
@@ -152,10 +162,29 @@ const Navbar = () => {
                     Shop
                   </a>
                   <div
-                    className={`absolute left-0 w-full bg-white border-t border-gray-100 shadow-xl transition-all duration-300 top-full mt-[-1px] ${activeMenu === "women" ? "opacity-100 visible pointer-events-auto" : "opacity-0 invisible pointer-events-none"}`}
+                    className={`absolute left-0 w-full bg-white border-t border-gray-100 shadow-xl transition-all duration-300 top-full mt-[-1px] ${activeMenu === "shop" ? "opacity-100 visible pointer-events-auto" : "opacity-0 invisible pointer-events-none"}`}
                   >
                     <div className="max-w-[1440px] mx-auto px-8 py-12 flex justify-between">
                       <div className="grid grid-cols-3 gap-12 w-2/3 pr-12">
+                        <div className="space-y-8">
+                          <div className="space-y-4">
+                            <h4 className="text-[10px] font-extrabold tracking-widest text-charcoal uppercase">
+                              Brands
+                            </h4>
+                            <ul className="space-y-3">
+                              {brands.map((brand) => (
+                                <li key={brand.id}>
+                                  <Link
+                                    to={`/brand/${encodeURIComponent(brand.slug)}`}
+                                    className="text-[11px] text-gray-500 hover:text-gold font-medium uppercase"
+                                  >
+                                    {brand.name}
+                                  </Link>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
                         <div className="space-y-8">
                           <div className="space-y-4">
                             <h4 className="text-[10px] font-extrabold tracking-widest text-charcoal uppercase">
@@ -165,7 +194,7 @@ const Navbar = () => {
                               {categories.map((cat) => (
                                 <li key={cat.id}>
                                   <Link
-                                    to={`/products?category=${encodeURIComponent(cat.name)}`}
+                                    to={`/category/${encodeURIComponent(cat.slug)}`}
                                     className="text-[11px] text-gray-500 hover:text-gold font-medium uppercase"
                                   >
                                     {cat.name}
@@ -181,30 +210,16 @@ const Navbar = () => {
                               Shop By Badge
                             </h4>
                             <ul className="space-y-3">
-                              <li>
-                                <Link
-                                  to="/products?badge=New"
-                                  className="text-[11px] text-gray-500 hover:text-gold font-medium uppercase"
-                                >
-                                  New Arrivals
-                                </Link>
-                              </li>
-                              <li>
-                                <Link
-                                  to="/products?badge=Best Seller"
-                                  className="text-[11px] text-gray-500 hover:text-gold font-medium uppercase"
-                                >
-                                  Best Sellers
-                                </Link>
-                              </li>
-                              <li>
-                                <Link
-                                  to="/products?badge=Luxe"
-                                  className="text-[11px] text-gray-500 hover:text-gold font-medium uppercase"
-                                >
-                                  Luxe Edition
-                                </Link>
-                              </li>
+                              {badges.map((badge) => (
+                                <li key={badge.id}>
+                                  <Link
+                                    to={`/badge/${encodeURIComponent(badge.slug)}`}
+                                    className="text-[11px] text-gray-500 hover:text-gold font-medium uppercase"
+                                  >
+                                    {badge.name}
+                                  </Link>
+                                </li>
+                              ))}
                             </ul>
                           </div>
                         </div>
@@ -393,22 +408,36 @@ const Navbar = () => {
           >
             Home
           </Link>
-          <Link
-            to="/products?badge=New"
-            onClick={() => setIsOpen(false)}
-            className="block text-white hover:text-gold uppercase text-sm font-semibold tracking-widest py-2 border-b border-white/10"
-          >
-            New Arrivals
-          </Link>
+          {brands.map((brand) => (
+            <Link
+              key={brand.id}
+              to={`/brand/${encodeURIComponent(brand.slug)}`}
+              onClick={() => setIsOpen(false)}
+              className="block text-white hover:text-gold uppercase text-sm font-semibold tracking-widest py-2 border-b border-white/10"
+            >
+              {brand.name}
+            </Link>
+          ))}
 
           {categories.map((cat) => (
             <Link
               key={cat.id}
-              to={`/products?category=${encodeURIComponent(cat.name)}`}
+              to={`/category/${encodeURIComponent(cat.slug)}`}
               onClick={() => setIsOpen(false)}
               className="block text-white hover:text-gold uppercase text-sm font-semibold tracking-widest py-2 border-b border-white/10"
             >
               {cat.name}
+            </Link>
+          ))}
+
+          {badges.map((badge) => (
+            <Link
+              key={badge.id}
+              to={`/badge/${encodeURIComponent(badge.slug)}`}
+              onClick={() => setIsOpen(false)}
+              className="block text-white hover:text-gold uppercase text-sm font-semibold tracking-widest py-2 border-b border-white/10"
+            >
+              {badge.name}
             </Link>
           ))}
 

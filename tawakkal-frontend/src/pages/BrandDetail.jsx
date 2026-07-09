@@ -2,32 +2,29 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { SlidersHorizontal, Grid3X3, LayoutGrid, ChevronDown } from 'lucide-react';
 import ProductGrid from '../components/ProductGrid';
-import { fetchCategories } from '../api';
+import { fetchBrands } from '../api';
 
 const sortOptions = ['Featured', 'Price: Low to High', 'Price: High to Low', 'Newest'];
 
-const CategoryPage = () => {
-  const { categorySlug } = useParams();
+const BrandDetail = () => {
+  const { slug } = useParams();
   const navigate = useNavigate();
   const [activeSort, setActiveSort] = useState('Featured');
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [gridView, setGridView] = useState('4col');
   const dropdownRef = useRef(null);
-
-  const [category, setCategory] = useState(null);
+  
+  const [brand, setBrand] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadCategory = async () => {
+    const loadBrand = async () => {
       setLoading(true);
       try {
-        const categories = await fetchCategories();
-        const found = categories.find(c => c.slug === categorySlug);
+        const brands = await fetchBrands();
+        const found = brands.find(b => b.slug === slug);
         if (found) {
-          setCategory({
-            title: found.name,
-            filter: found.name
-          });
+          setBrand(found);
         } else {
           navigate('/products');
         }
@@ -38,9 +35,9 @@ const CategoryPage = () => {
         setLoading(false);
       }
     };
-    loadCategory();
+    loadBrand();
     window.scrollTo(0, 0);
-  }, [categorySlug, navigate]);
+  }, [slug, navigate]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -53,18 +50,21 @@ const CategoryPage = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  if (loading) return <div className="min-h-screen bg-ivory pt-32 text-center text-charcoal">Loading...</div>;
+  if (loading) {
+    return <div className="min-h-screen bg-ivory pt-32 text-center text-charcoal">Loading...</div>;
+  }
 
-  if (!category) return null;
+  if (!brand) return null;
 
   return (
     <div className="bg-gradient-to-b from-ivory via-white to-ivory min-h-screen text-charcoal pt-28">
-      {/* Category Name */}
+      {/* Brand Name */}
       <div className="pt-32 pb-8">
         <div className="max-w-[1600px] mx-auto px-6">
-          <h1 className="text-4xl md:text-5xl font-bold text-charcoal">
-            {category.title}
+          <h1 className="text-4xl md:text-5xl font-bold text-charcoal uppercase tracking-widest">
+            {brand.name}
           </h1>
+          {brand.description && <p className="mt-4 text-gray-600 max-w-2xl">{brand.description}</p>}
         </div>
       </div>
 
@@ -72,10 +72,10 @@ const CategoryPage = () => {
       <div className="sticky top-16 md:top-20 z-20 bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-3 md:py-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
-            {/* Category Info */}
+            {/* Brand Info */}
             <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
               <SlidersHorizontal size={18} className="text-gray-400 flex-shrink-0" />
-              <span className="font-semibold text-charcoal whitespace-nowrap">{category.title}</span>
+              <span className="font-semibold text-charcoal whitespace-nowrap uppercase tracking-widest">{brand.name}</span>
             </div>
 
             {/* Sort & View Options */}
@@ -130,7 +130,7 @@ const CategoryPage = () => {
       {/* Products Grid */}
       <div className="max-w-[1600px] mx-auto px-0 py-12">
         <ProductGrid
-          category={category.filter}
+          brand={brand.slug}
           sortBy={activeSort}
           gridView={gridView}
         />
@@ -139,4 +139,4 @@ const CategoryPage = () => {
   );
 };
 
-export default CategoryPage;
+export default BrandDetail;

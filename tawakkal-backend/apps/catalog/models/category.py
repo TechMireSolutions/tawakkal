@@ -6,6 +6,13 @@ class Category(BaseModel):
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=255, unique=True)
     description = models.TextField(blank=True)
+    brand = models.ForeignKey(
+        'catalog.Brand',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='categories'
+    )
     parent = models.ForeignKey(
         'self', 
         on_delete=models.PROTECT, 

@@ -22,6 +22,16 @@ export const fetchCategories = async () => {
   return ensureArray(res);
 };
 
+export const fetchBrands = async () => {
+  const res = await api.get('/catalog/brands/');
+  return ensureArray(res);
+};
+
+export const fetchBadges = async () => {
+  const res = await api.get('/catalog/badges/');
+  return ensureArray(res);
+};
+
 export const createCategory = async (categoryData) => {
   const res = await api.post('/catalog/categories/', categoryData);
   return res;

@@ -49,7 +49,8 @@ class Product(BaseModel):
     description = models.TextField(blank=True)
     
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name='products')
-    brand = models.CharField(max_length=100, blank=True)
+    brand = models.ForeignKey('catalog.Brand', on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
+    badges = models.ManyToManyField('catalog.Badge', blank=True, related_name='products')
     status = models.CharField(max_length=20, choices=ProductStatus.choices, default=ProductStatus.DRAFT)
     is_featured = models.BooleanField(default=False)
     

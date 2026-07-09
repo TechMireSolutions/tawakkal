@@ -464,7 +464,23 @@ const ProductDetail = () => {
                 onClick={() => navigate(`/product/${item.id}`)}
                 className="group cursor-pointer space-y-4"
               >
-                <div className="aspect-[3/4] rounded-[2rem] overflow-hidden bg-[#f5f5f5] shadow-lg">
+                <div className="relative aspect-[3/4] rounded-[2rem] overflow-hidden bg-[#f5f5f5] shadow-lg">
+                  <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-10 flex flex-col gap-2">
+                    {item.badges && item.badges.map(badge => (
+                      <div 
+                        key={badge.id}
+                        className="text-white text-[8px] sm:text-[10px] font-bold uppercase tracking-widest px-2 py-1 sm:px-3 sm:py-1.5 rounded-full shadow-lg"
+                        style={{ backgroundColor: badge.background_color || 'var(--admin-primary)', color: badge.text_color || '#fff' }}
+                      >
+                        {badge.name}
+                      </div>
+                    ))}
+                    {item.discount_percentage && item.discount_percentage > 0 && (
+                      <div className="bg-[#ff3333] text-white text-[8px] sm:text-[10px] font-bold uppercase tracking-widest px-2 py-1 sm:px-3 sm:py-1.5 rounded-full shadow-lg">
+                        {item.discount_percentage}% OFF
+                      </div>
+                    )}
+                  </div>
                   <img
                     src={item.primary_image?.image_url || "https://placehold.co/400x533?text=No+Image"}
                     alt={item.name}
@@ -474,7 +490,12 @@ const ProductDetail = () => {
                 <div className="space-y-1">
                   <p className="text-[9px] text-gold uppercase tracking-widest font-bold">{item.category?.name || item.category}</p>
                   <h3 className="font-bold group-hover:text-gold transition-colors line-clamp-1">{item.name}</h3>
-                  <p className="text-charcoal font-bold">{convertPrice(item.base_price)}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-charcoal font-bold">{convertPrice(item.base_price)}</p>
+                    {item.compare_at_price && parseFloat(item.compare_at_price) > parseFloat(item.base_price) && (
+                      <p className="text-gray-400 line-through text-[10px] font-medium">{convertPrice(item.compare_at_price)}</p>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

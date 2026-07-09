@@ -48,12 +48,15 @@ class ProductListSerializer(serializers.ModelSerializer):
     category = CategoryListSerializer(read_only=True)
     primary_image = serializers.SerializerMethodField()
     price_range = serializers.SerializerMethodField()
+    brand = serializers.SerializerMethodField()
+    badges = serializers.SerializerMethodField()
+    discount_percentage = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = [
-            'id', 'name', 'slug', 'category', 'brand', 'status', 
-            'is_featured', 'base_price', 'compare_at_price', 'stock', 'primary_image', 'price_range', 'created_at'
+            'id', 'name', 'slug', 'category', 'brand', 'badges', 'status', 
+            'is_featured', 'base_price', 'compare_at_price', 'stock', 'primary_image', 'price_range', 'created_at', 'discount_percentage'
         ]
 
     def get_primary_image(self, obj):
@@ -74,19 +77,39 @@ class ProductListSerializer(serializers.ModelSerializer):
             'max': max(prices)
         }
 
+    def get_brand(self, obj):
+        if obj.brand:
+            from .brand_serializers import BrandSerializer
+            return BrandSerializer(obj.brand, context=self.context).data
+        return None
+
+    def get_badges(self, obj):
+        # We assume the user wants custom badges to be serialized here.
+        # Priority sort is done at DB level since Meta has ordering.
+        from .badge_serializers import BadgeSerializer
+        return BadgeSerializer(obj.badges.all(), many=True, context=self.context).data
+        
+    def get_discount_percentage(self, obj):
+        if obj.compare_at_price and obj.compare_at_price > obj.base_price:
+            return round(((obj.compare_at_price - obj.base_price) / obj.compare_at_price) * 100)
+        return None
+
 class ProductDetailSerializer(serializers.ModelSerializer):
     category = CategoryListSerializer(read_only=True)
     variants = ProductVariantSerializer(many=True, read_only=True)
     images = ProductImageSerializer(many=True, read_only=True)
     price_range = serializers.SerializerMethodField()
+    brand = serializers.SerializerMethodField()
+    badges = serializers.SerializerMethodField()
+    discount_percentage = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
         fields = [
-            'id', 'name', 'slug', 'description', 'category', 'brand', 'status', 
+            'id', 'name', 'slug', 'description', 'category', 'brand', 'badges', 'status', 
             'is_featured', 'base_price', 'compare_at_price', 'stock', 'low_stock_threshold',
             'seo_title', 'seo_description', 'seo_keywords',
-            'created_at', 'updated_at', 'variants', 'images', 'price_range'
+            'created_at', 'updated_at', 'variants', 'images', 'price_range', 'discount_percentage'
         ]
 
     def get_price_range(self, obj):
@@ -98,6 +121,21 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             'min': min(prices),
             'max': max(prices)
         }
+
+    def get_brand(self, obj):
+        if obj.brand:
+            from .brand_serializers import BrandSerializer
+            return BrandSerializer(obj.brand, context=self.context).data
+        return None
+
+    def get_badges(self, obj):
+        from .badge_serializers import BadgeSerializer
+        return BadgeSerializer(obj.badges.all(), many=True, context=self.context).data
+
+    def get_discount_percentage(self, obj):
+        if obj.compare_at_price and obj.compare_at_price > obj.base_price:
+            return round(((obj.compare_at_price - obj.base_price) / obj.compare_at_price) * 100)
+        return None
 
 class VariantWriteSerializer(serializers.Serializer):
     sku = serializers.CharField(required=False, allow_blank=True)
@@ -112,7 +150,8 @@ class ProductCreateSerializer(serializers.Serializer):
     slug = serializers.SlugField(required=False, allow_blank=True)
     description = serializers.CharField(required=False, allow_blank=True)
     category_id = serializers.UUIDField()
-    brand = serializers.CharField(required=False, allow_blank=True)
+    brand_id = serializers.UUIDField(required=False, allow_null=True)
+    badge_ids = serializers.ListField(child=serializers.UUIDField(), required=False)
     base_price = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=0)
     compare_at_price = serializers.DecimalField(max_digits=12, decimal_places=2, required=False, allow_null=True, min_value=0)
     stock = serializers.IntegerField(default=0, min_value=0)
@@ -138,7 +177,8 @@ class ProductUpdateSerializer(serializers.Serializer):
     slug = serializers.SlugField(required=False, allow_blank=True)
     description = serializers.CharField(required=False, allow_blank=True)
     category_id = serializers.UUIDField(required=False)
-    brand = serializers.CharField(required=False, allow_blank=True)
+    brand_id = serializers.UUIDField(required=False, allow_null=True)
+    badge_ids = serializers.ListField(child=serializers.UUIDField(), required=False)
     base_price = serializers.DecimalField(max_digits=12, decimal_places=2, required=False, min_value=0)
     compare_at_price = serializers.DecimalField(max_digits=12, decimal_places=2, required=False, allow_null=True, min_value=0)
     stock = serializers.IntegerField(required=False, min_value=0)

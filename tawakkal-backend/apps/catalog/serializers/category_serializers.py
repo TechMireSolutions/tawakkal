@@ -4,13 +4,15 @@ from ..models.category import Category
 class CategoryListSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
     children_count = serializers.IntegerField(read_only=True, default=0)
+    brand_details = serializers.SerializerMethodField()
     # product_count = serializers.IntegerField(read_only=True, default=0)
 
     class Meta:
         model = Category
         fields = [
             'id', 'name', 'slug', 'path', 'level', 'status', 'display_order',
-            'is_featured', 'image_url', 'children_count', 'created_at', 'updated_at'
+            'is_featured', 'image_url', 'children_count', 'created_at', 'updated_at',
+            'brand', 'brand_details'
             # 'product_count'
         ]
 
@@ -20,6 +22,11 @@ class CategoryListSerializer(serializers.ModelSerializer):
             if request:
                 return request.build_absolute_uri(obj.image.file.url)
             return obj.image.file.url
+        return None
+
+    def get_brand_details(self, obj):
+        if obj.brand:
+            return {'id': obj.brand.id, 'name': obj.brand.name, 'slug': obj.brand.slug}
         return None
 
 class CategoryDetailSerializer(CategoryListSerializer):
@@ -51,6 +58,6 @@ class CategoryCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Category
         fields = [
-            'name', 'slug', 'description', 'parent', 'image', 'status',
+            'name', 'slug', 'description', 'parent', 'image', 'status', 'brand',
             'display_order', 'seo_title', 'seo_description', 'seo_keywords', 'is_featured'
         ]

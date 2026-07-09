@@ -25,6 +25,18 @@ export const createCategory = catalogService.createCategory;
 export const updateCategory = catalogService.updateCategory;
 export const deleteCategory = catalogService.deleteCategory;
 
+export const getBrands = catalogService.getBrands;
+export const getBrand = catalogService.getBrand;
+export const createBrand = catalogService.createBrand;
+export const updateBrand = catalogService.updateBrand;
+export const deleteBrand = catalogService.deleteBrand;
+
+export const getBadges = catalogService.getBadges;
+export const getBadge = catalogService.getBadge;
+export const createBadge = catalogService.createBadge;
+export const updateBadge = catalogService.updateBadge;
+export const deleteBadge = catalogService.deleteBadge;
+
 /* ═══════ Orders ═══════ */
 export const getOrders = orderService.getOrders;
 export const getOrder = orderService.getOrder;

@@ -2,32 +2,29 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { SlidersHorizontal, Grid3X3, LayoutGrid, ChevronDown } from 'lucide-react';
 import ProductGrid from '../components/ProductGrid';
-import { fetchCategories } from '../api';
+import { fetchBadges } from '../api';
 
 const sortOptions = ['Featured', 'Price: Low to High', 'Price: High to Low', 'Newest'];
 
-const CategoryPage = () => {
-  const { categorySlug } = useParams();
+const BadgeDetail = () => {
+  const { slug } = useParams();
   const navigate = useNavigate();
   const [activeSort, setActiveSort] = useState('Featured');
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [gridView, setGridView] = useState('4col');
   const dropdownRef = useRef(null);
-
-  const [category, setCategory] = useState(null);
+  
+  const [badge, setBadge] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadCategory = async () => {
+    const loadBadge = async () => {
       setLoading(true);
       try {
-        const categories = await fetchCategories();
-        const found = categories.find(c => c.slug === categorySlug);
+        const badges = await fetchBadges();
+        const found = badges.find(b => b.slug === slug);
         if (found) {
-          setCategory({
-            title: found.name,
-            filter: found.name
-          });
+          setBadge(found);
         } else {
           navigate('/products');
         }
@@ -38,9 +35,9 @@ const CategoryPage = () => {
         setLoading(false);
       }
     };
-    loadCategory();
+    loadBadge();
     window.scrollTo(0, 0);
-  }, [categorySlug, navigate]);
+  }, [slug, navigate]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -53,17 +50,29 @@ const CategoryPage = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  if (loading) return <div className="min-h-screen bg-ivory pt-32 text-center text-charcoal">Loading...</div>;
+  if (loading) {
+    return <div className="min-h-screen bg-ivory pt-32 text-center text-charcoal">Loading...</div>;
+  }
 
-  if (!category) return null;
+  if (!badge) return null;
 
   return (
     <div className="bg-gradient-to-b from-ivory via-white to-ivory min-h-screen text-charcoal pt-28">
-      {/* Category Name */}
+      {/* Badge Name */}
       <div className="pt-32 pb-8">
-        <div className="max-w-[1600px] mx-auto px-6">
-          <h1 className="text-4xl md:text-5xl font-bold text-charcoal">
-            {category.title}
+        <div className="max-w-[1600px] mx-auto px-6 flex items-center gap-4">
+          {badge.icon_details && badge.icon_details.file ? (
+            <img src={badge.icon_details.file} alt="" className="w-16 h-16 object-contain" />
+          ) : (
+             <div 
+               className="w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold"
+               style={{ background: badge.background_color || '#000', color: badge.text_color || '#fff' }}
+             >
+                {badge.name.charAt(0)}
+             </div>
+          )}
+          <h1 className="text-4xl md:text-5xl font-bold text-charcoal uppercase tracking-widest">
+            {badge.name}
           </h1>
         </div>
       </div>
@@ -72,10 +81,10 @@ const CategoryPage = () => {
       <div className="sticky top-16 md:top-20 z-20 bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-3 md:py-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
-            {/* Category Info */}
+            {/* Badge Info */}
             <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
               <SlidersHorizontal size={18} className="text-gray-400 flex-shrink-0" />
-              <span className="font-semibold text-charcoal whitespace-nowrap">{category.title}</span>
+              <span className="font-semibold text-charcoal whitespace-nowrap uppercase tracking-widest">{badge.name} Collection</span>
             </div>
 
             {/* Sort & View Options */}
@@ -130,7 +139,7 @@ const CategoryPage = () => {
       {/* Products Grid */}
       <div className="max-w-[1600px] mx-auto px-0 py-12">
         <ProductGrid
-          category={category.filter}
+          badge={badge.slug}
           sortBy={activeSort}
           gridView={gridView}
         />
@@ -139,4 +148,4 @@ const CategoryPage = () => {
   );
 };
 
-export default CategoryPage;
+export default BadgeDetail;

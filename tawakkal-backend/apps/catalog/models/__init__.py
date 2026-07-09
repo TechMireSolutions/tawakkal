@@ -1,4 +1,6 @@
 from .category import Category
+from .brand import Brand
+from .badge import Badge
 from .product import (
     ProductStatus,
     VariantStatus,

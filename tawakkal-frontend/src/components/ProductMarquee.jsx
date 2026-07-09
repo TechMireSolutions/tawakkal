@@ -121,14 +121,18 @@ const ProductMarquee = ({ id, limit = 8 }) => {
                   {/* Image Container */}
                   <div className="relative aspect-[3/4] overflow-hidden">
                     <div className="absolute top-2 left-2 md:top-3 md:left-3 z-10 flex flex-col gap-2">
-                      {product.badge && (
-                        <div className="bg-gold text-white text-[8px] md:text-[9px] font-bold uppercase tracking-widest px-2 py-1 md:px-3 md:py-1.5">
-                          {product.badge}
+                      {product.badges && product.badges.map(badge => (
+                        <div 
+                          key={badge.id}
+                          className="text-white text-[8px] md:text-[9px] font-bold uppercase tracking-widest px-2 py-1 md:px-3 md:py-1.5"
+                          style={{ backgroundColor: badge.background_color || 'var(--admin-primary)', color: badge.text_color || '#fff' }}
+                        >
+                          {badge.name}
                         </div>
-                      )}
-                      {product.discount_percent > 0 && (
+                      ))}
+                      {product.discount_percentage && product.discount_percentage > 0 && (
                         <div className="bg-[#ff3333] text-white text-[8px] md:text-[9px] font-bold uppercase tracking-widest px-2 py-1 md:px-3 md:py-1.5">
-                          {product.discount_percent}% OFF
+                          {product.discount_percentage}% OFF
                         </div>
                       )}
                     </div>

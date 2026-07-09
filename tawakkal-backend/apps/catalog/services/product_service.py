@@ -37,9 +37,13 @@ class ProductService:
         product_data['updated_by'] = user
         
         media_ids = product_data.pop('media_ids', [])
+        badge_ids = product_data.pop('badge_ids', [])
         
         product = ProductRepository.create(**product_data)
         
+        if badge_ids:
+            product.badges.set(badge_ids)
+            
         if media_ids:
             for idx, m_id in enumerate(media_ids):
                 media_obj = Media.objects.filter(id=m_id).first()
@@ -87,9 +91,13 @@ class ProductService:
                 product_data['slug'] = ProductService.generate_slug(product_data['name'])
                 
         media_ids = product_data.pop('media_ids', None)
+        badge_ids = product_data.pop('badge_ids', None)
         product_data['updated_by'] = user
         updated_product = ProductRepository.update(product, **product_data)
         
+        if badge_ids is not None:
+            updated_product.badges.set(badge_ids)
+            
         if media_ids is not None:
             # Re-sync images
             ProductImage.objects.filter(product=updated_product).update(is_deleted=True)

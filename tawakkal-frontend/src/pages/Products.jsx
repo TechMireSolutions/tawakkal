@@ -13,6 +13,7 @@ const Products = () => {
   const activeCategory = searchParams.get('category') || 'All';
   const activeSort = searchParams.get('sort') || 'Featured';
   const activeBadge = searchParams.get('badge') || null;
+  const activeSearch = searchParams.get('search') || null;
 
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [gridView, setGridView] = useState('4col'); // '4col' or '3col'
@@ -161,7 +162,7 @@ const Products = () => {
 
       {/* Products Grid */}
       <div className="max-w-[1600px] mx-auto px-0 py-12">
-        <ProductGrid category={activeCategory} sortBy={activeSort} badge={activeBadge} gridView={gridView} />
+        <ProductGrid category={activeCategory} sortBy={activeSort} badge={activeBadge} search={activeSearch} gridView={gridView} />
       </div>
     </div>
   );
