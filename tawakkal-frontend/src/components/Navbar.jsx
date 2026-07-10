@@ -139,10 +139,10 @@ const Navbar = () => {
                   </Link>
                 </div>
 
-                {/* WOMEN Mega Menu */}
+                {/* SHOP Mega Menu */}
                 <div
                   className="flex items-center h-8"
-                  onMouseEnter={() => handleMenuEnter("women")}
+                  onMouseEnter={() => handleMenuEnter("shop")}
                   onMouseLeave={handleMenuLeave}
                 >
                   <a
@@ -209,42 +209,6 @@ const Navbar = () => {
                           </div>
                         </div>
                       </div>
-                      <div className="w-1/3 flex gap-6">
-                        <div className="flex-1 space-y-4 text-center group/card cursor-pointer">
-                          <div className="aspect-[3/4] overflow-hidden bg-gray-100">
-                            <img
-                              src="spring-summer-1.png"
-                              alt="Capsule"
-                              className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-105"
-                            />
-                          </div>
-                          <div>
-                            <h5 className="text-[10px] font-bold tracking-widest text-charcoal">
-                              CAPSULE
-                            </h5>
-                            <p className="text-[9px] tracking-widest text-gray-400 mt-1">
-                              LATEST DROPS
-                            </p>
-                          </div>
-                        </div>
-                        <div className="flex-1 space-y-4 text-center group/card cursor-pointer">
-                          <div className="aspect-[3/4] overflow-hidden bg-gray-100">
-                            <img
-                              src="spring-summer-2.png"
-                              alt="Women RTW"
-                              className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-105"
-                            />
-                          </div>
-                          <div>
-                            <h5 className="text-[10px] font-bold tracking-widest text-charcoal">
-                              WOMEN RTW
-                            </h5>
-                            <p className="text-[9px] tracking-widest text-gray-400 mt-1">
-                              LATEST DROPS
-                            </p>
-                          </div>
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -259,7 +223,7 @@ const Navbar = () => {
                     href="#"
                     className={`${scrolled || isDarkHeroPage ? "text-white" : "text-charcoal"} hover:text-gold transition-colors duration-300 uppercase text-xs font-bold tracking-[0.2em] text-[12px]`}
                   >
-                    Pages
+                    PAGES
                   </a>
                   <div
                     className={`absolute left-0 w-full bg-white border-t border-gray-100 shadow-xl transition-all duration-300 top-full mt-[-1px] ${activeMenu === "pages" ? "opacity-100 visible pointer-events-auto" : "opacity-0 invisible pointer-events-none"}`}
@@ -305,112 +269,6 @@ const Navbar = () => {
                               );
                             })}
                           </ul>
-                        </div>
-                      </div>
-                      <div className="w-1/3 flex justify-end">
-                        <div className="w-64 space-y-4 text-center group/card cursor-pointer">
-                          <div className="aspect-[4/5] overflow-hidden bg-gray-100">
-                            <img
-                              src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&q=80&w=800"
-                              alt="Customer Service"
-                              className="w-full h-full object-cover transition-transform duration-700 group-hover/card:scale-105"
-                            />
-                          </div>
-                          <p className="text-[9px] tracking-widest text-gray-400 mt-2 font-bold uppercase">
-                            WE ARE HERE TO HELP
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* SALE Mega Menu */}
-                <div
-                  className="flex items-center h-8"
-                  onMouseEnter={() => handleMenuEnter("sale")}
-                  onMouseLeave={handleMenuLeave}
-                >
-                  <a
-                    href="/products?sale=true"
-                    className={`${scrolled ? "text-[#FEBE59]" : "text-[#DEA144]"} hover:text-gold transition-colors duration-300 uppercase text-xs font-bold tracking-[0.2em] text-[12px]`}
-                  >
-                    Sale
-                  </a>
-                  <div
-                    className={`absolute left-0 w-full bg-white border-t border-gray-100 shadow-xl transition-all duration-300 top-full mt-[-1px] ${activeMenu === "sale" ? "opacity-100 visible pointer-events-auto" : "opacity-0 invisible pointer-events-none"}`}
-                  >
-                    <div className="max-w-[1440px] mx-auto px-8 py-12 flex justify-between">
-                      <div className="grid grid-cols-2 gap-12 w-3/4 pr-12">
-                        <div className="space-y-4">
-                          <h4 className="text-[10px] font-extrabold tracking-widest text-charcoal uppercase">
-                            SHOP BY COLLECTION
-                          </h4>
-                          <ul className="space-y-3">
-                            <li>
-                              <a
-                                href="#"
-                                className="text-[11px] text-gray-500 hover:text-gold font-medium"
-                              >
-                                SPECIAL PRICE
-                              </a>
-                            </li>
-                            <li>
-                              <a
-                                href="#"
-                                className="text-[11px] text-gray-500 hover:text-gold font-medium"
-                              >
-                                SPRING SUMMER
-                              </a>
-                            </li>
-                            <li>
-                              <a
-                                href="#"
-                                className="text-[11px] text-gray-500 hover:text-gold font-medium"
-                              >
-                                WINTER SALE
-                              </a>
-                            </li>
-                            <li>
-                              <a
-                                href="#"
-                                className="text-[11px] text-gray-500 hover:text-gold font-medium"
-                              >
-                                CLEARANCE
-                              </a>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                      <div className="w-1/4 flex justify-end">
-                        <div className="w-64 text-center group/card cursor-pointer">
-                          <div className="bg-white border-[6px] border-[#ff3333] p-8 aspect-[3/4] flex flex-col items-center justify-center relative shadow-lg">
-                            <h2 className="text-[40px] font-black uppercase text-charcoal leading-[0.8] tracking-tighter">
-                              REAL
-                            </h2>
-                            <h2 className="text-[40px] font-black uppercase text-charcoal leading-[0.8] tracking-tighter mt-1">
-                              RELIEF
-                            </h2>
-                            <div className="mt-4 flex flex-col items-center">
-                              <span className="bg-charcoal text-white py-1 px-3 text-[10px] font-bold uppercase tracking-widest">
-                                UP TO
-                              </span>
-                              <div className="flex items-start mt-2">
-                                <span className="text-8xl font-black text-[#ff3333] leading-none tracking-tighter">
-                                  60
-                                </span>
-                                <span className="text-4xl font-black text-[#ff3333] mt-2">
-                                  %
-                                </span>
-                              </div>
-                              <span className="bg-charcoal text-white py-1 px-3 text-[10px] font-bold uppercase tracking-widest mt-1">
-                                OFF
-                              </span>
-                            </div>
-                          </div>
-                          <p className="text-[10px] tracking-widest text-gray-400 mt-4 uppercase font-bold">
-                            SALE
-                          </p>
                         </div>
                       </div>
                     </div>
