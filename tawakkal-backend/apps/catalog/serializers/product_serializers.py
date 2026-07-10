@@ -163,7 +163,7 @@ class ProductCreateSerializer(serializers.Serializer):
     
     article_no = serializers.CharField(max_length=50, required=False, allow_blank=True)
     volume_no = serializers.CharField(max_length=50, required=False, allow_blank=True)
-    shipping_price = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, allow_null=True, min_value=0)
+    shipping_price = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, allow_null=True)
     
     seo_title = serializers.CharField(max_length=255, required=False, allow_blank=True)
     seo_description = serializers.CharField(required=False, allow_blank=True)
@@ -194,7 +194,7 @@ class ProductUpdateSerializer(serializers.Serializer):
     
     article_no = serializers.CharField(max_length=50, required=False, allow_blank=True)
     volume_no = serializers.CharField(max_length=50, required=False, allow_blank=True)
-    shipping_price = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, allow_null=True, min_value=0)
+    shipping_price = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, allow_null=True)
     
     seo_title = serializers.CharField(max_length=255, required=False, allow_blank=True)
     seo_description = serializers.CharField(required=False, allow_blank=True)

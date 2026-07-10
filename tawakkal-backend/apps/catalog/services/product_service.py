@@ -39,7 +39,20 @@ class ProductService:
         media_ids = product_data.pop('media_ids', [])
         badge_ids = product_data.pop('badge_ids', [])
         
-        product = ProductRepository.create(**product_data)
+        # Filter out fields that might not exist in database yet (for migration compatibility)
+        # These fields will be added via migration, but we handle them gracefully
+        optional_fields = ['article_no', 'volume_no', 'shipping_price']
+        safe_product_data = {k: v for k, v in product_data.items() if k not in optional_fields or v is not None and v != ''}
+        
+        try:
+            product = ProductRepository.create(**safe_product_data)
+        except Exception as e:
+            # If field doesn't exist, try without the optional fields
+            if 'unknown column' in str(e).lower() or 'no such column' in str(e).lower():
+                safe_product_data = {k: v for k, v in product_data.items() if k not in optional_fields}
+                product = ProductRepository.create(**safe_product_data)
+            else:
+                raise
         
         if badge_ids:
             product.badges.set(badge_ids)
