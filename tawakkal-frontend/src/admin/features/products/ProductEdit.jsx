@@ -29,7 +29,8 @@ export default function ProductEdit() {
           setInitialData({
             ...product,
             category_id: product.category?.id || '',
-            media: initialPreviews
+            media: initialPreviews,
+            variants: product.variants || []
           });
         } else {
           toast.error('Error', res?.message || 'Failed to load product');

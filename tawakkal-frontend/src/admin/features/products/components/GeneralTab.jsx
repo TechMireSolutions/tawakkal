@@ -28,16 +28,25 @@ export default function GeneralTab() {
       />
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
         <Input 
-          label="SKU" 
-          placeholder="TWK-001" 
-          {...register('sku')}
-          error={errors.sku?.message}
-        />
-        <Input 
           label="Slug" 
           placeholder="royal-silk-kurta" 
           {...register('slug')}
           error={errors.slug?.message}
+        />
+        <div></div>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+        <Input 
+          label="Article No." 
+          placeholder="TW-0921" 
+          {...register('article_no')}
+          error={errors.article_no?.message}
+        />
+        <Input 
+          label="Volume No." 
+          placeholder="VOL-26" 
+          {...register('volume_no')}
+          error={errors.volume_no?.message}
         />
       </div>
       <div>

@@ -51,7 +51,7 @@ const ProductDetail = () => {
         // Fetch related products
         const categoryId = typeof data.category === 'object' ? data.category?.id : data.category;
         const products = await fetchProducts({ category_id: categoryId });
-        setRelatedProducts(products.filter(p => p.id !== parseInt(id)).slice(0, 4));
+        setRelatedProducts(products.filter(p => p.id !== data.id && p.id !== parseInt(id)).slice(0, 4));
       } catch (err) {
         console.error("Error fetching product", err);
         navigate('/products');
@@ -346,7 +346,7 @@ const ProductDetail = () => {
                   </div>
                   <p className="text-[9px] text-gray-400 text-center mt-3 tracking-wide">
                     {wholesaleQuantity} pcs × {convertPrice(product.wholesale_price)} = <span className="font-bold text-charcoal">
-                      {convertPrice(String(parseFloat(product.wholesale_price.replace(/[^0-9.]/g, '')) * wholesaleQuantity))}
+                      {convertPrice(parseFloat(product.wholesale_price) * wholesaleQuantity)}
                     </span>
                   </p>
                 </div>
@@ -405,11 +405,10 @@ const ProductDetail = () => {
               <div className="min-h-[200px]">
                 {activeTab === 'description' && (
                   <div className="space-y-4 animate-in fade-in slide-in-from-top-2 duration-500">
-                    <p className="text-sm italic font-serif text-charcoal">"Timeless elegance for the modern woman."</p>
-                    <p className="text-gray-500 text-xs leading-relaxed">
-                      {product.description || `Crafted from the finest premium fabrics, this ensemble offers an unmatched level of comfort without 
-                      compromising on style. The intricate patterns are inspired by traditional motifs, reinvented for a contemporary silhouette.`}
-                    </p>
+                    <div 
+                      className="text-gray-500 text-xs leading-relaxed prose prose-sm max-w-none"
+                      dangerouslySetInnerHTML={{ __html: product.description || 'No description available.' }}
+                    />
                   </div>
                 )}
                 {activeTab === 'details' && (

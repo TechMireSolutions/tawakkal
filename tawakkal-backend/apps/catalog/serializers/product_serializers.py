@@ -56,7 +56,8 @@ class ProductListSerializer(serializers.ModelSerializer):
         model = Product
         fields = [
             'id', 'name', 'slug', 'category', 'brand', 'badges', 'status', 
-            'is_featured', 'base_price', 'compare_at_price', 'stock', 'primary_image', 'price_range', 'created_at', 'discount_percentage'
+            'is_featured', 'base_price', 'compare_at_price', 'stock', 'primary_image', 'price_range', 'created_at', 'discount_percentage',
+            'article_no', 'volume_no', 'shipping_price'
         ]
 
     def get_primary_image(self, obj):
@@ -108,6 +109,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'slug', 'description', 'category', 'brand', 'badges', 'status', 
             'is_featured', 'base_price', 'compare_at_price', 'stock', 'low_stock_threshold',
+            'article_no', 'volume_no', 'shipping_price',
             'seo_title', 'seo_description', 'seo_keywords',
             'created_at', 'updated_at', 'variants', 'images', 'price_range', 'discount_percentage'
         ]
@@ -159,6 +161,10 @@ class ProductCreateSerializer(serializers.Serializer):
     status = serializers.ChoiceField(choices=['ACTIVE', 'DRAFT', 'ARCHIVED'], required=False, default='DRAFT')
     is_featured = serializers.BooleanField(default=False)
     
+    article_no = serializers.CharField(max_length=50, required=False, allow_blank=True)
+    volume_no = serializers.CharField(max_length=50, required=False, allow_blank=True)
+    shipping_price = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, allow_null=True, min_value=0)
+    
     seo_title = serializers.CharField(max_length=255, required=False, allow_blank=True)
     seo_description = serializers.CharField(required=False, allow_blank=True)
     seo_keywords = serializers.CharField(max_length=255, required=False, allow_blank=True)
@@ -185,6 +191,10 @@ class ProductUpdateSerializer(serializers.Serializer):
     low_stock_threshold = serializers.IntegerField(required=False, min_value=0)
     status = serializers.ChoiceField(choices=['ACTIVE', 'DRAFT', 'ARCHIVED'], required=False)
     is_featured = serializers.BooleanField(required=False)
+    
+    article_no = serializers.CharField(max_length=50, required=False, allow_blank=True)
+    volume_no = serializers.CharField(max_length=50, required=False, allow_blank=True)
+    shipping_price = serializers.DecimalField(max_digits=10, decimal_places=2, required=False, allow_null=True, min_value=0)
     
     seo_title = serializers.CharField(max_length=255, required=False, allow_blank=True)
     seo_description = serializers.CharField(required=False, allow_blank=True)

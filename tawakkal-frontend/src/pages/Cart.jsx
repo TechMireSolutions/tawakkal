@@ -25,7 +25,17 @@ const Cart = () => {
     }, 0);
   };
 
+  const calculateShipping = () => {
+    if (cartItems.length === 0) return 0;
+    // Use the shipping price from the first item, or calculate total shipping
+    // For simplicity, we'll use the max shipping price among items
+    const shippingPrices = cartItems.map(item => item.shipping_price || 0);
+    return Math.max(...shippingPrices);
+  };
+
   const subtotal = calculateSubtotal();
+  const shipping = calculateShipping();
+  const total = subtotal + shipping;
 
   return (
     <div className="bg-ivory min-h-screen text-charcoal pt-32">
@@ -93,11 +103,11 @@ const Cart = () => {
               </div>
               <div className="flex justify-between border-b border-gray-100 pb-4 mb-4">
                 <span className="text-sm">Shipping</span>
-                <span className="font-bold text-gray-400">Calculated at checkout</span>
+                <span className="font-bold">{shipping > 0 ? `PKR ${shipping.toLocaleString()}` : 'Free'}</span>
               </div>
               <div className="flex justify-between mb-8">
                 <span className="font-bold uppercase tracking-widest">Total</span>
-                <span className="font-bold text-gold">PKR {subtotal.toLocaleString()}</span>
+                <span className="font-bold text-gold">PKR {total.toLocaleString()}</span>
               </div>
               <button
                 onClick={handleProceedToCheckout}

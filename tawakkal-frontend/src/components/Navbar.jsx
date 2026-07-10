@@ -64,7 +64,7 @@ const Navbar = () => {
       setBadges(badgeData.filter((b) => b.status === true));
 
       const pagesData = await fetchPages();
-      setPages(pagesData.filter((p) => p.status === "published"));
+      setPages(pagesData.filter((p) => p.status === "published" || p.status === true));
     } catch (err) {
       console.error("Error fetching data for navbar:", err);
     }

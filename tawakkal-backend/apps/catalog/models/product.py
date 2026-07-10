@@ -59,6 +59,13 @@ class Product(BaseModel):
     stock = models.IntegerField(default=0)
     low_stock_threshold = models.IntegerField(default=5)
     
+    # Additional product identifiers
+    article_no = models.CharField(max_length=50, blank=True, default='')
+    volume_no = models.CharField(max_length=50, blank=True, default='')
+    
+    # Shipping price
+    shipping_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Shipping cost for this product")
+    
     seo_title = models.CharField(max_length=255, blank=True)
     seo_description = models.TextField(blank=True)
     seo_keywords = models.CharField(max_length=255, blank=True)

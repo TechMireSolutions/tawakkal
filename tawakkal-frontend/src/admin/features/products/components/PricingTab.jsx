@@ -26,6 +26,14 @@ export default function PricingTab() {
           error={errors.compare_at_price?.message}
         />
       </div>
+      <Input 
+        label="Shipping Price (PKR)" 
+        placeholder="250" 
+        type="number"
+        step="0.01"
+        {...register('shipping_price')}
+        error={errors.shipping_price?.message}
+      />
     </FormSection>
   );
 }
