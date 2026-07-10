@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { ChevronDown, HelpCircle, Search, MessageCircle } from 'lucide-react';
 
+const defaultFaqs = [];
+
 const FAQs = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -15,9 +17,11 @@ const FAQs = () => {
       try {
         const { fetchFaqs } = await import('../api');
         const data = await fetchFaqs();
-        setFaqs(data.filter(f => f.status === 'published' || f.is_published || f.status !== 'draft'));
+        const filtered = data.filter(f => f.status === 'published' || f.is_published || f.status !== 'draft');
+        setFaqs(filtered.length > 0 ? filtered : defaultFaqs);
       } catch (err) {
         console.error("Error loading FAQs:", err);
+        setFaqs(defaultFaqs);
       }
     }
     loadFaqs();

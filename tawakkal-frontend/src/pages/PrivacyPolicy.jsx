@@ -44,7 +44,36 @@ const PrivacyPolicy = () => {
           ) : policy ? (
             <div dangerouslySetInnerHTML={{ __html: policy.content }} />
           ) : (
-            <div className="text-center text-gray-500 py-20">Privacy policy content not found.</div>
+            <div className="prose prose-gold max-w-none">
+              <p className="text-gray-600 mb-6"><strong>Effective Date:</strong> July 13, 2026</p>
+              <p className="mb-6">At <strong>Tawakkal Store</strong> (accessible from tawakkal.store), one of our main priorities is the privacy of our visitors. This Privacy Policy document contains types of information that is collected and recorded by Tawakkal Store and how we use it.</p>
+              
+              <h2>Information We Collect</h2>
+              <ul>
+                <li><strong>Personal Information:</strong> When you make a purchase or attempt to make a purchase through the Site, we collect certain information from you, including your name, billing address, shipping address, payment information (including credit card numbers or mobile wallet details), email address, and phone number.</li>
+                <li><strong>Log Files:</strong> Tawakkal Store follows a standard procedure of using log files. These files log visitors when they visit websites. The information collected by log files includes internet protocol (IP) addresses, browser type, Internet Service Provider (ISP), date and time stamp, referring/exit pages, and possibly the number of clicks.</li>
+              </ul>
+
+              <h2>How We Use Your Information</h2>
+              <p>We use the information we collect in various ways, including to:</p>
+              <ul>
+                <li>Provide, operate, and maintain our website.</li>
+                <li>Process your orders, arrange for shipping, and provide you with invoices and/or order confirmations.</li>
+                <li>Communicate with you, including responding to customer service requests or sending promotional updates.</li>
+                <li>Screen our orders for potential risk or fraud.</li>
+              </ul>
+
+              <h2>Data Protection Rights</h2>
+              <p>We want to ensure you are fully aware of all of your data protection rights. Every user is entitled to the following:</p>
+              <ul>
+                <li><strong>The right to access</strong> – You have the right to request copies of your personal data.</li>
+                <li><strong>The right to rectification</strong> – You have the right to request that we correct any information you believe is inaccurate.</li>
+                <li><strong>The right to erasure</strong> – You have the right to request that we erase your personal data, under certain conditions.</li>
+              </ul>
+
+              <h2>Third-Party Privacy Policies</h2>
+              <p>Tawakkal Store's Privacy Policy does not apply to other advertisers or websites. Thus, we are advising you to consult the respective Privacy Policies of these third-party ad servers or payment gateways for more detailed information.</p>
+            </div>
           )}
         </div>
       </section>

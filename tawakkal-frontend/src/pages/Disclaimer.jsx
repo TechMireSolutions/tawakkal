@@ -44,7 +44,19 @@ const Disclaimer = () => {
           ) : policy ? (
             <div dangerouslySetInnerHTML={{ __html: policy.content }} />
           ) : (
-            <div className="text-center text-gray-500 py-20">Disclaimer content not found.</div>
+            <div className="prose prose-gold max-w-none">
+              <h2>Website Disclaimer</h2>
+              <p>The information provided by <strong>Tawakkal Store</strong> ("we," "us," or "our") on tawakkal.store (the "Site") is for general informational purposes only. All information on the Site is provided in good faith, however, we make no representation or warranty of any kind, express or implied, regarding the accuracy, adequacy, validity, reliability, availability, or completeness of any information on the Site.</p>
+
+              <h2>Product & Color Disclaimer</h2>
+              <ul>
+                <li><strong>Color Variation:</strong> We make every effort to display as accurately as possible the colors and images of our women's clothing apparel that appear at the store. We cannot guarantee that your computer monitor or mobile screen's display of any color will be completely accurate. Minor color variations due to photographic lighting sources or your monitor settings do not qualify as a product defect.</li>
+                <li><strong>Sizing:</strong> Please refer to our detailed sizing chart before placing an order. Minor variances of 1–2 inches in stitched clothing sizes are standard due to the manual manufacturing process.</li>
+              </ul>
+
+              <h2>Limitation of Liability</h2>
+              <p>Under no circumstance shall Tawakkal Store have any liability to you for any loss or damage of any kind incurred as a result of the use of the site or reliance on any information provided on the site. Your use of the site and your reliance on any information on the site is solely at your own risk.</p>
+            </div>
           )}
         </div>
       </section>
