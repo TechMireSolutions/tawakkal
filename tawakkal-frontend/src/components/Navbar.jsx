@@ -50,19 +50,20 @@ const Navbar = () => {
 
     const loadData = async () => {
       try {
-        const { fetchCategories, fetchPages, fetchBrands, fetchBadges } = await import('../api');
-        
+        const { fetchCategories, fetchPages, fetchBrands, fetchBadges } =
+          await import("../api");
+
         const catData = await fetchCategories();
         setCategories(catData.filter((cat) => cat.status === true));
-        
+
         const brandData = await fetchBrands();
-        setBrands(brandData.filter(b => b.status === true));
+        setBrands(brandData.filter((b) => b.status === true));
 
         const badgeData = await fetchBadges();
-        setBadges(badgeData.filter(b => b.status === true));
-        
+        setBadges(badgeData.filter((b) => b.status === true));
+
         const pagesData = await fetchPages();
-        setPages(pagesData.filter((p) => p.status === 'published'));
+        setPages(pagesData.filter((p) => p.status === "published"));
       } catch (err) {
         console.error("Error fetching data for navbar:", err);
       }
@@ -142,7 +143,7 @@ const Navbar = () => {
                 {/* NEW IN */}
                 <div className="flex items-center h-8">
                   <Link
-                    to="/products?badge=New"
+                    to={badges[0] ? `/badge/${encodeURIComponent(badges[0].slug)}` : '/products'}
                     className={`${scrolled || isDarkHeroPage ? "text-white" : "text-charcoal"} hover:text-gold transition-colors duration-300 uppercase font-bold tracking-[0.2em] text-[12px]`}
                   >
                     New In
@@ -250,19 +251,38 @@ const Navbar = () => {
                             CUSTOMER CARE
                           </h4>
                           <ul className="space-y-3">
-                            {pages.filter(p => p.group === 'CUSTOMER CARE').map(page => {
-                              const isSystemPage = page.is_system || ['about', 'contact', 'privacy-policy', 'shipping', 'store-locator', 'blogs', 'fabric-glossary', 'feedback-survey', 'disclaimer', 'faqs'].includes(page.slug);
-                              return (
-                                <li key={page.id}>
-                                  <Link
-                                    to={isSystemPage ? `/${page.slug}` : `/page/${page.slug || page.id}`}
-                                    className="text-[11px] text-gray-500 hover:text-gold font-medium uppercase"
-                                  >
-                                    {page.title}
-                                  </Link>
-                                </li>
-                              );
-                            })}
+                            {pages
+                              .filter((p) => p.group === "CUSTOMER CARE")
+                              .map((page) => {
+                                const isSystemPage =
+                                  page.is_system ||
+                                  [
+                                    "about",
+                                    "contact",
+                                    "privacy-policy",
+                                    "shipping",
+                                    "store-locator",
+                                    "blogs",
+                                    "fabric-glossary",
+                                    "feedback-survey",
+                                    "disclaimer",
+                                    "faqs",
+                                  ].includes(page.slug);
+                                return (
+                                  <li key={page.id}>
+                                    <Link
+                                      to={
+                                        isSystemPage
+                                          ? `/${page.slug}`
+                                          : `/page/${page.slug || page.id}`
+                                      }
+                                      className="text-[11px] text-gray-500 hover:text-gold font-medium uppercase"
+                                    >
+                                      {page.title}
+                                    </Link>
+                                  </li>
+                                );
+                              })}
                           </ul>
                         </div>
                         <div className="space-y-4">
@@ -270,19 +290,38 @@ const Navbar = () => {
                             INFORMATION
                           </h4>
                           <ul className="space-y-3">
-                            {pages.filter(p => p.group === 'INFORMATION').map(page => {
-                              const isSystemPage = page.is_system || ['about', 'contact', 'privacy-policy', 'shipping', 'store-locator', 'blogs', 'fabric-glossary', 'feedback-survey', 'disclaimer', 'faqs'].includes(page.slug);
-                              return (
-                                <li key={page.id}>
-                                  <Link
-                                    to={isSystemPage ? `/${page.slug}` : `/page/${page.slug || page.id}`}
-                                    className="text-[11px] text-gray-500 hover:text-gold font-medium uppercase"
-                                  >
-                                    {page.title}
-                                  </Link>
-                                </li>
-                              );
-                            })}
+                            {pages
+                              .filter((p) => p.group === "INFORMATION")
+                              .map((page) => {
+                                const isSystemPage =
+                                  page.is_system ||
+                                  [
+                                    "about",
+                                    "contact",
+                                    "privacy-policy",
+                                    "shipping",
+                                    "store-locator",
+                                    "blogs",
+                                    "fabric-glossary",
+                                    "feedback-survey",
+                                    "disclaimer",
+                                    "faqs",
+                                  ].includes(page.slug);
+                                return (
+                                  <li key={page.id}>
+                                    <Link
+                                      to={
+                                        isSystemPage
+                                          ? `/${page.slug}`
+                                          : `/page/${page.slug || page.id}`
+                                      }
+                                      className="text-[11px] text-gray-500 hover:text-gold font-medium uppercase"
+                                    >
+                                      {page.title}
+                                    </Link>
+                                  </li>
+                                );
+                              })}
                           </ul>
                         </div>
                       </div>

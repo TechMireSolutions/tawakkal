@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingBag, ArrowRight, Heart } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Autoplay } from 'swiper/modules';
 import { fetchProducts } from '../api';
-import { useCart } from '../pages/CartContext';
-import { useCurrency } from '../context/CurrencyContext';
+import ProductCard from './ProductCard';
 
 // Import Swiper styles
 import 'swiper/css';
@@ -14,8 +13,6 @@ import 'swiper/css/pagination';
 
 const ProductMarquee = ({ id, limit = 8 }) => {
   const navigate = useNavigate();
-  const { addToCart, toggleWishlist, wishlistItems } = useCart();
-  const { convertPrice } = useCurrency();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -32,17 +29,6 @@ const ProductMarquee = ({ id, limit = 8 }) => {
     };
     getProducts();
   }, [limit]);
-
-  const handleQuickAdd = (e, product) => {
-    e.stopPropagation();
-    // Default options for quick add
-    addToCart(product, 1, 'M', { name: 'Standard', hex: '#000000' });
-  };
-
-  const handleWishlist = (e, product) => {
-    e.stopPropagation();
-    toggleWishlist(product);
-  };
 
   if (loading) return <div className="py-24 text-center text-gray-400 animate-pulse">Loading Collection...</div>;
   if (products.length === 0) return null;
@@ -112,81 +98,7 @@ const ProductMarquee = ({ id, limit = 8 }) => {
         >
           {products.map((product) => (
             <SwiperSlide key={product.id}>
-              <div 
-                className="group h-full cursor-pointer"
-                onClick={() => navigate(`/product/${product.id}`)}
-              >
-                {/* Product Card */}
-                <div className="bg-white shadow-lg hover:shadow-2xl transition-all duration-500 h-full">
-                  {/* Image Container */}
-                  <div className="relative aspect-[3/4] overflow-hidden">
-                    <div className="absolute top-2 left-2 md:top-3 md:left-3 z-10 flex flex-col gap-2">
-                      {product.badges && product.badges.map(badge => (
-                        <div 
-                          key={badge.id}
-                          className="text-white text-[8px] md:text-[9px] font-bold uppercase tracking-widest px-2 py-1 md:px-3 md:py-1.5"
-                          style={{ backgroundColor: badge.background_color || 'var(--admin-primary)', color: badge.text_color || '#fff' }}
-                        >
-                          {badge.name}
-                        </div>
-                      ))}
-                      {product.discount_percentage && product.discount_percentage > 0 && (
-                        <div className="bg-[#ff3333] text-white text-[8px] md:text-[9px] font-bold uppercase tracking-widest px-2 py-1 md:px-3 md:py-1.5">
-                          {product.discount_percentage}% OFF
-                        </div>
-                      )}
-                    </div>
-                    
-                    <button
-                      onClick={(e) => handleWishlist(e, product)}
-                      className="absolute top-2 right-2 md:top-3 md:right-3 z-20 w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/90 backdrop-blur-md shadow-lg flex items-center justify-center hover:bg-gold hover:text-white transition-all duration-300"
-                    >
-                      <Heart size={16} className={wishlistItems.some(item => item.id === product.id) ? 'fill-red-500 text-red-500' : 'text-charcoal'} />
-                    </button>
-                    <img
-                      src={product.primary_image?.image_url || "https://placehold.co/400x533?text=No+Image"}
-                      alt={product.name}
-                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                    />
-                    {/* Overlay */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all duration-300" />
-
-                    {/* Quick Add Button */}
-                    <div className="absolute bottom-3 left-3 right-3 md:bottom-4 md:left-4 md:right-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                      <button 
-                        onClick={(e) => handleQuickAdd(e, product)}
-                        className="w-full bg-white text-charcoal py-2.5 md:py-3 flex items-center justify-center gap-2 text-[9px] md:text-[10px] font-bold uppercase tracking-[0.15em] hover:bg-gold hover:text-white transition-all shadow-xl"
-                      >
-                        <ShoppingBag size={14} />
-                        <span className="hidden sm:inline">Add to Bag</span>
-                        <span className="sm:hidden">Add</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Product Info */}
-                  <div className="p-3 md:p-4 space-y-1 md:space-y-2">
-                    <p className="text-gold text-[8px] md:text-[9px] uppercase tracking-[0.2em] font-bold">
-                      {product.category?.name || 'All'}
-                    </p>
-                    <h3 className="text-sm md:text-base font-bold group-hover:text-gold transition-colors line-clamp-1">
-                      {product.name}
-                    </h3>
-                    <div className="flex flex-col gap-1">
-                      <div className="flex items-center gap-2">
-                        <p className="text-charcoal font-bold text-xs md:text-sm tracking-wider">
-                          {convertPrice(product.base_price)}
-                        </p>
-                        {product.compare_at_price && parseFloat(product.compare_at_price) > parseFloat(product.base_price) && (
-                          <p className="text-gray-400 line-through text-[10px] md:text-xs font-medium">
-                            {convertPrice(product.compare_at_price)}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              <ProductCard product={product} className="h-full" />
             </SwiperSlide>
           ))}
         </Swiper>

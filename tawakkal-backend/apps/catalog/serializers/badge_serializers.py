@@ -1,9 +1,9 @@
 from rest_framework import serializers
 from apps.catalog.models.badge import Badge
-from apps.media.serializers import MediaSerializer
+from apps.media.serializers import MediaListSerializer
 
 class BadgeSerializer(serializers.ModelSerializer):
-    icon_details = MediaSerializer(source='icon', read_only=True)
+    icon_details = MediaListSerializer(source='icon', read_only=True)
 
     class Meta:
         model = Badge

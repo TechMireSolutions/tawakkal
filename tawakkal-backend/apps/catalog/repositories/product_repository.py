@@ -1,6 +1,12 @@
 from django.db.models import Q, Prefetch, F
+
 from apps.core.repositories import BaseRepository
-from apps.catalog.models import Product, ProductVariant, ProductStatus, VariantStatus
+from apps.catalog.models import (
+    Product,
+    ProductVariant,
+    ProductStatus,
+    VariantStatus,
+)
 
 class ProductRepository(BaseRepository):
     model = Product
@@ -10,14 +16,24 @@ class ProductRepository(BaseRepository):
         """
         Optimizes fetching with select_related and prefetch_related to prevent N+1 queries.
         """
-        return cls.get_queryset().select_related(
-            'category'
-        ).prefetch_related(
-            'images',
-            Prefetch(
-                'variants',
-                queryset=ProductVariant.objects.select_related('color', 'size').filter(is_deleted=False)
-            )
+        return (
+            cls.get_queryset()
+                .select_related(
+                    'category',
+                    'brand',
+                )
+                .prefetch_related(
+                    'badges',
+                    'images',
+                    Prefetch(
+                        'variants',
+                        queryset=(
+                            ProductVariant.objects
+                            .select_related('color', 'size')
+                            .filter(is_deleted=False)
+                        ),
+                    ),
+                )
         )
 
     @classmethod
