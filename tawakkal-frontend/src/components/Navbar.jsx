@@ -58,13 +58,13 @@ const Navbar = () => {
       setCategories(catData.filter((cat) => cat.status === true));
 
       const brandData = await fetchBrands();
-      setBrands(brandData.filter((b) => b.status === true));
+      setBrands(brandData.filter((b) => b.status === true || b.status === 'true' || b.status === 1));
 
       const badgeData = await fetchBadges();
-      setBadges(badgeData.filter((b) => b.status === true));
+      setBadges(badgeData.filter((b) => b.status === true || b.status === 'true' || b.status === 1));
 
       const pagesData = await fetchPages();
-      setPages(pagesData.filter((p) => p.status === "published" || p.status === true));
+      setPages(pagesData.filter((p) => p.status === "published" || p.status === true || p.status === 'true' || p.status === 1));
     } catch (err) {
       console.error("Error fetching data for navbar:", err);
     }

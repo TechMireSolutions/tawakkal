@@ -87,7 +87,8 @@ export const CartProvider = ({ children }) => {
                     quantity: (quantity || 1), 
                     selectedSize, 
                     selectedColor,
-                    isWholesale 
+                    isWholesale,
+                    image: product.primary_image?.image_url || product.image || "https://placehold.co/400x533?text=No+Image"
                 }];
             }
         });

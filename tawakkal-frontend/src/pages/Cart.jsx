@@ -53,7 +53,7 @@ const Cart = () => {
                 {cartItems.map((item, index) => (
                   <div key={`${item.id}-${item.selectedSize || 'nosize'}-${item.selectedColor?.name || 'nocolor'}`} className={`flex items-center gap-4 p-4 md:p-6 ${index > 0 ? 'border-t border-gray-100' : ''}`}>
                     <div className="w-24 h-24 md:w-32 md:h-32 flex-shrink-0 rounded-lg overflow-hidden bg-gray-100">
-                      <img src={item.primary_image?.image_url || "https://placehold.co/400x533?text=No+Image"} alt={item.name} className="w-full h-full object-cover" />
+                      <img src={item.image || item.primary_image?.image_url || "https://placehold.co/400x533?text=No+Image"} alt={item.name} className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-1">
                       <h3 className="font-bold text-lg mb-1">{item.name}</h3>

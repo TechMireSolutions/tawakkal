@@ -48,10 +48,9 @@ const ProductDetail = () => {
           setSelectedColor({ name: first.name, hex: first.hex_code || '#cccccc' });
         }
 
-        // Fetch related products
-        const categoryId = typeof data.category === 'object' ? data.category?.id : data.category;
-        const products = await fetchProducts({ category_id: categoryId });
-        setRelatedProducts(products.filter(p => p.id !== data.id && p.id !== parseInt(id)).slice(0, 4));
+        // Fetch featured products for "Complete the Look"
+        const featuredProducts = await fetchProducts({ is_featured: true });
+        setRelatedProducts(featuredProducts.filter(p => p.id !== data.id && p.id !== parseInt(id)).slice(0, 4));
       } catch (err) {
         console.error("Error fetching product", err);
         navigate('/products');

@@ -185,7 +185,7 @@ const Checkout = () => {
                 {cartItems.map((item) => (
                   <div key={`${item.id}-${item.selectedSize}`} className="flex gap-4">
                     <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
-                      <img src={item.image} alt="" className="w-full h-full object-cover" />
+                      <img src={item.image || item.primary_image?.image_url || "https://placehold.co/400x533?text=No+Image"} alt={item.name} className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-1">
                       <h4 className="text-xs font-bold line-clamp-1 uppercase tracking-wider">{item.name}</h4>
