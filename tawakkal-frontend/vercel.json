@@ -5,6 +5,22 @@
   "outputDirectory": "dist",
   "rewrites": [
     {
+      "source": "/api/:path*",
+      "destination": "https://tawakkal-backend-teal.vercel.app/api/:path*"
+    },
+    {
+      "source": "/backend-admin/:path*",
+      "destination": "https://tawakkal-backend-teal.vercel.app/backend-admin/:path*"
+    },
+    {
+      "source": "/static/:path*",
+      "destination": "https://tawakkal-backend-teal.vercel.app/static/:path*"
+    },
+    {
+      "source": "/media/:path*",
+      "destination": "https://tawakkal-backend-teal.vercel.app/media/:path*"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

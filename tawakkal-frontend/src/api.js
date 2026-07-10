@@ -62,9 +62,13 @@ export const deleteProduct = async (id) => {
 import axios from 'axios';
 
 export const createOrder = async (orderData) => {
-  const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1/admin';
-  const STOREFRONT_URL = BASE_URL.replace('/admin', '/storefront');
+  let BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1/admin';
   
+  if (!window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) {
+    BASE_URL = '/api/v1/admin';
+  }
+  
+  const STOREFRONT_URL = BASE_URL.replace('/admin', '/storefront');
   const res = await axios.post(`${STOREFRONT_URL}/orders/checkout/`, orderData);
   return res.data;
 };

@@ -29,7 +29,7 @@ if env_file.exists():
 
 SECRET_KEY = env('SECRET_KEY', default='django-insecure-key-change-in-production')
 DEBUG = env.bool('DEBUG', default=False)
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', 'testserver', '.vercel.app'])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1', 'testserver', '.vercel.app', 'tawakkal.store', '.tawakkal.store'])
 
 # Application definition
 INSTALLED_APPS = [
@@ -85,7 +85,9 @@ CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
 CORS_ALLOWED_ORIGINS.extend([
     'https://tawakkal-frontend.vercel.app',
     'http://localhost:5173',
-    'http://localhost:3000'
+    'http://localhost:3000',
+    'https://tawakkal.store',
+    'https://www.tawakkal.store'
 ])
 # Ensure uniqueness
 CORS_ALLOWED_ORIGINS = list(set(CORS_ALLOWED_ORIGINS))
@@ -93,7 +95,9 @@ CORS_ALLOWED_ORIGINS = list(set(CORS_ALLOWED_ORIGINS))
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
 CSRF_TRUSTED_ORIGINS.extend([
     'https://tawakkal-frontend.vercel.app',
-    'https://tawakkal-backend-teal.vercel.app'
+    'https://tawakkal-backend-teal.vercel.app',
+    'https://tawakkal.store',
+    'https://www.tawakkal.store'
 ])
 CSRF_TRUSTED_ORIGINS = list(set(CSRF_TRUSTED_ORIGINS))
 
@@ -125,30 +129,37 @@ if DEBUG:
         }
     }
 else:
-    if 'DATABASE_URL' not in os.environ:
-        raise ImproperlyConfigured('DATABASE_URL environment variable is required when DEBUG is False')
-    
     db_url = os.environ.get('DATABASE_URL')
     
-    # Explicit URL structural parsing to guarantee use of Psycopg 3 engine parameters
-    urllib.parse.uses_netloc.append("postgres")
-    url = urllib.parse.urlparse(db_url)
-    
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': url.path[1:],
-            'USER': url.username,
-            'PASSWORD': url.password,
-            'HOST': url.hostname,
-            'PORT': url.port or 5432,
-            'OPTIONS': {
-                'sslmode': 'require',
-                'connect_timeout': 10,
-                'server_side_binding': False,
+    if db_url:
+        import dj_database_url
+        DATABASES = {
+            'default': dj_database_url.config(
+                default=db_url,
+                conn_max_age=600,
+            )
+        }
+    else:
+        # Fallback to direct MySQL settings if DATABASE_URL is not set
+        db_name = env('DB_NAME', default='tawakkal.store')
+        db_user = env('DB_USER', default='tawakkal.store')
+        db_password = env('DB_PASSWORD', default='mXdrETcYbYBLM8SJ')
+        db_host = env('DB_HOST', default='localhost')
+        db_port = env('DB_PORT', default='3306')
+        
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.mysql',
+                'NAME': db_name,
+                'USER': db_user,
+                'PASSWORD': db_password,
+                'HOST': db_host,
+                'PORT': db_port,
+                'OPTIONS': {
+                    'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+                }
             }
         }
-    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},

@@ -2,9 +2,9 @@ import axios from 'axios';
 
 let API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api/v1/admin';
 
-// Force production URL if running on Vercel (to override misconfigured/empty env vars)
-if (window.location.hostname.includes('vercel.app')) {
-  API_BASE_URL = 'https://tawakkal-backend-teal.vercel.app/api/v1/admin';
+// Use relative URL in production (same domain deployment)
+if (!window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) {
+  API_BASE_URL = '/api/v1/admin';
 }
 
 const api = axios.create({
