@@ -43,38 +43,40 @@ const Navbar = () => {
   );
 
   useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
+  const handleScroll = () => {
+    setScrolled(window.scrollY > 20);
+  };
+  window.addEventListener("scroll", handleScroll);
 
-    const loadData = async () => {
-      try {
-        const { fetchCategories, fetchPages, fetchBrands, fetchBadges } =
-          await import("../api");
+  const loadData = async () => {
+    try {
+      // REMOVED: await import("../api") 
+      // Instead, ensure ALL imports are at the top of your file:
+      // import { fetchCategories, fetchPages, fetchBrands, fetchBadges } from "../api";
 
-        const catData = await fetchCategories();
-        setCategories(catData.filter((cat) => cat.status === true));
+      const catData = await fetchCategories();
+      setCategories(catData.filter((cat) => cat.status === true));
 
-        const brandData = await fetchBrands();
-        setBrands(brandData.filter((b) => b.status === true));
+      const brandData = await fetchBrands();
+      setBrands(brandData.filter((b) => b.status === true));
 
-        const badgeData = await fetchBadges();
-        setBadges(badgeData.filter((b) => b.status === true));
+      const badgeData = await fetchBadges();
+      setBadges(badgeData.filter((b) => b.status === true));
 
-        const pagesData = await fetchPages();
-        setPages(pagesData.filter((p) => p.status === "published"));
-      } catch (err) {
-        console.error("Error fetching data for navbar:", err);
-      }
-    };
-    loadData();
+      const pagesData = await fetchPages();
+      setPages(pagesData.filter((p) => p.status === "published"));
+    } catch (err) {
+      console.error("Error fetching data for navbar:", err);
+    }
+  };
+  
+  loadData();
 
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-      if (closeTimeout.current) clearTimeout(closeTimeout.current);
-    };
-  }, []);
+  return () => {
+    window.removeEventListener("scroll", handleScroll);
+    if (closeTimeout.current) clearTimeout(closeTimeout.current);
+  };
+}, []); // Keep empty if you only want to fetch once on site-load
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
