@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react';
 import { useCart } from "./CartContext.jsx";
 import { useNavigate } from 'react-router-dom';
 import { createOrder } from '../api';
-// Removed unused useCurrency import
+import { useCurrency } from '../context/CurrencyContext';
 import { useSiteSettings } from '../context/SiteSettingsContext';
 import { Check, ArrowRight, Loader2 } from 'lucide-react';
 
 const Checkout = () => {
   const { cartItems, clearCart, setNotification } = useCart();
-  // Removed unused convertPrice
+  const { convertPrice } = useCurrency();
   const siteSettings = useSiteSettings();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -37,8 +37,7 @@ const Checkout = () => {
 
   const calculateSubtotal = () => {
     return cartItems.reduce((total, item) => {
-      const price = parseFloat(item.price.replace(/[^0-9.-]+/g, ""));
-      return total + price * item.quantity;
+      return total + item.price * item.quantity;
     }, 0);
   };
 
@@ -192,7 +191,7 @@ const Checkout = () => {
                       <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
                         Size: {item.selectedSize} | Qty: {item.quantity}
                       </p>
-                      <p className="text-xs font-black text-gold mt-1">{item.price}</p>
+                      <p className="text-xs font-black text-gold mt-1">{convertPrice(item.price)}</p>
                     </div>
                   </div>
                 ))}
@@ -203,21 +202,21 @@ const Checkout = () => {
               <div className="space-y-4">
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400 font-bold uppercase tracking-widest">Subtotal</span>
-                  <span className="font-bold">PKR {subtotal.toLocaleString()}</span>
+                  <span className="font-bold">{convertPrice(subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-400 font-bold uppercase tracking-widest">Shipping</span>
-                  <span className="font-bold">{shipping === 0 ? 'FREE' : `PKR ${shipping}`}</span>
+                  <span className="font-bold">{shipping === 0 ? 'FREE' : convertPrice(shipping)}</span>
                 </div>
                 {tax > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-400 font-bold uppercase tracking-widest">Tax ({taxPercent}%)</span>
-                    <span className="font-bold">PKR {tax.toLocaleString()}</span>
+                    <span className="font-bold">{convertPrice(tax)}</span>
                   </div>
                 )}
                 <div className="flex justify-between items-center pt-4 border-t border-gray-100">
                   <span className="text-lg font-black uppercase tracking-[0.2em]">Total</span>
-                  <span className="text-2xl font-black text-gold">PKR {total.toLocaleString()}</span>
+                  <span className="text-2xl font-black text-gold">{convertPrice(total)}</span>
                 </div>
               </div>
 

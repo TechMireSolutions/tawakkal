@@ -19,9 +19,7 @@ const Cart = () => {
 
   const calculateSubtotal = () => {
     return cartItems.reduce((total, item) => {
-      const priceStr = String(item.price);
-      const price = parseFloat(priceStr.replace(/[^0-9.-]+/g, ""));
-      return total + price * item.quantity;
+      return total + item.price * item.quantity;
     }, 0);
   };
 
@@ -99,15 +97,15 @@ const Cart = () => {
               <h2 className="text-xl font-bold mb-6 uppercase tracking-widest">Order Summary</h2>
               <div className="flex justify-between border-b border-gray-100 pb-4 mb-4">
                 <span className="text-sm">Subtotal</span>
-                <span className="font-bold">PKR {subtotal.toLocaleString()}</span>
+                <span className="font-bold">{convertPrice(subtotal)}</span>
               </div>
               <div className="flex justify-between border-b border-gray-100 pb-4 mb-4">
                 <span className="text-sm">Shipping</span>
-                <span className="font-bold">{shipping > 0 ? `PKR ${shipping.toLocaleString()}` : 'Free'}</span>
+                <span className="font-bold">{shipping > 0 ? convertPrice(shipping) : 'Free'}</span>
               </div>
               <div className="flex justify-between mb-8">
                 <span className="font-bold uppercase tracking-widest">Total</span>
-                <span className="font-bold text-gold">PKR {total.toLocaleString()}</span>
+                <span className="font-bold text-gold">{convertPrice(total)}</span>
               </div>
               <button
                 onClick={handleProceedToCheckout}

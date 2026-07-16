@@ -80,7 +80,8 @@ export const CartProvider = ({ children }) => {
                         : item
                 );
             } else {
-                const itemPrice = isWholesale ? product.wholesale_price : (product.base_price || product.price);
+                const rawPrice = isWholesale ? product.wholesale_price : (product.base_price || product.price || 0);
+                const itemPrice = parseFloat(String(rawPrice).replace(/[^0-9.-]+/g, ""));
                 return [...prevItems, { 
                     ...product, 
                     price: itemPrice, 

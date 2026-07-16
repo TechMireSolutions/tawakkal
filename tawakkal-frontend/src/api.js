@@ -13,22 +13,22 @@ export const fetchProducts = async (params = {}) => {
     }
     delete finalParams.category;
   }
-  const res = await api.get('/catalog/products/', { params: finalParams });
+  const res = await api.get('/catalog/products/', { params: finalParams, skipAuth: true });
   return ensureArray(res);
 };
 
 export const fetchCategories = async () => {
-  const res = await api.get('/catalog/categories/');
+  const res = await api.get('/catalog/categories/', { skipAuth: true });
   return ensureArray(res);
 };
 
 export const fetchBrands = async () => {
-  const res = await api.get('/catalog/brands/');
+  const res = await api.get('/catalog/brands/', { skipAuth: true });
   return ensureArray(res);
 };
 
 export const fetchBadges = async () => {
-  const res = await api.get('/catalog/badges/');
+  const res = await api.get('/catalog/badges/', { skipAuth: true });
   return ensureArray(res);
 };
 
@@ -48,7 +48,7 @@ export const deleteCategory = async (id) => {
 };
 
 export const fetchProductDetail = async (id) => {
-  const res = await api.get(`/catalog/products/${id}/`);
+  const res = await api.get(`/catalog/products/${id}/`, { skipAuth: true });
   return res;
 };
 
@@ -84,22 +84,22 @@ export const createOrder = async (orderData) => {
 };
 
 export const fetchPages = async () => {
-  const res = await api.get('/cms/pages/');
+  const res = await api.get('/cms/pages/', { skipAuth: true });
   return ensureArray(res);
 };
 
 export const fetchBlogPosts = async () => {
-  const res = await api.get('/cms/blog-posts/?status=PUBLISHED');
+  const res = await api.get('/cms/blog-posts/?status=PUBLISHED', { skipAuth: true });
   return ensureArray(res);
 };
 
 export const fetchBlogPost = async (id) => {
-  const res = await api.get(`/cms/blog-posts/${id}/`);
+  const res = await api.get(`/cms/blog-posts/${id}/`, { skipAuth: true });
   return res;
 };
 
 export const fetchFaqs = async () => {
-  const res = await api.get('/cms/faqs/?status=PUBLISHED');
+  const res = await api.get('/cms/faqs/?status=PUBLISHED', { skipAuth: true });
   return ensureArray(res);
 };
 
@@ -110,17 +110,17 @@ export const fetchOrders = async () => {
 
 
 export const fetchHeroBanners = async () => {
-  const res = await api.get('/cms/hero-banners/'); // fixed from /cms/projects/
+  const res = await api.get('/cms/hero-banners/', { skipAuth: true }); // fixed from /cms/projects/
   return ensureArray(res);
 };
 
 export const fetchTikTokReels = async () => {
-  const res = await api.get('/cms/social-links/'); // fixed from /cms/testimonials/
+  const res = await api.get('/cms/social-links/', { skipAuth: true }); // fixed from /cms/testimonials/
   return ensureArray(res);
 };
 
 export const fetchTestimonials = async () => {
-  const res = await api.get('/cms/testimonials/');
+  const res = await api.get('/cms/testimonials/', { skipAuth: true });
   return ensureArray(res);
 };
 
@@ -135,7 +135,7 @@ export const updateSiteSettings = async (id, settingsData) => {
 };
 
 export const fetchSystemConfig = async () => {
-  const res = await api.get('/settings/system/');
+  const res = await api.get('/settings/system/', { skipAuth: true });
   return res;
 };
 
@@ -151,12 +151,12 @@ export const fetchDashboardStats = async () => {
 
 
 export const fetchPolicies = async () => {
-  const res = await api.get('/cms/policies/');
+  const res = await api.get('/cms/policies/', { skipAuth: true });
   return ensureArray(res);
 };
 
 export const fetchContactInfo = async () => {
-  const res = await api.get('/cms/contact-info/');
+  const res = await api.get('/cms/contact-info/', { skipAuth: true });
   return ensureArray(res);
 };
 
