@@ -7,10 +7,7 @@ export const fetchProducts = async (params = {}) => {
   if (!window.location.pathname.startsWith('/admin')) {
     finalParams.status = 'ACTIVE';
   }
-  if (finalParams.category) {
-    if (finalParams.category !== 'All') {
-      finalParams.category__name = finalParams.category;
-    }
+  if (finalParams.category === 'All') {
     delete finalParams.category;
   }
   const res = await api.get('/catalog/products/', { params: finalParams, skipAuth: true });

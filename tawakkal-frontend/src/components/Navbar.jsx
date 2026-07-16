@@ -145,7 +145,7 @@ const Navbar = () => {
                 {/* NEW IN */}
                 <div className="flex items-center h-8">
                   <Link
-                    to={badges[0] ? `/badge/${encodeURIComponent(badges[0].slug)}` : '/products'}
+                    to={badges.find(b => b.slug === 'new-arrival') ? `/badge/new-arrival` : '/products'}
                     className={`${scrolled || isDarkHeroPage ? "text-white" : "text-charcoal"} hover:text-gold transition-colors duration-300 uppercase font-bold tracking-[0.2em] text-[12px]`}
                   >
                     New In

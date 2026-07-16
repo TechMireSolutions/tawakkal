@@ -20,6 +20,7 @@ from ..serializers.product_serializers import (
     ProductCreateSerializer, 
     ProductUpdateSerializer
 )
+from apps.catalog.filters import ProductFilter
 
 class ProductViewSet(SoftDeleteModelMixin, RestoreModelMixin, viewsets.ModelViewSet):
     """
@@ -30,7 +31,7 @@ class ProductViewSet(SoftDeleteModelMixin, RestoreModelMixin, viewsets.ModelView
     module_name = 'catalog'
     
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    filterset_fields = ['status', 'is_featured', 'category_id', 'brand']
+    filterset_class = ProductFilter
     search_fields = ['name', 'slug', 'seo_title', 'seo_keywords', 'description', 'variants__sku']
     ordering_fields = ['created_at', 'updated_at', 'name', 'base_price']
     
@@ -48,60 +49,6 @@ class ProductViewSet(SoftDeleteModelMixin, RestoreModelMixin, viewsets.ModelView
 
         if not self.request.user.is_authenticated:
             qs = qs.filter(status='ACTIVE')
-
-        query_params = self.request.query_params
-
-        # BRAND
-        brands = query_params.getlist("brand")
-        if not brands:
-            brand = query_params.get("brand")
-            if brand:
-                brands = [brand]
-
-        if brands:
-            brand_query = Q()
-            for brand in brands:
-                brand_query |= Q(brand__slug=brand)
-
-                if is_valid_uuid(brand):
-                    brand_query |= Q(brand__id=brand)
-
-            qs = qs.filter(brand_query)
-
-        # CATEGORY
-        categories = query_params.getlist("category")
-        if not categories:
-            category = query_params.get("category")
-            if category:
-                categories = [category]
-
-        if categories:
-            category_query = Q()
-            for category in categories:
-                category_query |= Q(category__slug=category)
-
-                if is_valid_uuid(category):
-                    category_query |= Q(category__id=category)
-
-            qs = qs.filter(category_query)
-
-        # BADGE
-        badges = query_params.getlist("badge")
-        if not badges:
-            badge = query_params.get("badge")
-            if badge:
-                badges = [badge]
-
-        if badges:
-            badge_query = Q()
-
-            for badge in badges:
-                badge_query |= Q(badges__slug=badge)
-
-                if is_valid_uuid(badge):
-                    badge_query |= Q(badges__id=badge)
-
-            qs = qs.filter(badge_query)
 
         return qs.distinct()
 

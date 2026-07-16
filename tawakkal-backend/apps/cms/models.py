@@ -58,11 +58,16 @@ class BlogPost(PublishableBaseModel, SEOBaseModel):
 # Structural Content
 # ---------------------------------------------------------
 
+class PageGroupChoices(models.TextChoices):
+    CUSTOMER_CARE = 'CUSTOMER CARE', 'Customer Care'
+    INFORMATION = 'INFORMATION', 'Information'
+
 class Page(PublishableBaseModel, SEOBaseModel):
     title = models.CharField(max_length=255)
     content = models.TextField(blank=True)
     template = models.CharField(max_length=50, default='default')
     featured_image = models.ForeignKey(Media, on_delete=models.SET_NULL, null=True, blank=True)
+    group = models.CharField(max_length=50, choices=PageGroupChoices.choices, default=PageGroupChoices.CUSTOMER_CARE)
 
 class PolicyType(models.TextChoices):
     PRIVACY = 'privacy', 'Privacy Policy'

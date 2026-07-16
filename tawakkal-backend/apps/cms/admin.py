@@ -31,9 +31,9 @@ class BlogPostAdmin(admin.ModelAdmin):
 
 @admin.register(Page)
 class PageAdmin(admin.ModelAdmin):
-    list_display = tuple(['id', 'slug', 'seo_title', 'seo_description', 'meta_keywords', 'canonical_url', 'created_at', 'is_deleted'])
+    list_display = tuple(['id', 'slug', 'seo_title', 'group', 'seo_description', 'meta_keywords', 'canonical_url', 'created_at', 'is_deleted'])
     search_fields = tuple(['slug', 'seo_title', 'meta_keywords', 'canonical_url'])
-    list_filter = tuple(['is_deleted', 'is_active', 'featured_image__id'])
+    list_filter = tuple(['is_deleted', 'is_active', 'group', 'featured_image__id'])
     readonly_fields = ('created_at', 'updated_at', 'created_by', 'updated_by', 'deleted_at')
 
 @admin.register(Policy)
