@@ -43,6 +43,9 @@ urlpatterns = [
     path('api/v1/admin/notifications/', include('apps.notifications.urls')),
     path('api/v1/admin/audit/', include('apps.audit.urls')),
     path('api/v1/admin/settings/', include('apps.core.urls')),
+    
+    # Storefront APIs
+    path('api/v1/storefront/orders/', include('apps.orders.storefront_urls')),
 ]
 
 from django.conf import settings

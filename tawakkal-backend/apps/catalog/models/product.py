@@ -63,6 +63,12 @@ class Product(BaseModel):
     article_no = models.CharField(max_length=50, blank=True, default='')
     volume_no = models.CharField(max_length=50, blank=True, default='')
     
+    # Wholesale Support
+    wholesale_enabled = models.BooleanField(default=False)
+    wholesale_price = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True)
+    wholesale_min_quantity = models.IntegerField(default=6)
+    wholesale_step_quantity = models.IntegerField(default=6)
+    
     # Shipping price
     shipping_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Shipping cost for this product")
     

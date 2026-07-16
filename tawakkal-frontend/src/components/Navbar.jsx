@@ -3,7 +3,7 @@ import { ShoppingBag, Menu, X, Search, Heart, User, Globe } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { useCart } from "../pages/CartContext";
-import { fetchCategories, fetchPages } from "../api";
+import { fetchCategories, fetchPages, fetchBrands, fetchBadges } from "../api";
 import { useCurrency, currencies } from "../context/CurrencyContext";
 import { useSiteSettings } from "../context/SiteSettingsContext";
 
