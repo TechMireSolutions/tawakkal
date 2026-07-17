@@ -8,6 +8,7 @@ import RichTextEditor from '../../../components/ui/RichTextEditor';
 import ImageUploader from '../../../components/ui/ImageUploader';
 import { useToast } from '../../../components/ui/Toast';
 import { getBlog, createBlog, updateBlog, getBlogCategories, getAuthors } from '../../../services/cms.service';
+import { uploadMedia } from '../../../api';
 
 export default function BlogForm() {
   const { id } = useParams();
@@ -75,12 +76,26 @@ export default function BlogForm() {
     e.preventDefault();
     setSubmitting(true);
     try {
+      let finalFormData = { ...formData };
+      
+      // If featured_image is a File object, upload it first
+      if (finalFormData.featured_image instanceof File) {
+        const uploadRes = await uploadMedia(finalFormData.featured_image, () => {});
+        if (uploadRes && uploadRes.id) {
+          finalFormData.featured_image = uploadRes.id;
+        } else {
+          toast.error('Error', 'Failed to upload image');
+          setSubmitting(false);
+          return;
+        }
+      }
+
       if (isEdit) {
-        await updateBlog(id, formData);
+        await updateBlog(id, finalFormData);
         toast.success('Success', 'Blog post updated successfully');
         navigate('/admin/cms/blogs');
       } else {
-        await createBlog(formData);
+        await createBlog(finalFormData);
         toast.success('Success', 'Blog post created successfully');
         navigate('/admin/cms/blogs');
       }
@@ -201,6 +216,7 @@ export default function BlogForm() {
               <ImageUploader 
                 value={formData.featured_image} 
                 onChange={(uuid) => handleChange('featured_image', uuid)} 
+                onRemove={() => handleChange('featured_image', null)}
               />
             </Card>
           </div>

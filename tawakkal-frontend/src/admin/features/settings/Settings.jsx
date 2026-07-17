@@ -221,79 +221,6 @@ function BrandingSettings({ data }) {
 
   return (
     <FormSection title="Branding" subtitle="Logos, icons, and brand colors">
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-          gap: "16px",
-          marginBottom: "32px",
-        }}
-      >
-        <div>
-          <label
-            style={{
-              display: "block",
-              fontSize: "13px",
-              fontWeight: 600,
-              color: "var(--admin-text)",
-              marginBottom: "6px",
-            }}
-          >
-            Primary Color
-          </label>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <input
-              type="color"
-              value={values.primary_color || "#1c1c1c"}
-              onChange={(e) => handleChange(e, "primary_color")}
-              style={{
-                width: 42,
-                height: 42,
-                border: "1px solid var(--admin-border)",
-                borderRadius: "var(--admin-radius-md)",
-                cursor: "pointer",
-              }}
-            />
-            <Input
-              value={values.primary_color}
-              onChange={(e) => handleChange(e, "primary_color")}
-              placeholder="#000000"
-            />
-          </div>
-        </div>
-        <div>
-          <label
-            style={{
-              display: "block",
-              fontSize: "13px",
-              fontWeight: 600,
-              color: "var(--admin-text)",
-              marginBottom: "6px",
-            }}
-          >
-            Secondary Color
-          </label>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <input
-              type="color"
-              value={values.secondary_color || "#cda434"}
-              onChange={(e) => handleChange(e, "secondary_color")}
-              style={{
-                width: 42,
-                height: 42,
-                border: "1px solid var(--admin-border)",
-                borderRadius: "var(--admin-radius-md)",
-                cursor: "pointer",
-              }}
-            />
-            <Input
-              value={values.secondary_color}
-              onChange={(e) => handleChange(e, "secondary_color")}
-              placeholder="#000000"
-            />
-          </div>
-        </div>
-      </div>
 
       <div
         style={{
@@ -339,6 +266,8 @@ function ContactSettings({ data }) {
     instagram_url: data?.instagram_url || "",
     twitter_url: data?.twitter_url || "",
     linkedin_url: data?.linkedin_url || "",
+    tiktok_profile_url: data?.tiktok_profile_url || "",
+    tiktok_embed_code: data?.tiktok_embed_code || "",
   });
 
   const handleChange = (e, field) =>
@@ -412,6 +341,20 @@ function ContactSettings({ data }) {
           label="LinkedIn URL"
           value={values.linkedin_url}
           onChange={(e) => handleChange(e, "linkedin_url")}
+        />
+        <Input
+          label="TikTok URL"
+          value={values.tiktok_profile_url}
+          onChange={(e) => handleChange(e, "tiktok_profile_url")}
+        />
+      </div>
+      <div style={{ marginTop: "16px" }}>
+        <Input
+          label="TikTok Embed Code (for Homepage Reels)"
+          as="textarea"
+          rows={3}
+          value={values.tiktok_embed_code}
+          onChange={(e) => handleChange(e, "tiktok_embed_code")}
         />
       </div>
 

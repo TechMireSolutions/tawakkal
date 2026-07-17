@@ -16,13 +16,13 @@ const About = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
-    
-    gsap.fromTo(statsRef.current, 
+
+    gsap.fromTo(statsRef.current,
       { y: 60, opacity: 0 },
-      { 
-        y: 0, 
-        opacity: 1, 
-        duration: 0.8, 
+      {
+        y: 0,
+        opacity: 1,
+        duration: 0.8,
         stagger: 0.15,
         ease: 'power3.out',
         scrollTrigger: {
@@ -38,7 +38,7 @@ const About = () => {
         const data = await fetchFaqs();
         // Just take a few FAQs for the about page
         setFaqs(data.slice(0, 5));
-        
+
         // Fetch CMS page content
         const { default: api } = await import('../admin/services/axios');
         const pageRes = await api.get('/cms/pages/about/');
@@ -80,7 +80,7 @@ const About = () => {
                 </h2>
               </div>
               {pageContent ? (
-                <div 
+                <div
                   className="prose prose-lg max-w-none text-gray-600 prose-p:leading-relaxed"
                   dangerouslySetInnerHTML={{ __html: pageContent }}
                 />
@@ -97,9 +97,9 @@ const About = () => {
             </div>
             <div className="relative">
               <div className="aspect-[4/5] overflow-hidden">
-                <img 
-                  src="https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&q=80&w=800" 
-                  alt="Fashion Collection" 
+                <img
+                  src="public/about-page-img.jpg"
+                  alt="Fashion Collection"
                   className="w-full h-full object-cover"
                 />
               </div>
@@ -121,7 +121,7 @@ const About = () => {
               What We <span className="italic font-serif text-gold">Do?</span>
             </h2>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             {[
               { icon: Heart, title: "Premium Collections", desc: "We create fashion that tells a story. Our mission is to provide premium unstitched and stitched collections that combine comfort with style." },
@@ -147,7 +147,7 @@ const About = () => {
               Frequently Asked <span className="italic font-serif text-gold">Questions</span>
             </h2>
           </div>
-          
+
           {faqs.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6 mx-auto">
               {faqs.map((faq, index) => (
@@ -172,7 +172,7 @@ const About = () => {
               Contact <span className="italic font-serif text-gold">Information</span>
             </h2>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
             <div className="text-center space-y-4">
               <div className="w-16 h-16 bg-gold/20 rounded-full flex items-center justify-center mx-auto">
@@ -181,7 +181,7 @@ const About = () => {
               <h3 className="font-bold tracking-tight">Phone</h3>
               <a href={`tel:${settings?.contact_phone || '+92 300 7600883'}`} className="block text-white/70 text-sm hover:text-gold transition-colors">{settings?.contact_phone || '+92 300 7600883'}</a>
             </div>
-            
+
             <div className="text-center space-y-4">
               <div className="w-16 h-16 bg-gold/20 rounded-full flex items-center justify-center mx-auto">
                 <Mail className="w-6 h-6 text-gold" />
@@ -189,7 +189,7 @@ const About = () => {
               <h3 className="font-bold tracking-tight">Email</h3>
               <a href={`mailto:${settings?.contact_email || 'mianusmanjee09@gmail.com'}`} className="block text-white/70 text-sm hover:text-gold transition-colors">{settings?.contact_email || 'mianusmanjee09@gmail.com'}</a>
             </div>
-            
+
             <div className="text-center space-y-4">
               <div className="w-16 h-16 bg-gold/20 rounded-full flex items-center justify-center mx-auto">
                 <MapPin className="w-6 h-6 text-gold" />
