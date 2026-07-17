@@ -7,6 +7,7 @@ For more information on this file, see
 https://docs.djangoproject.com/en/6.0/topics/settings/
 """
 
+import sys
 import environ
 import os
 import urllib.parse
@@ -16,6 +17,9 @@ from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Python path mein 'apps' folder ko add karna taake apps direct call ho sakein
+sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
 
 env = environ.Env()
 
@@ -53,7 +57,7 @@ INSTALLED_APPS = [
     'apps.core',
     'apps.users',
     'apps.audit',
-    'apps.media',
+    'media',          # <-- Yahan direct 'media' kar diya taake dependency issue solve ho jaye
     'apps.catalog',
     'apps.customers',
     'apps.orders',
@@ -141,9 +145,9 @@ else:
         }
     else:
         # Fallback to direct MySQL settings if DATABASE_URL is not set
-        db_name = env('DB_NAME', default='tawakkal.store')
-        db_user = env('DB_USER', default='tawakkal.store')
-        db_password = env('DB_PASSWORD', default='mXdrETcYbYBLM8SJ')
+        db_name = env('DB_NAME', default='sql_tawakkal_store')
+        db_user = env('DB_USER', default='sql_tawakkal_store')
+        db_password = env('DB_PASSWORD', default='613e0ce6dc83f')
         db_host = env('DB_HOST', default='localhost')
         db_port = env('DB_PORT', default='3306')
         
