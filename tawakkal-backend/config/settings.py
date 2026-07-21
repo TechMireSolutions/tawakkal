@@ -175,6 +175,7 @@ else:
     db_host = env('DB_HOST', default='localhost')
     db_port = env('DB_PORT', default='3306')
     
+<<<<<<< HEAD
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.mysql',
@@ -185,6 +186,35 @@ else:
             'PORT': db_port,
             'OPTIONS': {
                 'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+=======
+    if db_url:
+        import dj_database_url
+        DATABASES = {
+            'default': dj_database_url.config(
+                default=db_url,
+                conn_max_age=600,
+            )
+        }
+    else:
+        # Fallback to direct MySQL settings if DATABASE_URL is not set
+        db_name = env('DB_NAME', default='sql_tawakkal_store')
+        db_user = env('DB_USER', default='sql_tawakkal_store')
+        db_password = env('DB_PASSWORD', default='613e0ce6dc83f')
+        db_host = env('DB_HOST', default='localhost')
+        db_port = env('DB_PORT', default='3306')
+        
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.mysql',
+                'NAME': db_name,
+                'USER': db_user,
+                'PASSWORD': db_password,
+                'HOST': db_host,
+                'PORT': db_port,
+                'OPTIONS': {
+                    'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+                }
+>>>>>>> 6de244e60cebd812828a5b55d0ed2bc32f1a0aa1
             }
         }
     }
@@ -295,6 +325,7 @@ class UnverifiedSmtpEmailBackend(SmtpEmailBackend):
 
 EMAIL_BACKEND = 'config.settings.UnverifiedSmtpEmailBackend'
 
+<<<<<<< HEAD
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'mail.tawakkal.store')
 EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
@@ -302,3 +333,6 @@ EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'info@tawakkal.store')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+=======
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+>>>>>>> 6de244e60cebd812828a5b55d0ed2bc32f1a0aa1
