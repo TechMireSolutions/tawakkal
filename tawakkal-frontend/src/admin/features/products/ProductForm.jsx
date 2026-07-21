@@ -83,7 +83,7 @@ export default function ProductForm({ title, subtitle, breadcrumbs, initialData,
     // Convert string prices to numbers to match schema
     const payload = {
       ...data,
-      brand: data.brand || null,
+      brand_id: data.brand || null,
       badge_ids: data.badges || [],
       base_price: parseFloat(data.base_price),
       compare_at_price: data.compare_at_price ? parseFloat(data.compare_at_price) : null,

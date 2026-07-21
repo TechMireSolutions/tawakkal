@@ -34,9 +34,24 @@ export function Breadcrumbs({ items = [] }) {
               >
                 {item.label}
               </span>
+            ) : item.onClick ? (
+              <span
+                onClick={item.onClick}
+                style={{
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  color: 'var(--admin-text-muted)',
+                  cursor: 'pointer',
+                  transition: 'color var(--admin-transition-fast)',
+                }}
+                onMouseEnter={(e) => e.target.style.color = 'var(--admin-primary)'}
+                onMouseLeave={(e) => e.target.style.color = 'var(--admin-text-muted)'}
+              >
+                {item.label}
+              </span>
             ) : (
               <Link
-                to={item.path}
+                to={item.path || '#'}
                 style={{
                   fontSize: '13px',
                   fontWeight: 500,

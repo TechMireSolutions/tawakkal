@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
+import { useSystemConfig } from "./SystemConfigContext";
 
 import { formatCurrency, convertCurrency } from "../admin/utils/formatters";
 
@@ -39,15 +40,43 @@ export const currencies = [
 ];
 
 export const CurrencyProvider = ({ children }) => {
+  const systemConfig = useSystemConfig();
+  const defaultCurrencyCode = systemConfig?.default_currency || "USD";
+  const baseCurrency = currencies.find(c => c.code === defaultCurrencyCode) || currencies[0];
+
   const [currency, setCurrency] = useState(() => {
     const saved = localStorage.getItem("selectedCurrency");
-
-    return saved ? JSON.parse(saved) : currencies[0];
+    return saved ? JSON.parse(saved) : null;
   });
 
+  const [userSelected, setUserSelected] = useState(() => {
+    return localStorage.getItem("currencyUserSelected") === "true";
+  });
+
+  // Keep currency synced with system default unless user explicitly chose one
   useEffect(() => {
-    localStorage.setItem("selectedCurrency", JSON.stringify(currency));
+    if (systemConfig) {
+      if (!userSelected) {
+        setCurrency(baseCurrency);
+      } else if (!currency) {
+        setCurrency(baseCurrency);
+      }
+    }
+  }, [systemConfig, baseCurrency, userSelected, currency]);
+
+  const handleSetCurrency = (newCurrency) => {
+    setCurrency(newCurrency);
+    setUserSelected(true);
+    localStorage.setItem("currencyUserSelected", "true");
+  };
+
+  useEffect(() => {
+    if (currency) {
+      localStorage.setItem("selectedCurrency", JSON.stringify(currency));
+    }
   }, [currency]);
+
+  const activeCurrency = currency || baseCurrency;
 
   /**
    * Convert and format price
@@ -68,24 +97,22 @@ export const CurrencyProvider = ({ children }) => {
 
     const numericPrice = Number(String(price).replace(/[^0-9.]/g, ""));
 
-    const converted = convertCurrency(numericPrice, currency.rate);
+    const converted = convertCurrency(numericPrice, activeCurrency.rate);
 
     return formatCurrency(
       converted,
-      currency.code,
-      currency.code === "PKR" ? "en-PK" : "en-US",
+      activeCurrency.code,
+      activeCurrency.code === "PKR" ? "en-PK" : "en-US",
     );
   };
 
   return (
-    <CurrencyContext.Provider
-      value={{
-        currency,
-        setCurrency,
+    <CurrencyContext.Provider value={{
+        currency: activeCurrency,
+        setCurrency: handleSetCurrency,
         currencies,
         convertPrice,
-      }}
-    >
+    }}>
       {children}
     </CurrencyContext.Provider>
   );

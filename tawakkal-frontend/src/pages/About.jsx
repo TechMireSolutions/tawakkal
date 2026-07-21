@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Mail, Phone, MapPin, Shield, Heart, Award } from 'lucide-react';
+import { Mail, Phone, MapPin, Shield, Heart, Award, Plus, Minus } from 'lucide-react';
 import { useSiteSettings } from '../context/SiteSettingsContext';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -11,6 +11,7 @@ const About = () => {
   const statsRef = useRef([]);
   const settings = useSiteSettings();
   const [faqs, setFaqs] = useState([]);
+  const [openFaqIndex, setOpenFaqIndex] = useState(null);
 
   const [pageContent, setPageContent] = useState(null);
 
@@ -37,7 +38,8 @@ const About = () => {
         const { fetchFaqs } = await import('../api');
         const data = await fetchFaqs();
         // Just take a few FAQs for the about page
-        setFaqs(data.slice(0, 5));
+        const publishedFaqs = data.filter(f => f.status === 'published' || f.is_published === true);
+        setFaqs(publishedFaqs.slice(0, 5));
 
         // Fetch CMS page content
         const { default: api } = await import('../admin/services/axios');
@@ -53,9 +55,9 @@ const About = () => {
   return (
     <div className="bg-ivory min-h-screen text-charcoal">
       {/* Hero Banner */}
-      <section className="relative h-[60vh] min-h-[500px] flex items-center justify-center overflow-hidden">
+      <section className="relative h-[40vh] min-h-[400px] flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-charcoal/60 z-10" />
+          <div className="absolute inset-0 bg-black z-10" />
         </div>
         <div className="relative z-20 text-center px-6 max-w-4xl mx-auto">
           <p className="text-gold tracking-[0.4em] uppercase text-[10px] font-bold mb-6">Our Story</p>
@@ -98,7 +100,7 @@ const About = () => {
             <div className="relative">
               <div className="aspect-[4/5] overflow-hidden">
                 <img
-                  src="public/about-page-img.jpg"
+                  src="/about-page-img.png"
                   alt="Fashion Collection"
                   className="w-full h-full object-cover"
                 />
@@ -149,11 +151,33 @@ const About = () => {
           </div>
 
           {faqs.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6 mx-auto">
+            <div className="max-w-3xl mx-auto space-y-4">
               {faqs.map((faq, index) => (
-                <div key={index} className="bg-white p-6 border border-gray-100 shadow-sm hover:border-gold/30 transition-all">
-                  <h3 className="font-bold text-charcoal mb-3 text-sm">{faq.question}</h3>
-                  <p className="text-gray-600 text-sm leading-relaxed">{faq.answer}</p>
+                <div key={index} className="bg-gray-300 border border-gray-400 shadow-md rounded-xl overflow-hidden">
+                  <button
+                    onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
+                    className="w-full p-6 text-left flex items-center justify-between hover:bg-gray-400 transition-colors"
+                  >
+                    <div className="text-left pr-4">
+                      {faq.category && (
+                        <div className="text-[10px] text-gold uppercase tracking-wider mb-1 font-bold">
+                          {faq.category.replace('_', ' ')}
+                        </div>
+                      )}
+                      <h3 className="font-bold text-charcoal text-sm">{faq.question}</h3>
+                    </div>
+                    <div className="relative w-5 h-5 flex items-center justify-center flex-shrink-0">
+                      <Plus className={`absolute w-5 h-5 text-gold transition-all duration-300 ${openFaqIndex === index ? 'rotate-90 opacity-0 scale-50' : 'rotate-0 opacity-100 scale-100'}`} />
+                      <Minus className={`absolute w-5 h-5 text-gold transition-all duration-300 ${openFaqIndex === index ? 'rotate-0 opacity-100 scale-100' : '-rotate-90 opacity-0 scale-50'}`} />
+                    </div>
+                  </button>
+                  <div className={`grid transition-all duration-300 ease-in-out ${openFaqIndex === index ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                    <div className="overflow-hidden">
+                      <div className="px-6 pb-6 pt-4 border-t border-gray-400 text-center">
+                        <p className="text-gray-800 text-sm leading-relaxed">{faq.answer}</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>

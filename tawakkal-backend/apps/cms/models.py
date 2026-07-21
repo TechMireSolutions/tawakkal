@@ -152,3 +152,23 @@ class Testimonial(PublishableBaseModel):
 
     def __str__(self):
         return f"{self.name} - {self.rating} Stars"
+
+# ---------------------------------------------------------
+# Inquiries
+# ---------------------------------------------------------
+
+class ContactMessageStatus(models.TextChoices):
+    UNREAD = 'unread', 'Unread'
+    REPLIED = 'replied', 'Replied'
+
+class ContactMessage(BaseModel):
+    name = models.CharField(max_length=255)
+    email = models.EmailField()
+    phone = models.CharField(max_length=50, blank=True)
+    subject = models.CharField(max_length=255, blank=True)
+    message = models.TextField()
+    reply = models.TextField(blank=True, null=True)
+    status = models.CharField(max_length=20, choices=ContactMessageStatus.choices, default=ContactMessageStatus.UNREAD)
+    
+    def __str__(self):
+        return f"Message from {self.name} - {self.subject}"

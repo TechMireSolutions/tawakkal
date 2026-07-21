@@ -11,5 +11,6 @@ export const customerService = {
   },
   getCustomer: async (id) => {
     return await api.get(`/customers/customers/${id}/`);
-  }
+  },
+  deleteCustomer: async (id) => api.delete(`/customers/customers/${id}/`),
 };

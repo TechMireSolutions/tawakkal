@@ -12,7 +12,7 @@ class CategoryListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'name', 'slug', 'path', 'level', 'status', 'display_order',
             'is_featured', 'image_url', 'children_count', 'created_at', 'updated_at',
-            'brand', 'brand_details'
+            'brand', 'brand_details', 'parent_id'
             # 'product_count'
         ]
 

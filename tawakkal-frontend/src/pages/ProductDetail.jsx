@@ -26,6 +26,7 @@ const ProductDetail = () => {
   const [wholesaleQuantity, setWholesaleQuantity] = useState(6);
   const [activeImage, setActiveImage] = useState(0);
   const [activeTab, setActiveTab] = useState('description');
+  const [purchaseMode, setPurchaseMode] = useState('retail');
   const [addedToCart, setAddedToCart] = useState(false);
   const [wholesaleAddedToCart, setWholesaleAddedToCart] = useState(false);
   
@@ -77,7 +78,7 @@ const ProductDetail = () => {
   };
 
   const handleExpressCheckout = () => {
-    addToCart(product, quantity, selectedSize, selectedColor);
+    addToCart(product, purchaseMode === 'wholesale' ? wholesaleQuantity : quantity, selectedSize, selectedColor, purchaseMode === 'wholesale');
     navigate('/cart');
   };
 
@@ -177,28 +178,6 @@ const ProductDetail = () => {
               <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-charcoal mb-4 leading-tight">
                 {product.name}
               </h1>
-              <div className="space-y-1.5">
-                <div className="flex items-baseline gap-4">
-                  <div className="flex flex-col">
-                    <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-gray-400 mb-0.5">Retail Price</span>
-                    <div className="flex items-baseline gap-3">
-                      <span className="text-3xl font-bold text-gold">{convertPrice(product.base_price)}</span>
-                      {product.compare_at_price && parseFloat(product.compare_at_price) > parseFloat(product.base_price) && (
-                        <span className="text-gray-400 line-through text-base">{convertPrice(product.compare_at_price)}</span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                {product.wholesale_price && (
-                  <div className="flex flex-col pt-1">
-                    <span className="text-[9px] uppercase tracking-[0.2em] font-bold text-gray-400 mb-0.5">Wholesale Price</span>
-                    <div className="flex items-baseline gap-3">
-                      <span className="text-3xl font-bold text-charcoal">{convertPrice(product.wholesale_price)}</span>
-                      <span className="text-[10px] text-gray-400 font-medium">/ piece</span>
-                    </div>
-                  </div>
-                )}
-              </div>
 
               {/* Product IDs */}
               <div className="flex gap-8 mt-4 border-t border-gray-50 pt-4">
@@ -271,91 +250,98 @@ const ProductDetail = () => {
 
             {/* Quantity & Action */}
             <div className="space-y-4 pt-4 product-anim-up">
-              <div className="flex gap-4 h-16">
-                <div className="flex items-center bg-gray-50 rounded-2xl px-2 border border-gray-100">
+              {/* Purchase Mode Toggle */}
+              {product.wholesale_price && product.wholesale_enabled !== false && (
+                <div className="flex bg-gray-100 p-1 rounded-2xl mb-6 w-full sm:w-fit border border-gray-200 shadow-inner">
                   <button
-                    onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                    className="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-charcoal transition-colors"
+                    onClick={() => setPurchaseMode('retail')}
+                    className={`flex-1 sm:px-8 py-3 rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 ${
+                      purchaseMode === 'retail' 
+                        ? 'bg-white shadow-md text-charcoal' 
+                        : 'text-gray-400 hover:text-charcoal hover:bg-gray-50'
+                    }`}
+                  >
+                    Retail Order
+                  </button>
+                  <button
+                    onClick={() => setPurchaseMode('wholesale')}
+                    className={`flex-1 sm:px-8 py-3 rounded-xl text-[10px] font-bold uppercase tracking-[0.2em] transition-all duration-300 ${
+                      purchaseMode === 'wholesale' 
+                        ? 'bg-white shadow-md text-charcoal' 
+                        : 'text-gray-400 hover:text-charcoal hover:bg-gray-50'
+                    }`}
+                  >
+                    Wholesale Order
+                  </button>
+                </div>
+              )}
+
+              {/* Price Display Based on Mode */}
+              <div className="mb-6 bg-gray-50 p-4 rounded-2xl border border-gray-100">
+                <div className="flex items-baseline gap-4">
+                  <span className="text-3xl font-black text-gold">
+                    {convertPrice(purchaseMode === 'wholesale' ? product.wholesale_price : (product.base_price || product.price))}
+                  </span>
+                  {purchaseMode === 'wholesale' ? (
+                    <span className="text-[10px] text-gray-400 font-bold uppercase tracking-widest bg-gray-200/50 px-2 py-1 rounded">
+                      Per Piece
+                    </span>
+                  ) : (
+                    product.compare_at_price && parseFloat(product.compare_at_price) > parseFloat(product.base_price || product.price) && (
+                      <span className="text-gray-400 line-through text-base font-bold">
+                        {convertPrice(product.compare_at_price)}
+                      </span>
+                    )
+                  )}
+                </div>
+                {purchaseMode === 'wholesale' && (
+                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-3 flex items-center gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-gold"></span>
+                    Minimum Order: {product.wholesale_min_quantity || 6} pieces
+                  </p>
+                )}
+              </div>
+
+              {/* Add to Cart Area */}
+              <div className="flex gap-4 h-16 mb-4">
+                <div className="flex items-center bg-white rounded-2xl px-2 border-2 border-gray-100 shadow-sm">
+                  <button
+                    onClick={() => purchaseMode === 'wholesale' ? stepWholesaleQty(-1) : setQuantity(Math.max(1, quantity - 1))}
+                    className="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-charcoal hover:bg-gray-50 rounded-xl transition-all"
                   >
                     <Minus size={18} />
                   </button>
-                  <span className="w-12 text-center font-bold text-lg">{quantity}</span>
+                  <span className="w-14 text-center font-bold text-lg text-charcoal">
+                    {purchaseMode === 'wholesale' ? wholesaleQuantity : quantity}
+                  </span>
                   <button
-                    onClick={() => setQuantity(quantity + 1)}
-                    className="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-charcoal transition-colors"
+                    onClick={() => purchaseMode === 'wholesale' ? stepWholesaleQty(1) : setQuantity(quantity + 1)}
+                    className="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-charcoal hover:bg-gray-50 rounded-xl transition-all"
                   >
                     <Plus size={18} />
                   </button>
                 </div>
-                
                 <button
-                  onClick={handleAddToCart}
-                  className={`flex-1 rounded-2xl font-bold uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-3 transition-all duration-500 shadow-2xl ${addedToCart
-                      ? 'bg-green-500 text-white'
-                      : 'bg-gold text-white hover:bg-charcoal'
-                    }`}
+                  onClick={purchaseMode === 'wholesale' ? handleWholesaleAddToCart : handleAddToCart}
+                  className={`flex-1 rounded-2xl font-bold uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-3 transition-all duration-500 shadow-xl shadow-charcoal/10 border-2 ${
+                    (purchaseMode === 'wholesale' ? wholesaleAddedToCart : addedToCart)
+                      ? 'bg-green-500 text-white border-green-500 shadow-green-500/20'
+                      : 'bg-charcoal text-white border-charcoal hover:bg-gold hover:border-gold shadow-charcoal/10 hover:shadow-gold/20'
+                  }`}
                 >
-                  {addedToCart ? (
-                    <><Check size={18} /> Item Added</>
+                  {(purchaseMode === 'wholesale' ? wholesaleAddedToCart : addedToCart) ? (
+                    <><Check size={18} /> Added to Cart</>
                   ) : (
                     <><ShoppingBag size={18} /> Add to Cart</>
                   )}
                 </button>
               </div>
-              
-              {/* Wholesale Section */}
-              {product.wholesale_price && product.wholesale_enabled !== false && (
-                <div className="pt-4 border-t border-dashed border-gray-200">
-                  <div className="flex items-center gap-3 mb-4">
-                    <span className="text-[10px] uppercase tracking-[0.25em] font-bold text-charcoal">Wholesale Order</span>
-                    <div className="flex-1 h-px bg-gray-100" />
-                    <span className="text-[9px] uppercase tracking-widest text-gray-400 font-medium">
-                      Min. {product.wholesale_min_quantity || 6} pcs · +{product.wholesale_step_quantity || 6} per step
-                    </span>
-                  </div>
-                  <div className="flex gap-4 h-16">
-                    <div className="flex items-center bg-gray-50 rounded-2xl px-2 border border-gray-200">
-                      <button
-                        onClick={() => stepWholesaleQty(-1)}
-                        className="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-charcoal transition-colors"
-                      >
-                        <Minus size={18} />
-                      </button>
-                      <span className="w-14 text-center font-bold text-lg">{wholesaleQuantity}</span>
-                      <button
-                        onClick={() => stepWholesaleQty(1)}
-                        className="w-12 h-12 flex items-center justify-center text-gray-400 hover:text-charcoal transition-colors"
-                      >
-                        <Plus size={18} />
-                      </button>
-                    </div>
-                    <button
-                      onClick={handleWholesaleAddToCart}
-                      className={`flex-1 rounded-2xl font-bold uppercase tracking-[0.2em] text-[11px] flex items-center justify-center gap-3 transition-all duration-500 shadow-lg border-2 ${wholesaleAddedToCart
-                        ? 'bg-green-500 text-white border-green-500'
-                        : 'bg-charcoal text-white border-charcoal hover:bg-gold hover:border-gold'
-                      }`}
-                    >
-                      {wholesaleAddedToCart ? (
-                        <><Check size={18} /> Added</>
-                      ) : (
-                        <><ShoppingBag size={18} /> Add to Cart</>
-                      )}
-                    </button>
-                  </div>
-                  <p className="text-[9px] text-gray-400 text-center mt-3 tracking-wide">
-                    {wholesaleQuantity} pcs × {convertPrice(product.wholesale_price)} = <span className="font-bold text-charcoal">
-                      {convertPrice(parseFloat(product.wholesale_price) * wholesaleQuantity)}
-                    </span>
-                  </p>
-                </div>
-              )}
 
               <button
                 onClick={handleExpressCheckout}
-                className="w-full h-16 rounded-2xl border-2 border-charcoal font-bold uppercase tracking-[0.2em] text-[11px] hover:bg-charcoal hover:text-white transition-all duration-300"
+                className="w-full h-16 rounded-2xl border-2 border-charcoal font-bold uppercase tracking-[0.2em] text-[11px] hover:bg-charcoal hover:text-white transition-all duration-300 flex items-center justify-center gap-2"
               >
-                Express Checkout
+                <ArrowRight size={16} /> Express Checkout
               </button>
             </div>
 

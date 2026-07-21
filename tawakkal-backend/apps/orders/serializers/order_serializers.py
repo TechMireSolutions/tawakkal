@@ -23,18 +23,26 @@ class OrderNoteSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ['id', 'created_at', 'updated_at', 'created_by', 'updated_by']
 
+from apps.customers.serializers.customer_serializers import CustomerListSerializer, CustomerAddressSerializer
+
 class OrderListSerializer(serializers.ModelSerializer):
+    customer_details = CustomerListSerializer(source='customer', read_only=True)
+    shipping_address_details = CustomerAddressSerializer(source='shipping_address', read_only=True)
+
     class Meta:
         model = Order
         fields = [
-            'id', 'order_number', 'customer', 'status', 'total_amount', 
-            'currency', 'payment_status', 'shipping_status', 'created_at'
+            'id', 'order_number', 'customer', 'customer_details', 'shipping_address_details',
+            'status', 'total_amount', 'currency', 'payment_status', 'shipping_status', 'created_at'
         ]
 
 class OrderDetailSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
     timeline_events = OrderTimelineSerializer(many=True, read_only=True)
     internal_notes = OrderNoteSerializer(many=True, read_only=True)
+    customer_details = CustomerListSerializer(source='customer', read_only=True)
+    shipping_address_details = CustomerAddressSerializer(source='shipping_address', read_only=True)
+    billing_address_details = CustomerAddressSerializer(source='billing_address', read_only=True)
 
     class Meta:
         model = Order

@@ -5,7 +5,7 @@ import { PageContainer, PageHeader } from '../../../components/ui/PageLayout';
 import Button from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import Badge from '../../../components/ui/Badge';
-import { HiPlus, HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi2';
+import { HiPlus, HiOutlinePencilSquare, HiOutlineTrash } from 'react-icons/hi2';
 import { getBlogs, deleteBlog } from '../../../services/cms.service';
 import { useToast } from '../../../components/ui/Toast';
 
@@ -44,6 +44,23 @@ export default function BlogList() {
     }
   };
 
+  const handleDeleteAll = async () => {
+    if (window.confirm('Are you sure you want to delete ALL blog posts? This action cannot be undone.')) {
+      try {
+        setLoading(true);
+        for (const blog of blogs) {
+          await deleteBlog(blog.id);
+        }
+        toast.success('Success', 'All blog posts deleted');
+        loadBlogs();
+      } catch {
+        toast.error('Error', 'Failed to delete some posts');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   return (
     <PageContainer>
       <PageHeader 
@@ -58,6 +75,7 @@ export default function BlogList() {
             Add Post
           </Button>
         }
+        secondaryAction={<Button variant="danger" icon={HiOutlineTrash} size="sm" onClick={handleDeleteAll}>Delete All</Button>}
       />
 
       <Card>
@@ -90,7 +108,7 @@ export default function BlogList() {
                   <td>{blog.views}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <Button variant="ghost" size="sm" icon={HiOutlinePencil} onClick={() => navigate(`/admin/cms/blogs/${blog.id}`)} />
+                      <Button variant="ghost" size="sm" icon={HiOutlinePencilSquare} onClick={() => navigate(`/admin/cms/blogs/${blog.id}`)} />
                       <Button variant="ghost" size="sm" icon={HiOutlineTrash} onClick={() => handleDelete(blog.id)} style={{ color: 'var(--admin-error)' }} />
                     </div>
                   </td>

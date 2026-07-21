@@ -354,8 +354,8 @@ export default function Dashboard() {
         </ContentCard>
       </div>
 
-      {/* ─── Notifications + System Status ─── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px', marginTop: '24px' }} className="admin-charts-row">
+      {/* ─── Notifications ─── */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '20px', marginTop: '24px' }} className="admin-charts-row">
         {/* Recent Notifications */}
         <ContentCard
           title="Notifications"
@@ -386,31 +386,6 @@ export default function Dashboard() {
             ) : (
               <div style={{ padding: '20px', textAlign: 'center', color: 'var(--admin-text-muted)' }}>No new notifications</div>
             )}
-          </div>
-        </ContentCard>
-
-        {/* System Status */}
-        <ContentCard title="System Status" subtitle="All systems operational">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            {[
-              { name: 'Website', status: 'operational', uptime: '99.9%' },
-              { name: 'Payment Gateway', status: 'operational', uptime: '99.8%' },
-              { name: 'Email Service', status: 'operational', uptime: '100%' },
-              { name: 'CDN', status: 'operational', uptime: '99.9%' },
-              { name: 'Database', status: 'operational', uptime: '99.95%' },
-            ].map((system) => (
-              <div key={system.name} style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                padding: '10px 12px', borderRadius: 'var(--admin-radius-md)',
-                border: '1px solid var(--admin-border-light)',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <HiOutlineCheckCircle size={16} style={{ color: 'var(--admin-success)' }} />
-                  <span style={{ fontSize: '13px', fontWeight: 500, color: 'var(--admin-text)' }}>{system.name}</span>
-                </div>
-                <Badge variant="success" size="xs">{system.uptime}</Badge>
-              </div>
-            ))}
           </div>
         </ContentCard>
       </div>

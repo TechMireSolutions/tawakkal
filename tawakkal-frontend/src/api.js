@@ -2,6 +2,23 @@ import api from './admin/services/axios';
 
 const ensureArray = (res) => Array.isArray(res) ? res : (res?.results || []);
 
+export const getMediaUrl = (path) => {
+  if (!path) return '';
+  if (path.startsWith('http://') || path.startsWith('https://')) return path;
+  
+  let baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+  if (!window.location.hostname.includes('localhost') && !window.location.hostname.includes('127.0.0.1')) {
+    baseUrl = '';
+  } else {
+    if (baseUrl.includes('/api/v1/admin')) {
+      baseUrl = baseUrl.replace('/api/v1/admin', '');
+    }
+  }
+  
+  const cleanPath = path.startsWith('/') ? path : `/${path}`;
+  return `${baseUrl}${cleanPath}`;
+};
+
 export const fetchProducts = async (params = {}) => {
   const finalParams = { ...params };
   if (!window.location.pathname.startsWith('/admin')) {
@@ -155,6 +172,10 @@ export const fetchPolicies = async () => {
 export const fetchContactInfo = async () => {
   const res = await api.get('/cms/contact-info/', { skipAuth: true });
   return ensureArray(res);
+};
+
+export const submitContactForm = async (data) => {
+  return await api.post('/cms/inquiries/', data, { skipAuth: true });
 };
 
 export const uploadMedia = async (file, onUploadProgress) => {

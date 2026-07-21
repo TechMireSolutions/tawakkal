@@ -80,6 +80,8 @@ class SiteSettings(SingletonModel):
     instagram_url = models.URLField(blank=True)
     twitter_url = models.URLField(blank=True)
     linkedin_url = models.URLField(blank=True)
+    tiktok_profile_url = models.URLField(blank=True)
+    tiktok_embed_code = models.TextField(blank=True)
 
     # ---------------------------------------------------------
     # Hero Section CMS

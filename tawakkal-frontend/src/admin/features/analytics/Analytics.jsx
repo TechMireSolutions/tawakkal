@@ -9,6 +9,7 @@ import { PageSkeleton } from '../../components/ui/Skeleton';
 import { getAnalyticsData } from '../../services/api';
 import { formatCurrency, formatNumber } from '../../utils/formatters';
 import { DATE_PRESETS } from '../../utils/constants';
+import { exportToPDF } from '../../utils/exportToPDF';
 import { HiOutlineCurrencyDollar, HiOutlineShoppingCart, HiOutlineUsers, HiOutlineArrowTrendingUp, HiOutlineChartBar } from 'react-icons/hi2';
 
 export default function Analytics() {
@@ -19,6 +20,18 @@ export default function Analytics() {
   useEffect(() => {
     (async () => { try { const res = await getAnalyticsData(period); setData(res); } finally { setLoading(false); } })();
   }, [period]);
+
+  const handleExport = () => {
+    if (!data || !data.topProducts) return;
+    const headers = ['Rank', 'Product Name', 'Revenue', 'Sales (Units)'];
+    const tableData = data.topProducts.map((p, i) => [
+      i + 1,
+      p.name,
+      formatCurrency(p.revenue),
+      p.sales
+    ]);
+    exportToPDF(`Top Products Analytics (${period})`, `analytics_top_products_${period}`, headers, tableData);
+  };
 
   if (loading) return <PageSkeleton />;
 
@@ -50,7 +63,7 @@ export default function Analytics() {
             <select value={period} onChange={(e) => setPeriod(e.target.value)} style={{ height: '36px', padding: '0 12px', fontSize: '13px', fontWeight: 500, border: '1px solid var(--admin-border)', borderRadius: 'var(--admin-radius-lg)', background: 'var(--admin-surface)', fontFamily: 'var(--admin-font-sans)', color: 'var(--admin-text)' }}>
               {DATE_PRESETS.filter(d => d.value !== 'custom').map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
             </select>
-            <Button variant="secondary" icon={HiOutlineArrowDownTray} size="sm">Export</Button>
+            <Button variant="secondary" icon={HiOutlineArrowDownTray} size="sm" onClick={handleExport}>Export</Button>
           </div>
         }
       />

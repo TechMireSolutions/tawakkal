@@ -5,7 +5,7 @@ import { PageContainer, PageHeader } from '../../../components/ui/PageLayout';
 import Button from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import Badge from '../../../components/ui/Badge';
-import { HiPlus, HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi2';
+import { HiPlus, HiOutlinePencilSquare, HiOutlineTrash } from 'react-icons/hi2';
 import { getPages, deletePage } from '../../../services/cms.service';
 import { useToast } from '../../../components/ui/Toast';
 
@@ -44,6 +44,23 @@ export default function PageList() {
     }
   };
 
+  const handleDeleteAll = async () => {
+    if (window.confirm('Are you sure you want to delete ALL pages? This action cannot be undone.')) {
+      try {
+        setLoading(true);
+        for (const page of pages) {
+          await deletePage(page.id);
+        }
+        toast.success('Success', 'All pages deleted');
+        loadPages();
+      } catch {
+        toast.error('Error', 'Failed to delete some pages');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   return (
     <PageContainer>
       <PageHeader 
@@ -58,6 +75,7 @@ export default function PageList() {
             Add Page
           </Button>
         }
+        secondaryAction={<Button variant="danger" icon={HiOutlineTrash} size="sm" onClick={handleDeleteAll}>Delete All</Button>}
       />
 
       <Card>
@@ -88,7 +106,7 @@ export default function PageList() {
                   </td>
                   <td>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <Button variant="ghost" size="sm" icon={HiOutlinePencil} onClick={() => navigate(`/admin/cms/pages/${page.id}`)} />
+                      <Button variant="ghost" size="sm" icon={HiOutlinePencilSquare} onClick={() => navigate(`/admin/cms/pages/${page.id}`)} />
                       <Button variant="ghost" size="sm" icon={HiOutlineTrash} onClick={() => handleDelete(page.id)} style={{ color: 'var(--admin-error)' }} />
                     </div>
                   </td>

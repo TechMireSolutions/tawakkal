@@ -1,4 +1,5 @@
 from rest_framework import viewsets, status
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema, extend_schema_view
@@ -8,14 +9,14 @@ from apps.users.permissions import HasModulePermission
 from apps.cms.models import (
     BlogCategory, Tag, Author, BlogPost, Page, Policy, HeroBanner, Announcement,
     StaticBlock, HomepageSection, Faq, ContactInformation, SocialLink,
-    NavigationMenu, FooterContent, Testimonial
+    NavigationMenu, FooterContent, Testimonial, ContactMessage
 )
 from apps.cms.serializers.cms_serializers import (
     BlogCategorySerializer, TagSerializer, AuthorSerializer, BlogPostSerializer,
     PageSerializer, PolicySerializer, HeroBannerSerializer, AnnouncementSerializer,
     StaticBlockSerializer, HomepageSectionSerializer, FaqSerializer,
     ContactInformationSerializer, SocialLinkSerializer, NavigationMenuSerializer,
-    FooterContentSerializer, TestimonialSerializer
+    FooterContentSerializer, TestimonialSerializer, ContactMessageSerializer
 )
 from apps.cms.services.cms_service import CmsService
 
@@ -274,3 +275,84 @@ class FooterContentViewSet(BaseCmsViewSet):
 class TestimonialViewSet(BaseCmsViewSet):
     queryset = Testimonial.objects.all()
     serializer_class = TestimonialSerializer
+
+@extend_schema_view(
+    list=extend_schema(summary="List Contact Messages"),
+    create=extend_schema(summary="Create Contact Message"),
+    retrieve=extend_schema(summary="Retrieve Contact Message"),
+    update=extend_schema(summary="Update Contact Message"),
+    partial_update=extend_schema(summary="Partially Update Contact Message"),
+    destroy=extend_schema(summary="Delete Contact Message"),
+)
+class ContactMessageViewSet(BaseCmsViewSet):
+    queryset = ContactMessage.objects.all()
+    serializer_class = ContactMessageSerializer
+
+    def get_permissions(self):
+        if self.action == 'create':
+            return []
+        return super().get_permissions()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            instance = serializer.save()
+            try:
+                from django.core.mail import send_mail
+                from django.conf import settings
+                send_mail(
+                    subject=f"New Contact Inquiry: {instance.subject}",
+                    message=f"Name: {instance.name}\nEmail: {instance.email}\nPhone: {instance.phone}\n\nMessage:\n{instance.message}",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[settings.DEFAULT_FROM_EMAIL],
+                    fail_silently=True,
+                )
+            except Exception as e:
+                print(f"Failed to send email notification: {e}")
+            
+            return format_api_response(
+                data=serializer.data,
+                message="Message sent successfully"
+            )
+        return format_api_response(
+            success=False,
+            message="Invalid data",
+            errors=serializer.errors,
+            status_code=status.HTTP_400_BAD_REQUEST
+        )
+
+    @action(detail=False, methods=['delete'], url_path='clear-all')
+    def clear_all(self, request):
+        self.get_queryset().delete()
+        return format_api_response(message="All messages cleared successfully")
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        old_reply = instance.reply
+        
+        serializer = self.get_serializer(instance, data=request.data, partial=True)
+        if serializer.is_valid():
+            from apps.cms.services.cms_service import CmsService
+            updated_instance = CmsService.update_instance(instance, serializer.validated_data)
+            
+            if updated_instance.reply and old_reply != updated_instance.reply and updated_instance.status == 'replied':
+                try:
+                    from django.core.mail import send_mail
+                    from django.conf import settings
+                    send_mail(
+                        subject=f"Re: {updated_instance.subject}",
+                        message=f"Dear {updated_instance.name},\n\nThank you for reaching out.\n\nYour message:\n{updated_instance.message}\n\nOur Reply:\n{updated_instance.reply}\n\nBest regards,\nTawakkal Team",
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[updated_instance.email],
+                        fail_silently=False,
+                    )
+                except Exception as e:
+                    print(f"Failed to send reply email: {e}")
+                    return format_api_response(
+                        success=False,
+                        message=f"Reply saved, but failed to send email. Ensure the recipient email is valid. Error: {str(e)}",
+                        status_code=status.HTTP_400_BAD_REQUEST
+                    )
+                    
+            return format_api_response(success=True, data=self.get_serializer(updated_instance).data)
+        return format_api_response(success=False, message="Validation Error", errors=serializer.errors, status_code=status.HTTP_400_BAD_REQUEST)

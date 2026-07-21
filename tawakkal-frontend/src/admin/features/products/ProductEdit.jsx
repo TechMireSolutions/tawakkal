@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { fetchProductDetail, updateProduct } from '../../../api';
+import { getProduct, updateProduct } from '../../services/api';
 import { useToast } from '../../components/ui/Toast';
 import ProductForm from './ProductForm';
 
@@ -15,7 +15,7 @@ export default function ProductEdit() {
   useEffect(() => {
     const loadProduct = async () => {
       try {
-        const res = await fetchProductDetail(id);
+        const res = await getProduct(id);
         if (res && res.id) {
           const product = res;
           
@@ -29,6 +29,7 @@ export default function ProductEdit() {
           setInitialData({
             ...product,
             category_id: product.category?.id || '',
+            brand: product.brand?.id || '',
             media: initialPreviews,
             variants: product.variants || []
           });
@@ -48,7 +49,9 @@ export default function ProductEdit() {
     if (id) {
       loadProduct();
     }
-  }, [id, navigate, toast]);
+    // Remove toast and navigate from dependencies to prevent infinite loops if context changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const handleSubmit = async (payload, setError) => {
     setIsSubmitting(true);

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createProduct } from '../../../api';
+import { createProduct } from '../../services/api';
 import { useToast } from '../../components/ui/Toast';
 import ProductForm from './ProductForm';
 

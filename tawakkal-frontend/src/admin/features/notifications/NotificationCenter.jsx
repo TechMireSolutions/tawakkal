@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { HiOutlineBell, HiOutlineCheckCircle, HiOutlineShoppingBag, HiOutlineCube, HiOutlineStar, HiOutlineServerStack, HiOutlineEnvelope, HiOutlineCreditCard } from 'react-icons/hi2';
+import { HiOutlineBell, HiOutlineCheckCircle, HiOutlineShoppingBag, HiOutlineCube, HiOutlineStar, HiOutlineServerStack, HiOutlineEnvelope, HiOutlineCreditCard, HiOutlineTrash } from 'react-icons/hi2';
 import { motion } from 'framer-motion';
 import { PageContainer, PageHeader } from '../../components/ui/PageLayout';
 import { ContentCard } from '../../components/ui/Card';
@@ -30,7 +30,12 @@ export default function NotificationCenter() {
   return (
     <PageContainer>
       <PageHeader title="Notifications" subtitle={`${unreadCount} unread notifications`} breadcrumbs={[{ label: 'Notifications' }]}
-        secondaryAction={unreadCount > 0 ? <Button variant="secondary" size="sm" icon={HiOutlineCheckCircle} onClick={handleMarkAllRead}>Mark All Read</Button> : null} />
+        secondaryAction={
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <Button variant="danger" size="sm" icon={HiOutlineTrash} onClick={() => { if(window.confirm('Clear all notifications?')) { setNotifications([]); toast.success('Cleared all'); } }}>Clear All</Button>
+            {unreadCount > 0 ? <Button variant="secondary" size="sm" icon={HiOutlineCheckCircle} onClick={handleMarkAllRead}>Mark All Read</Button> : null}
+          </div>
+        } />
 
       <ContentCard noPadding>
         <div style={{ display: 'flex', gap: '4px', padding: '16px 20px', borderBottom: '1px solid var(--admin-border-light)' }}>

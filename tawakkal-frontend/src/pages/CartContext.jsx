@@ -89,19 +89,20 @@ export const CartProvider = ({ children }) => {
                     selectedSize, 
                     selectedColor,
                     isWholesale,
-                    image: product.primary_image?.image_url || product.image || "https://placehold.co/400x533?text=No+Image"
+                    image: product.primary_image?.image_url || (product.images && product.images.length > 0 ? product.images[0].image_url : null) || product.image || "https://placehold.co/400x533?text=No+Image"
                 }];
             }
         });
     };
 
-    const removeFromCart = (productId, selectedSize, selectedColorName) => {
+    const removeFromCart = (productId, selectedSize, selectedColorName, isWholesale) => {
         setCartItems((prevItems) =>
             prevItems.filter(
                 (item) =>
                     !(item.id === productId &&
                         item.selectedSize === selectedSize &&
-                        item.selectedColor?.name === selectedColorName)
+                        item.selectedColor?.name === selectedColorName &&
+                        item.isWholesale === isWholesale)
             )
         );
     };

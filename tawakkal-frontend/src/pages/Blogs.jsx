@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Calendar, User, ArrowRight } from 'lucide-react';
-import { fetchBlogPosts } from '../api';
+import { fetchBlogPosts, getMediaUrl } from '../api';
 import { Link } from 'react-router-dom';
 
 const Blogs = () => {
@@ -50,17 +50,17 @@ const Blogs = () => {
                 <article>
                   <div className="aspect-[4/3] overflow-hidden">
                     <img 
-                      src={post.featured_image || "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&q=80&w=800"} 
+                      src={post.featured_image_url ? getMediaUrl(post.featured_image_url) : "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&q=80&w=800"} 
                       alt={post.title}
                       className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                     />
                   </div>
                   <div className="p-6">
                     <div className="flex items-center gap-4 text-xs text-gray-500 mb-3">
-                      {post.category && (
-                        <span className="text-gold font-medium">{post.category.name || post.category}</span>
+                      {post.category_name && (
+                        <span className="text-gold font-medium">{post.category_name}</span>
                       )}
-                      {post.category && <span>•</span>}
+                      {post.category_name && <span>•</span>}
                       <span className="flex items-center gap-1">
                         <Calendar size={12} />
                         {new Date(post.created_at || new Date()).toLocaleDateString()}
@@ -93,7 +93,7 @@ const Blogs = () => {
       </section>
 
       {/* Newsletter CTA */}
-      <section className="py-24 bg-[#f9f9f9] border-y border-gold/10">
+      <section className="py-24 bg-black/5 border-y border-gold/10">
         <div className="max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-3xl font-bold tracking-tight mb-4">
             Stay <span className="italic font-serif text-gold">Updated</span>

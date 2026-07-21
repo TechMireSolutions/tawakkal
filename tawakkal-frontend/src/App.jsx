@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Routes, Route, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import Preloader from "./components/Preloader";
 import SmoothScroll from "./components/SmoothScroll";
 import Navbar from "./components/Navbar";
@@ -26,22 +26,50 @@ import Blogs from "./pages/Blogs";
 import FabricGlossary from "./pages/FabricGlossary";
 import FeedbackSurvey from "./pages/FeedbackSurvey";
 import FAQs from "./pages/FAQs";
-import { Navigate } from "react-router-dom";
 import AdminRoutes from "./admin/routes/AdminRoutes";
 import AdminLogin from "./admin/features/auth/AdminLogin";
 import DynamicPage from "./pages/DynamicPage";
 import BlogDetail from "./pages/BlogDetail";
 import { SiteSettingsProvider } from "./context/SiteSettingsContext";
+import { SystemConfigProvider, useSystemConfig } from "./context/SystemConfigContext";
 
 function App() {
+  return (
+    <SiteSettingsProvider>
+      <SystemConfigProvider>
+        <AppContent />
+      </SystemConfigProvider>
+    </SiteSettingsProvider>
+  );
+}
+
+function AppContent() {
   const [loading, setLoading] = useState(true);
   const location = useLocation();
   const isAdminLegacyPath = location.pathname.startsWith("/admin-panel");
   const isNewAdminPath = location.pathname.startsWith("/admin");
   const isLoginPage = location.pathname === "/admin-login";
+  const systemConfig = useSystemConfig();
+
+  useEffect(() => {
+    if (systemConfig) {
+      const lang = systemConfig.default_language || 'en';
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+    }
+  }, [systemConfig]);
+
+  if (systemConfig?.maintenance_mode && !isAdminLegacyPath && !isNewAdminPath && !isLoginPage) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-ivory text-charcoal flex-col gap-4 text-center p-4">
+        <h1 className="text-4xl font-serif">Maintenance Mode</h1>
+        <p className="text-lg max-w-md">Our website is currently undergoing scheduled maintenance. Please check back later.</p>
+      </div>
+    );
+  }
 
   return (
-    <SiteSettingsProvider>
+    <>
       {loading && <Preloader onComplete={() => setLoading(false)} />}
 
       {isAdminLegacyPath || isNewAdminPath || isLoginPage ? (
@@ -61,10 +89,7 @@ function App() {
               <Route path="/" element={<Home />} />
               <Route path="/products" element={<Products />} />
               <Route path="/product/:id" element={<ProductDetail />} />
-              <Route
-                path="/category/:categorySlug"
-                element={<CategoryPage />}
-              />
+              <Route path="/category/:categorySlug" element={<CategoryPage />} />
               <Route path="/brand/:slug" element={<BrandDetail />} />
               <Route path="/badge/:slug" element={<BadgeDetail />} />
               <Route path="/about" element={<About />} />
@@ -83,14 +108,15 @@ function App() {
               <Route path="/auth" element={<Auth />} />
               <Route path="/page/:slug" element={<DynamicPage />} />
               <Route path="/blog/:id" element={<BlogDetail />} />
+              <Route path="*" element={<DynamicPage />} />
             </Routes>
-            <Footer id="contact" />
+            <Footer />
             <WhatsAppButton />
             <NotificationToast />
           </div>
         </SmoothScroll>
       )}
-    </SiteSettingsProvider>
+    </>
   );
 }
 

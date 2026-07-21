@@ -9,12 +9,13 @@ export const otherService = {
   
   getMessages: async () => {
     try {
-      const res = await api.get('/cms/contact-info/');
+      const res = await api.get('/cms/inquiries/');
       return ensureArray(res);
     } catch { return []; }
   },
-  markAsRead: async (id) => api.patch(`/cms/contact-info/${id}/read/`),
-  replyToMessage: async (id, reply) => api.post(`/cms/contact-info/${id}/reply/`, { reply }),
+  clearMessages: async () => api.delete('/cms/inquiries/clear-all/'),
+  markAsRead: async (id) => api.patch(`/cms/inquiries/${id}/`, { status: 'read' }),
+  replyToMessage: async (id, reply) => api.patch(`/cms/inquiries/${id}/`, { status: 'replied', reply: reply }),
 
   getNotifications: async () => {
     try {
@@ -56,11 +57,42 @@ export const otherService = {
 
   getSurveys: async () => {
     try {
-      const res = await api.get('/surveys/surveys/');
-      return ensureArray(res);
+      const res = await api.get('/cms/inquiries/');
+      const data = ensureArray(res);
+      const feedback = data.filter(msg => msg.subject && msg.subject.startsWith('Feedback -'));
+      return feedback.map(msg => {
+        let rating = 5;
+        const ratingMatch = msg.message && msg.message.match(/Rating:\s*(\d+)/);
+        if (ratingMatch) rating = parseInt(ratingMatch[1]);
+        return {
+          id: msg.id,
+          customer: msg.name,
+          rating: rating,
+          feedback: msg.message,
+          category: msg.subject.replace('Feedback - ', ''),
+          createdAt: msg.created_at
+        };
+      });
     } catch { return []; }
   },
-  getSurveyAnalytics: async () => api.get('/surveys/analytics/'),
+  getSurveyAnalytics: async () => {
+    const surveys = await otherService.getSurveys();
+    const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    let totalRating = 0;
+    
+    surveys.forEach(s => {
+      if (s.rating >= 1 && s.rating <= 5) {
+        distribution[s.rating]++;
+        totalRating += s.rating;
+      }
+    });
+    
+    return {
+      totalResponses: surveys.length,
+      averageRating: surveys.length ? totalRating / surveys.length : 0,
+      distribution
+    };
+  },
 
   getSettings: async () => api.get('/settings/site/'),
   updateSettings: async (section, data) => api.put(`/settings/${section}/`, data),

@@ -98,8 +98,9 @@ class CategoryService(BaseService):
     @transaction.atomic
     def bulk_delete(cls, ids, user=None, request=None):
         deleted = []
-        for cat_id in ids:
-            cat = Category.objects.get(id=cat_id)
+        # Sort by level descending to delete children before parents
+        categories = Category.objects.filter(id__in=ids).order_by('-level')
+        for cat in categories:
             cls.soft_delete(cat, user=user, request=request)
             deleted.append(cat)
         return deleted

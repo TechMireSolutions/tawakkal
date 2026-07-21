@@ -4,7 +4,7 @@ import { Card } from '../../../components/ui/Card';
 import Button from '../../../components/ui/Button';
 import Input from '../../../components/ui/Input';
 import { useToast } from '../../../components/ui/Toast';
-import { HiOutlinePencil, HiOutlineTrash, HiOutlinePlus } from 'react-icons/hi2';
+import { HiOutlinePlus, HiOutlinePencilSquare, HiOutlineTrash, HiOutlineCheckBadge, HiOutlineXMark } from 'react-icons/hi2';
 import { getBlogCategories, createBlogCategory, updateBlogCategory, deleteBlogCategory } from '../../../services/cms.service';
 
 export default function BlogCategoryList() {
@@ -83,6 +83,23 @@ export default function BlogCategoryList() {
     }
   };
 
+  const handleDeleteAll = async () => {
+    if (window.confirm('Are you sure you want to delete ALL blog categories? This action cannot be undone.')) {
+      try {
+        setLoading(true);
+        for (const cat of categories) {
+          await deleteBlogCategory(cat.id);
+        }
+        toast.success('All categories deleted');
+        fetchCategories();
+      } catch {
+        toast.error('Failed to delete some categories');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   return (
     <PageContainer>
       <PageHeader 
@@ -93,6 +110,7 @@ export default function BlogCategoryList() {
           { label: 'Categories' }
         ]}
         primaryAction={<Button variant="primary" icon={HiOutlinePlus} onClick={handleOpenAdd}>Add Category</Button>}
+        secondaryAction={<Button variant="danger" icon={HiOutlineTrash} size="sm" onClick={handleDeleteAll}>Delete All</Button>}
       />
 
       <Card>
@@ -123,7 +141,7 @@ export default function BlogCategoryList() {
                     </span>
                   </td>
                   <td style={{ padding: '12px 16px', display: 'flex', gap: '8px' }}>
-                    <button onClick={() => handleOpenEdit(cat)} style={{ background: 'none', border: 'none', color: 'var(--admin-primary)', cursor: 'pointer' }}><HiOutlinePencil size={18} /></button>
+                    <button onClick={() => handleOpenEdit(cat)} style={{ background: 'none', border: 'none', color: 'var(--admin-primary)', cursor: 'pointer' }}><HiOutlinePencilSquare size={18} /></button>
                     <button onClick={() => handleDelete(cat.id)} style={{ background: 'none', border: 'none', color: 'var(--admin-danger)', cursor: 'pointer' }}><HiOutlineTrash size={18} /></button>
                   </td>
                 </tr>

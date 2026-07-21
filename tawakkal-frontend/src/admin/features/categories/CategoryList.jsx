@@ -13,7 +13,6 @@ import { CardSkeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { getCategories, createCategory, deleteCategory, updateCategory } from '../../services/api';
 import { uploadMedia } from '../../../api';
-import ImageUploader from '../../components/ui/ImageUploader';
 
 export default function CategoryList() {
   const toast = useToast();
@@ -22,8 +21,12 @@ export default function CategoryList() {
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState({ open: false, category: null });
+  const [currentParentId, setCurrentParentId] = useState(null);
+  const [showBulkModal, setShowBulkModal] = useState(false);
+  const [bulkNames, setBulkNames] = useState('');
+  const [bulkSubmitting, setBulkSubmitting] = useState(false);
   
-  const [newCat, setNewCat] = useState({ name: '', slug: '', brand: null });
+  const [newCat, setNewCat] = useState({ name: '', slug: '', brand: null, parent: null });
   const [newCatImage, setNewCatImage] = useState(null);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
@@ -72,6 +75,15 @@ export default function CategoryList() {
       toast.error('Name is required');
       return;
     }
+    
+    // Check subcategory limit
+    if (newCat.parent) {
+      const parentCat = categories.find(c => c.id === newCat.parent);
+      if (parentCat && parentCat.children_count >= 5) {
+        alert('Maximum of 5 subcategories per parent category is allowed.');
+        return;
+      }
+    }
     setSubmitting(true);
     try {
       let imageId = null;
@@ -86,12 +98,13 @@ export default function CategoryList() {
         name: newCat.name,
         slug: newCat.slug,
         brand: newCat.brand,
+        parent: newCat.parent,
         image: imageId
       });
       
       toast.success('Category created successfully');
       setShowModal(false);
-      setNewCat({ name: '', slug: '', brand: null });
+      setNewCat({ name: '', slug: '', brand: null, parent: null });
       setNewCatImage(null);
       fetchCategories();
     } catch (err) {
@@ -187,17 +200,63 @@ export default function CategoryList() {
     }
   };
 
-  const filtered = search ? categories.filter(c => c.name.toLowerCase().includes(search.toLowerCase())) : categories;
+  const handleDeleteAll = async () => {
+    if (!window.confirm('Are you sure you want to delete ALL categories? This action cannot be undone.')) return;
+    try {
+      setLoading(true);
+      const { api } = await import('../../services/api');
+      await api.post('/catalog/categories/bulk_delete/', { ids: categories.map(c => c.id) });
+      toast.success('All categories have been deleted');
+      fetchCategories();
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to delete some categories');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+    const currentParent = categories.find(c => c.id === currentParentId);
+  const minLevel = categories.length > 0 ? Math.min(...categories.map(c => c.level)) : 0;
+  
+  let displayedCategories = categories;
+  if (currentParent) {
+    displayedCategories = categories.filter(c => c.level === currentParent.level + 1 && c.path.startsWith(currentParent.path));
+  } else {
+    displayedCategories = categories.filter(c => c.level === minLevel);
+  }
+
+  const filtered = search 
+    ? categories.filter(c => c.name.toLowerCase().includes(search.toLowerCase())) 
+    : displayedCategories;
 
   return (
     <PageContainer>
       <PageHeader 
-        title="Categories" 
-        subtitle={`${categories.length} categories`} 
-        breadcrumbs={[{ label: 'Categories' }]} 
+        title={currentParent ? currentParent.name : "Categories"} 
+        subtitle={`${filtered.length} categories`} 
+        breadcrumbs={
+          currentParent 
+            ? [
+                { label: 'Categories', onClick: () => setCurrentParentId(null), style: { cursor: 'pointer', color: 'var(--admin-primary)' } }, 
+                { label: currentParent.name }
+              ] 
+            : [{ label: 'Categories' }]
+        } 
         actionLabel="Add Category" 
         actionIcon={HiOutlinePlus} 
-        onAction={() => setShowModal(true)} 
+        onAction={() => { setNewCat({ name: '', slug: '', brand: null, parent: currentParentId }); setShowModal(true); }} 
+        secondaryAction={
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {currentParent && (
+              <Button variant="secondary" icon={HiOutlinePlus} size="sm" onClick={() => setShowBulkModal(true)}>
+                Bulk Add Subcategories
+              </Button>
+            )}
+            <Button variant="danger" icon={HiOutlineTrash} size="sm" onClick={handleDeleteAll}>Delete All</Button>
+          </div>
+        }
       />
 
       <div style={{ marginBottom: '20px', maxWidth: '340px' }}>
@@ -219,7 +278,7 @@ export default function CategoryList() {
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
           {filtered.map(cat => (
-            <Card key={cat.id}>
+                        <Card key={cat.id} style={{ cursor: 'pointer', transition: 'shadow 0.2s', ...((!currentParent && cat.children_count > 0) ? { borderLeft: '4px solid var(--admin-primary)' } : {}) }} onClick={() => setCurrentParentId(cat.id)}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
                 {cat.image_url ? (
                   <div style={{ width: 48, height: 48, borderRadius: 'var(--admin-radius-lg)', overflow: 'hidden', flexShrink: 0 }}>
@@ -237,8 +296,9 @@ export default function CategoryList() {
                 <Badge variant={cat.status ? 'success' : 'neutral'} size="xs">{cat.status ? 'Active' : 'Draft'}</Badge>
               </div>
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
-                <Button variant="ghost" size="xs" icon={HiOutlinePencilSquare} onClick={() => openEditModal(cat)}>Edit</Button>
-                <Button variant="ghost" size="xs" icon={HiOutlineTrash} onClick={() => setDeleteDialog({ open: true, category: cat })}>Delete</Button>
+                <Button variant="secondary" size="xs" onClick={(e) => { e.stopPropagation(); setNewCat({ name: '', slug: '', brand: null, parent: cat.id }); setShowModal(true); }}>Add Sub</Button>
+                <Button variant="ghost" size="xs" icon={HiOutlinePencilSquare} onClick={(e) => { e.stopPropagation(); openEditModal(cat); }}>Edit</Button>
+                <Button variant="ghost" size="xs" icon={HiOutlineTrash} onClick={(e) => { e.stopPropagation(); setDeleteDialog({ open: true, category: cat }); }}>Delete</Button>
               </div>
             </Card>
           ))}
@@ -286,11 +346,7 @@ export default function CategoryList() {
                 ))}
             </select>
           </div>
-          <ImageUploader 
-            label="Category Image"
-            onChange={(file) => setNewCatImage(file)}
-            onRemove={() => setNewCatImage(null)}
-          />
+          
         </div>
       </Modal>
 
@@ -373,11 +429,7 @@ export default function CategoryList() {
              <div style={{ marginTop: '12px' }}><Input label="SEO Keywords" value={editCat.seo_keywords} onChange={e => setEditCat({...editCat, seo_keywords: e.target.value})} /></div>
              <div style={{ marginTop: '12px' }}><Input label="SEO Description" as="textarea" rows={2} value={editCat.seo_description} onChange={e => setEditCat({...editCat, seo_description: e.target.value})} /></div>
           </div>
-          <ImageUploader 
-            label="Category Image (Replace)"
-            onChange={(file) => setEditCatImage(file)}
-            onRemove={() => setEditCatImage(null)}
-          />
+          
         </div>
       </Modal>
 

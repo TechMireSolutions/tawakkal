@@ -17,7 +17,7 @@ export default {
           DEFAULT: '#1A1A1A',
           dark: '#0D0D0D',
         },
-        ivory: '#FFFFF0',
+        ivory: '#E5E7EB',
       },
       fontFamily: {
         serif: ['"Playfair Display"', 'serif'],

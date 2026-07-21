@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { ChevronDown, HelpCircle, Search, MessageCircle } from 'lucide-react';
+import { HelpCircle, Search, MessageCircle, Plus, Minus } from 'lucide-react';
 
 const defaultFaqs = [];
 
@@ -17,7 +17,7 @@ const FAQs = () => {
       try {
         const { fetchFaqs } = await import('../api');
         const data = await fetchFaqs();
-        const filtered = data.filter(f => f.status === 'published' || f.is_published || f.status !== 'draft');
+        const filtered = data.filter(f => f.status === 'published' || f.is_published === true);
         setFaqs(filtered.length > 0 ? filtered : defaultFaqs);
       } catch (err) {
         console.error("Error loading FAQs:", err);
@@ -28,16 +28,16 @@ const FAQs = () => {
   }, []);
 
   // Deduplicate categories from backend FAQs
-  const categories = Array.from(new Set(faqs.map(f => f.category))).map(cat => ({
+  const categories = Array.from(new Set(faqs.map(f => f.category || 'general'))).map(cat => ({
     id: cat,
-    name: cat.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) // Basic formatting
+    name: cat === 'general' ? 'General' : cat.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()) // Basic formatting
   }));
 
   const toggleFAQ = (index) => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
-  const filteredFAQs = faqs.filter(faq => 
+  const filteredFAQs = faqs.filter(faq =>
     faq.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
     faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -67,7 +67,7 @@ const FAQs = () => {
               placeholder="Search for answers..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-gray-50 border border-gray-200 pl-12 pr-4 py-4 text-sm focus:outline-none focus:border-gold transition-colors"
+              className="w-full bg-gray-300 text-charcoal placeholder-gray-500 border border-gray-400 pl-12 pr-4 py-4 text-sm focus:outline-none focus:bg-white focus:border-gold transition-colors rounded-lg"
             />
           </div>
         </div>
@@ -75,7 +75,7 @@ const FAQs = () => {
 
       {/* FAQ Categories & Content */}
       <section className="py-24 px-6">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-3xl mx-auto">
           {categories.map((category) => {
             const categoryFAQs = filteredFAQs.filter(faq => faq.category === category.id);
             if (categoryFAQs.length === 0) return null;
@@ -91,23 +91,26 @@ const FAQs = () => {
                     const globalIndex = faqs.indexOf(faq);
                     return (
                       <div 
-                        key={globalIndex}
-                        className="bg-white border border-gray-100 overflow-hidden"
+                        key={faq.id || globalIndex}
+                        className="bg-gray-300 border border-gray-400 shadow-md rounded-xl overflow-hidden"
                       >
                         <button
-                          onClick={() => toggleFAQ(globalIndex)}
-                          className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+                          onClick={() => toggleFAQ(faq.id || globalIndex)}
+                          className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-gray-400 transition-colors"
                         >
-                          <span className="font-medium pr-4">{faq.question}</span>
-                          <ChevronDown 
-                            className={`w-5 h-5 text-gold flex-shrink-0 transition-transform ${openIndex === globalIndex ? 'rotate-180' : ''}`} 
-                          />
-                        </button>
-                        {openIndex === globalIndex && (
-                          <div className="px-6 pb-4">
-                            <p className="text-gray-600 leading-relaxed">{faq.answer}</p>
+                          <span className="font-medium text-charcoal pr-4">{faq.question}</span>
+                          <div className="relative w-5 h-5 flex items-center justify-center flex-shrink-0">
+                            <Plus className={`absolute w-5 h-5 text-gold transition-all duration-300 ${openIndex === (faq.id || globalIndex) ? 'rotate-90 opacity-0 scale-50' : 'rotate-0 opacity-100 scale-100'}`} />
+                            <Minus className={`absolute w-5 h-5 text-gold transition-all duration-300 ${openIndex === (faq.id || globalIndex) ? 'rotate-0 opacity-100 scale-100' : '-rotate-90 opacity-0 scale-50'}`} />
                           </div>
-                        )}
+                        </button>
+                        <div className={`grid transition-all duration-300 ease-in-out ${openIndex === (faq.id || globalIndex) ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                          <div className="overflow-hidden">
+                            <div className="px-6 pb-4 pt-4 border-t border-gray-400 text-center">
+                              <p className="text-gray-800 leading-relaxed">{faq.answer}</p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     );
                   })}

@@ -24,7 +24,7 @@ const ProductGrid = ({
       setLoading(true);
       try {
         const data = await fetchProducts({ category, badge, brand, search });
-        setProducts(data);
+        console.log("FETCHED PRODUCTS:", data); setProducts(data);
       } catch (error) {
         console.error("Backend not reached", error);
         setProducts([]);
@@ -38,7 +38,9 @@ const ProductGrid = ({
   const sortedProducts = useMemo(() => {
     let filtered = [...products];
 
-    if (sortBy === "Price: Low to High") {
+    if (sortBy === "Featured") {
+      filtered.sort((a, b) => (b.is_featured ? 1 : 0) - (a.is_featured ? 1 : 0));
+    } else if (sortBy === "Price: Low to High") {
       filtered.sort((a, b) => {
         const priceA = parseFloat(a.base_price) || 0;
         const priceB = parseFloat(b.base_price) || 0;

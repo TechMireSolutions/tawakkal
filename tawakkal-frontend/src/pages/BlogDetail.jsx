@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { fetchBlogPost } from '../api';
+import { fetchBlogPost, getMediaUrl } from '../api';
 import { Calendar, User, ArrowLeft } from 'lucide-react';
 
 const BlogDetail = () => {
@@ -55,10 +55,10 @@ const BlogDetail = () => {
         </Link>
         
         <div className="text-center mb-12">
-          {post.category && (
-            <p className="text-gold tracking-[0.3em] uppercase text-[11px] font-bold mb-4">{post.category.name || post.category}</p>
-          )}
-          <h1 className="text-4xl md:text-5xl font-black mb-6 tracking-tight leading-tight">
+            {post.category_name && (
+              <p className="text-gold tracking-[0.3em] uppercase text-[11px] font-bold mb-4">{post.category_name}</p>
+            )}
+            <h1 className="text-4xl md:text-5xl font-black mb-6 tracking-tight leading-tight">
             {post.title}
           </h1>
           <div className="flex items-center justify-center gap-6 text-sm text-gray-500">
@@ -77,9 +77,9 @@ const BlogDetail = () => {
 
         {post.featured_image && (
           <div className="mb-16 w-full h-[50vh] min-h-[400px] overflow-hidden rounded-2xl shadow-xl">
-            <img 
-              src={typeof post.featured_image === 'object' ? post.featured_image.url : post.featured_image} 
-              alt={post.title}
+              <img 
+                src={post.featured_image_url ? getMediaUrl(post.featured_image_url) : "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&q=80&w=1200"} 
+                alt={post.title}
               className="w-full h-full object-cover"
             />
           </div>

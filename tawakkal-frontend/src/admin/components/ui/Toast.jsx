@@ -1,5 +1,5 @@
 /* eslint-disable react-refresh/only-export-components */
-import { useState, createContext, useContext, useCallback, useEffect } from 'react';
+import { useState, createContext, useContext, useCallback, useEffect, useMemo } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import { HiCheckCircle, HiExclamationCircle, HiInformationCircle, HiXCircle, HiXMark } from 'react-icons/hi2';
 
@@ -33,12 +33,12 @@ export function ToastProvider({ children }) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const toast = {
+  const toast = useMemo(() => ({
     success: (title, message) => addToast({ type: 'success', title, message }),
     error: (title, message) => addToast({ type: 'error', title, message }),
     warning: (title, message) => addToast({ type: 'warning', title, message }),
     info: (title, message) => addToast({ type: 'info', title, message }),
-  };
+  }), [addToast]);
 
   return (
     <ToastContext.Provider value={toast}>

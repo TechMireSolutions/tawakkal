@@ -62,8 +62,8 @@ const Checkout = () => {
         address: `${formData.address}, ${formData.city}, ${formData.country}`,
         total_amount: total,
         order_items: cartItems.map(item => ({
-          product: item.id,
-          variant_id: item.variants?.[0]?.id || item.id, // Fallback if no variant_id is present
+          product_id: item.id,
+          variant_id: item.selectedVariantId || item.variants?.[0]?.id || null,
           quantity: item.quantity,
           size: item.selectedSize,
           color: item.selectedColor?.name,
@@ -79,8 +79,22 @@ const Checkout = () => {
         message: 'Order placed successfully!'
       });
     } catch (err) {
-      console.error("Error creating order", err);
-      alert("Failed to place order. Please try again.");
+      console.error("Error creating order", err, err.response?.data);
+      const resData = err.response?.data;
+      let serverMsg = err.message || "An error occurred";
+      if (resData?.errors) {
+        if (typeof resData.errors === 'string') {
+          serverMsg = resData.errors;
+        } else if (typeof resData.errors === 'object') {
+          const firstVal = Object.values(resData.errors)[0];
+          serverMsg = Array.isArray(firstVal) ? firstVal[0] : (typeof firstVal === 'string' ? firstVal : JSON.stringify(resData.errors));
+        }
+      } else if (resData?.error) {
+        serverMsg = resData.error;
+      } else if (resData?.message && resData.message !== 'An error occurred') {
+        serverMsg = resData.message;
+      }
+      alert(`Failed to place order: ${serverMsg}`);
     } finally {
       setLoading(false);
     }
@@ -182,14 +196,19 @@ const Checkout = () => {
               
               <div className="space-y-6 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
                 {cartItems.map((item) => (
-                  <div key={`${item.id}-${item.selectedSize}`} className="flex gap-4">
+                  <div key={`${item.id}-${item.selectedSize || 'nosize'}-${item.selectedColor?.name || 'nocolor'}-${item.isWholesale}`} className="flex gap-4">
                     <div className="w-16 h-16 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
                       <img src={item.image || item.primary_image?.image_url || "https://placehold.co/400x533?text=No+Image"} alt={item.name} className="w-full h-full object-cover" />
                     </div>
                     <div className="flex-1">
                       <h4 className="text-xs font-bold line-clamp-1 uppercase tracking-wider">{item.name}</h4>
+                      {item.isWholesale && (
+                        <span className="inline-block bg-gold/10 text-gold text-[8px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded mt-0.5 mb-0.5">
+                          Wholesale
+                        </span>
+                      )}
                       <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-1">
-                        Size: {item.selectedSize} | Qty: {item.quantity}
+                        Size: {item.selectedSize || 'Standard'} | Qty: {item.quantity}
                       </p>
                       <p className="text-xs font-black text-gold mt-1">{convertPrice(item.price)}</p>
                     </div>

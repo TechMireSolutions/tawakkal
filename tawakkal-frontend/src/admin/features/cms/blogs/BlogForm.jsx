@@ -8,7 +8,7 @@ import RichTextEditor from '../../../components/ui/RichTextEditor';
 import ImageUploader from '../../../components/ui/ImageUploader';
 import { useToast } from '../../../components/ui/Toast';
 import { getBlog, createBlog, updateBlog, getBlogCategories, getAuthors } from '../../../services/cms.service';
-import { uploadMedia } from '../../../api';
+import { uploadMedia } from '../../../../api';
 
 export default function BlogForm() {
   const { id } = useParams();
@@ -77,10 +77,10 @@ export default function BlogForm() {
     setSubmitting(true);
     try {
       let finalFormData = { ...formData };
-      
+
       // If featured_image is a File object, upload it first
       if (finalFormData.featured_image instanceof File) {
-        const uploadRes = await uploadMedia(finalFormData.featured_image, () => {});
+        const uploadRes = await uploadMedia(finalFormData.featured_image, () => { });
         if (uploadRes && uploadRes.id) {
           finalFormData.featured_image = uploadRes.id;
         } else {
@@ -117,8 +117,8 @@ export default function BlogForm() {
   return (
     <PageContainer>
       <form onSubmit={handleSubmit}>
-        <PageHeader 
-          title={isEdit ? "Edit Blog Post" : "Add Blog Post"} 
+        <PageHeader
+          title={isEdit ? "Edit Blog Post" : "Add Blog Post"}
           breadcrumbs={[
             { label: 'CMS', path: '/admin/cms' },
             { label: 'Blog', path: '/admin/cms/blogs' },
@@ -129,52 +129,52 @@ export default function BlogForm() {
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <Card title="Blog Details">
-              <Input 
-                label="Title" 
-                value={formData.title} 
-                onChange={(e) => handleChange('title', e.target.value)} 
-                required 
+              <Input
+                label="Title"
+                value={formData.title}
+                onChange={(e) => handleChange('title', e.target.value)}
+                required
               />
-              <Input 
-                label="Slug (optional)" 
-                value={formData.slug} 
-                onChange={(e) => handleChange('slug', e.target.value)} 
+              <Input
+                label="Slug (optional)"
+                value={formData.slug}
+                onChange={(e) => handleChange('slug', e.target.value)}
                 error={errors.slug}
                 hint="Leave empty to auto-generate from title"
               />
               {errors.slug && <p style={{ color: 'var(--admin-danger)', fontSize: '13px', marginTop: '-15px', marginBottom: '10px' }}>{errors.slug}</p>}
               <div style={{ marginTop: '16px' }}>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--admin-text)', marginBottom: '8px' }}>Content</label>
-                <RichTextEditor 
-                  value={formData.content} 
-                  onChange={(val) => handleChange('content', val)} 
+                <RichTextEditor
+                  value={formData.content}
+                  onChange={(val) => handleChange('content', val)}
                 />
               </div>
             </Card>
-            
+
             <Card title="SEO Settings">
-              <Input 
-                label="SEO Title" 
-                value={formData.seo_title} 
-                onChange={(e) => handleChange('seo_title', e.target.value)} 
+              <Input
+                label="SEO Title"
+                value={formData.seo_title}
+                onChange={(e) => handleChange('seo_title', e.target.value)}
               />
-              <Input 
-                label="SEO Description" 
+              <Input
+                label="SEO Description"
                 as="textarea"
                 rows={4}
-                value={formData.seo_description} 
-                onChange={(e) => handleChange('seo_description', e.target.value)} 
+                value={formData.seo_description}
+                onChange={(e) => handleChange('seo_description', e.target.value)}
               />
             </Card>
           </div>
-          
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
             <Card title="Visibility">
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--admin-text)', marginBottom: '8px' }}>Status</label>
-                <select 
-                  className="admin-input" 
-                  value={formData.status} 
+                <select
+                  className="admin-input"
+                  value={formData.status}
                   onChange={(e) => handleChange('status', e.target.value)}
                   style={{ width: '100%', padding: '10px 14px', borderRadius: 'var(--admin-radius-md)', border: '1px solid var(--admin-border-light)' }}
                 >
@@ -188,9 +188,9 @@ export default function BlogForm() {
             <Card title="Organization">
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--admin-text)', marginBottom: '8px' }}>Category</label>
-                <select 
-                  className="admin-input" 
-                  value={formData.category} 
+                <select
+                  className="admin-input"
+                  value={formData.category}
                   onChange={(e) => handleChange('category', e.target.value)}
                   style={{ width: '100%', padding: '10px 14px', borderRadius: 'var(--admin-radius-md)', border: '1px solid var(--admin-border-light)' }}
                 >
@@ -200,9 +200,9 @@ export default function BlogForm() {
               </div>
               <div style={{ marginBottom: '16px' }}>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: 600, color: 'var(--admin-text)', marginBottom: '8px' }}>Author</label>
-                <select 
-                  className="admin-input" 
-                  value={formData.author} 
+                <select
+                  className="admin-input"
+                  value={formData.author}
                   onChange={(e) => handleChange('author', e.target.value)}
                   style={{ width: '100%', padding: '10px 14px', borderRadius: 'var(--admin-radius-md)', border: '1px solid var(--admin-border-light)' }}
                 >
@@ -211,17 +211,17 @@ export default function BlogForm() {
                 </select>
               </div>
             </Card>
-            
+
             <Card title="Featured Image">
-              <ImageUploader 
-                value={formData.featured_image} 
-                onChange={(uuid) => handleChange('featured_image', uuid)} 
+              <ImageUploader
+                value={formData.featured_image}
+                onChange={(uuid) => handleChange('featured_image', uuid)}
                 onRemove={() => handleChange('featured_image', null)}
               />
             </Card>
           </div>
         </div>
-        
+
         <ActionBar>
           <Button variant="secondary" onClick={() => navigate('/admin/cms/blogs')} type="button">Cancel</Button>
           <Button type="submit" variant="primary" loading={submitting}>

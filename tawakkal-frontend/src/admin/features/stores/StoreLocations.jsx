@@ -9,7 +9,7 @@ import Input from '../../components/ui/Input';
 import { useToast } from '../../components/ui/Toast';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { CardSkeleton } from '../../components/ui/Skeleton';
-import { getStores, createStore, deleteStore } from '../../services/api';
+import { getStores, createStore, updateStore, deleteStore } from '../../services/api';
 
 export default function StoreLocations() {
   const toast = useToast();
@@ -27,6 +27,7 @@ export default function StoreLocations() {
     postal_code: '38000',
     state: 'Punjab',
   });
+  const [editingStoreId, setEditingStoreId] = useState(null);
 
   const fetchStores = async () => {
     setLoading(true);
@@ -49,22 +50,45 @@ export default function StoreLocations() {
     }
     setIsSubmitting(true);
     try {
-      // Auto generate code and slug based on name if not provided
       const payload = {
         ...formData,
-        code: formData.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
-        slug: formData.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+        code: formData.code || formData.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+        slug: formData.slug || formData.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
       };
-      await createStore(payload);
-      toast.success('Store added');
+      
+      if (editingStoreId) {
+        await updateStore(editingStoreId, payload);
+        toast.success('Store updated successfully');
+      } else {
+        await createStore(payload);
+        toast.success('Store added');
+      }
+      
       setShowModal(false);
+      setEditingStoreId(null);
       setFormData({ name: '', address: '', phone: '', code: '', city: 'Faisalabad', country: 'Pakistan', postal_code: '38000', state: 'Punjab' });
       fetchStores();
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Failed to add store');
+      toast.error(err.response?.data?.message || 'Failed to save store');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleEditClick = (store) => {
+    setFormData({
+      name: store.name || '',
+      address: store.address || '',
+      phone: store.phone || '',
+      code: store.code || '',
+      slug: store.slug || '',
+      city: store.city || '',
+      country: store.country || '',
+      postal_code: store.postal_code || '',
+      state: store.state || ''
+    });
+    setEditingStoreId(store.id);
+    setShowModal(true);
   };
 
   const handleDelete = async (id) => {
@@ -79,9 +103,26 @@ export default function StoreLocations() {
     }
   };
 
+  const handleDeleteAll = async () => {
+    if (confirm('Are you sure you want to delete ALL stores? This action cannot be undone.')) {
+      try {
+        setLoading(true);
+        for (const store of stores) {
+          await deleteStore(store.id);
+        }
+        toast.success('All stores deleted');
+        fetchStores();
+      } catch (err) {
+        toast.error('Failed to delete some stores');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   return (
     <PageContainer>
-      <PageHeader title="Store Locations" subtitle={`${stores.length} stores`} breadcrumbs={[{ label: 'Stores' }]} actionLabel="Add Store" actionIcon={HiOutlinePlus} onAction={() => setShowModal(true)} />
+      <PageHeader title="Store Locations" subtitle={`${stores.length} stores`} breadcrumbs={[{ label: 'Stores' }]} actionLabel="Add Store" actionIcon={HiOutlinePlus} onAction={() => { setEditingStoreId(null); setFormData({ name: '', address: '', phone: '', code: '', city: 'Faisalabad', country: 'Pakistan', postal_code: '38000', state: 'Punjab' }); setShowModal(true); }} secondaryAction={<Button variant="danger" icon={HiOutlineTrash} size="sm" onClick={handleDeleteAll}>Delete All</Button>} />
 
       {loading ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
@@ -102,6 +143,7 @@ export default function StoreLocations() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><HiOutlinePhone size={15} style={{ color: 'var(--admin-text-muted)' }} /><span style={{ fontSize: '13px', color: 'var(--admin-text-secondary)' }}>{store.phone}</span></div>
               </div>
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', borderTop: '1px solid var(--admin-border-light)', paddingTop: '12px' }}>
+                <Button variant="ghost" size="xs" icon={HiOutlinePencilSquare} onClick={() => handleEditClick(store)}>Edit</Button>
                 <Button variant="ghost" size="xs" icon={HiOutlineTrash} onClick={() => handleDelete(store.id)}>Delete</Button>
               </div>
             </Card>
@@ -109,7 +151,7 @@ export default function StoreLocations() {
         </div>
       )}
 
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title="Add Store" footer={<><Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button><Button onClick={handleSave} disabled={isSubmitting}>{isSubmitting ? 'Saving...' : 'Save'}</Button></>}>
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={editingStoreId ? "Edit Store" : "Add Store"} footer={<><Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button><Button onClick={handleSave} disabled={isSubmitting}>{isSubmitting ? 'Saving...' : 'Save'}</Button></>}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <Input label="Store Name" placeholder="e.g. Tawakkal — Lahore" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
           <Input label="Address" placeholder="Full street address" required value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} />

@@ -76,7 +76,7 @@ export default function AdminLayout() {
   const sidebarWidth = sidebarCollapsed ? 'var(--admin-sidebar-collapsed)' : 'var(--admin-sidebar-width)';
 
   return (
-    <div className="admin-root" style={{ display: 'flex', minHeight: '100vh' }}>
+    <div className="admin-root" data-theme={theme} style={{ display: 'flex', minHeight: '100vh' }}>
       <CommandPalette />
       {/* ═══ Sidebar ═══ */}
       {/* Desktop sidebar */}

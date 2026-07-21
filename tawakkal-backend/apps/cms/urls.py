@@ -5,7 +5,7 @@ from apps.cms.views.cms_views import (
     PageViewSet, PolicyViewSet, HeroBannerViewSet, AnnouncementViewSet,
     StaticBlockViewSet, HomepageSectionViewSet, FaqViewSet,
     ContactInformationViewSet, SocialLinkViewSet, NavigationMenuViewSet,
-    FooterContentViewSet, TestimonialViewSet
+    FooterContentViewSet, TestimonialViewSet, ContactMessageViewSet
 )
 
 router = DefaultRouter()
@@ -25,6 +25,7 @@ router.register(r'social-links', SocialLinkViewSet, basename='social-link')
 router.register(r'navigation-menus', NavigationMenuViewSet, basename='navigation-menu')
 router.register(r'footer-content', FooterContentViewSet, basename='footer-content')
 router.register(r'testimonials', TestimonialViewSet, basename='testimonial')
+router.register(r'inquiries', ContactMessageViewSet, basename='inquiry')
 
 urlpatterns = [
     path('', include(router.urls)),

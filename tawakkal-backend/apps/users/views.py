@@ -41,6 +41,18 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             serializer = self.get_serializer(data=request.data)
             serializer.is_valid(raise_exception=True)
             user = serializer.user
+            
+            # Module 4: Require Email Verification check
+            from apps.core.models import SystemConfig
+            config = SystemConfig.objects.first()
+            if config and config.require_email_verification and not user.is_verified:
+                return Response({
+                    'success': False,
+                    'message': 'Email verification required.',
+                    'data': None,
+                    'errors': {'detail': 'Please verify your email before logging in.'}
+                }, status=status.HTTP_403_FORBIDDEN)
+                
             from apps.notifications.services.notification_service import NotificationService
             try:
                 NotificationService.dispatch(

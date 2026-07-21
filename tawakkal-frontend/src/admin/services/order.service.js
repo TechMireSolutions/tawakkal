@@ -14,5 +14,6 @@ export const orderService = {
   },
   updateOrderStatus: async (id, status) => {
     return await api.patch(`/orders/orders/${id}/status/`, { status });
-  }
+  },
+  deleteOrder: async (id) => api.delete(`/orders/orders/${id}/`),
 };

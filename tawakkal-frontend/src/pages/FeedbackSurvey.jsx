@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Star, Send, CheckCircle, MessageSquare, ThumbsUp, ThumbsDown } from 'lucide-react';
+import api from '../api';
 
 const FeedbackSurvey = () => {
   useEffect(() => {
@@ -34,11 +35,18 @@ const FeedbackSurvey = () => {
     setFormData({ ...formData, rating });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
     
-    setTimeout(() => {
+    try {
+      await api.post('/cms/inquiries/', {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.orderNumber || '0000000000',
+        subject: `Feedback - ${formData.productQuality || 'General'}`,
+        message: `Rating: ${formData.rating}\nExperience: ${formData.experience}\nDelivery: ${formData.deliverySatisfaction}\nService: ${formData.customerService}\nRecommend: ${formData.recommend}\nComments: ${formData.comments}`
+      }, { skipAuth: true });
       setIsSubmitting(false);
       setSubmitted(true);
       setFormData({
@@ -47,7 +55,10 @@ const FeedbackSurvey = () => {
         customerService: '', comments: '', recommend: '', hearAbout: ''
       });
       setTimeout(() => setSubmitted(false), 5000);
-    }, 1500);
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      setIsSubmitting(false);
+    }
   };
 
   if (submitted) {

@@ -13,7 +13,6 @@ import { CardSkeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { getBadges, createBadge, deleteBadge, updateBadge } from '../../services/api';
 import { uploadMedia } from '../../../api';
-import ImageUploader from '../../components/ui/ImageUploader';
 
 export default function BadgeList() {
   const toast = useToast();
@@ -54,6 +53,10 @@ export default function BadgeList() {
   }, []);
 
   const handleSave = async () => {
+    if (badges.length >= 5) {
+      toast.error('Maximum of 5 badges allowed.');
+      return;
+    }
     if (!newBadge.name) {
       toast.error('Name is required');
       return;
@@ -166,6 +169,24 @@ export default function BadgeList() {
     }
   };
 
+  const handleDeleteAll = async () => {
+    if (!window.confirm('Are you sure you want to delete ALL badges? This action cannot be undone.')) return;
+    try {
+      setLoading(true);
+      for (const badge of badges) {
+        await deleteBadge(badge.id);
+      }
+      toast.success('All badges have been deleted');
+      fetchBadges();
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to delete some badges');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   const filtered = search ? badges.filter(b => b.name.toLowerCase().includes(search.toLowerCase())) : badges;
 
   return (
@@ -176,7 +197,14 @@ export default function BadgeList() {
         breadcrumbs={[{ label: 'Badges' }]} 
         actionLabel="Add Badge" 
         actionIcon={HiOutlinePlus} 
-        onAction={() => setShowModal(true)} 
+        onAction={() => {
+          if (badges.length >= 5) {
+            toast.error('Maximum of 5 badges allowed.');
+            return;
+          }
+          setShowModal(true);
+        }}
+        secondaryAction={<Button variant="danger" icon={HiOutlineTrash} size="sm" onClick={handleDeleteAll}>Delete All</Button>}
       />
 
       <div style={{ marginBottom: '20px', maxWidth: '340px' }}>
@@ -194,7 +222,13 @@ export default function BadgeList() {
           {[1,2,3,4,5,6].map(i => <CardSkeleton key={i} />)}
         </div>
       ) : filtered.length === 0 ? (
-        <EmptyState title="No badges found" actionLabel="Add Badge" onAction={() => setShowModal(true)} />
+        <EmptyState title="No badges found" actionLabel="Add Badge" onAction={() => {
+          if (badges.length >= 5) {
+            toast.error('Maximum of 5 badges allowed.');
+            return;
+          }
+          setShowModal(true);
+        }} />
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
           {filtered.map(badge => (
@@ -266,11 +300,7 @@ export default function BadgeList() {
               onChange={(e) => setNewBadge(p => ({...p, text_color: e.target.value}))}
             />
           </div>
-          <ImageUploader 
-            label="Badge Icon (optional)"
-            onChange={(file) => setNewBadgeIcon(file)}
-            onRemove={() => setNewBadgeIcon(null)}
-          />
+          
         </div>
       </Modal>
 
@@ -330,11 +360,7 @@ export default function BadgeList() {
                 </select>
              </div>
           </div>
-          <ImageUploader 
-            label="Badge Icon (Replace)"
-            onChange={(file) => setEditBadgeIcon(file)}
-            onRemove={() => setEditBadgeIcon(null)}
-          />
+          
         </div>
       </Modal>
 

@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.text import slugify
 from apps.core.models import BaseModel
 from apps.media.models import Media
 
@@ -27,3 +28,14 @@ class Badge(BaseModel):
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.name)
+            slug = base_slug
+            counter = 1
+            while self.__class__.all_objects.filter(slug=slug).exclude(id=self.id).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)

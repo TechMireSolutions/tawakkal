@@ -13,7 +13,6 @@ import { CardSkeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { getBrands, createBrand, deleteBrand, updateBrand } from '../../services/api';
 import { uploadMedia } from '../../../api';
-import ImageUploader from '../../components/ui/ImageUploader';
 
 export default function BrandList() {
   const toast = useToast();
@@ -55,6 +54,10 @@ export default function BrandList() {
   }, []);
 
   const handleSave = async () => {
+    if (brands.length >= 10) {
+      toast.error('Maximum of 10 brands allowed.');
+      return;
+    }
     if (!newBrand.name) {
       toast.error('Name is required');
       return;
@@ -170,6 +173,24 @@ export default function BrandList() {
     }
   };
 
+  const handleDeleteAll = async () => {
+    if (!window.confirm('Are you sure you want to delete ALL brands? This action cannot be undone.')) return;
+    try {
+      setLoading(true);
+      for (const brand of brands) {
+        await deleteBrand(brand.id);
+      }
+      toast.success('All brands have been deleted');
+      fetchBrands();
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to delete some brands');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
   const filtered = search ? brands.filter(b => b.name.toLowerCase().includes(search.toLowerCase())) : brands;
 
   return (
@@ -180,7 +201,14 @@ export default function BrandList() {
         breadcrumbs={[{ label: 'Brands' }]} 
         actionLabel="Add Brand" 
         actionIcon={HiOutlinePlus} 
-        onAction={() => setShowModal(true)} 
+        onAction={() => {
+          if (brands.length >= 10) {
+            toast.error('Maximum of 10 brands allowed.');
+            return;
+          }
+          setShowModal(true);
+        }} 
+        secondaryAction={<Button variant="danger" icon={HiOutlineTrash} size="sm" onClick={handleDeleteAll}>Delete All</Button>}
       />
 
       <div style={{ marginBottom: '20px', maxWidth: '340px' }}>
@@ -198,7 +226,13 @@ export default function BrandList() {
           {[1,2,3,4,5,6].map(i => <CardSkeleton key={i} />)}
         </div>
       ) : filtered.length === 0 ? (
-        <EmptyState title="No brands found" actionLabel="Add Brand" onAction={() => setShowModal(true)} />
+        <EmptyState title="No brands found" actionLabel="Add Brand" onAction={() => {
+          if (brands.length >= 10) {
+            toast.error('Maximum of 10 brands allowed.');
+            return;
+          }
+          setShowModal(true);
+        }} />
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
           {filtered.map(brand => (
@@ -263,11 +297,7 @@ export default function BrandList() {
             value={newBrand.description} 
             onChange={(e) => setNewBrand(p => ({...p, description: e.target.value}))}
           />
-          <ImageUploader 
-            label="Brand Logo"
-            onChange={(file) => setNewBrandImage(file)}
-            onRemove={() => setNewBrandImage(null)}
-          />
+          
         </div>
       </Modal>
 
@@ -323,11 +353,7 @@ export default function BrandList() {
              <div style={{ marginTop: '12px' }}><Input label="SEO Keywords" value={editBrand.seo_keywords} onChange={e => setEditBrand({...editBrand, seo_keywords: e.target.value})} /></div>
              <div style={{ marginTop: '12px' }}><Input label="SEO Description" as="textarea" rows={2} value={editBrand.seo_description} onChange={e => setEditBrand({...editBrand, seo_description: e.target.value})} /></div>
           </div>
-          <ImageUploader 
-            label="Brand Logo (Replace)"
-            onChange={(file) => setEditBrandImage(file)}
-            onRemove={() => setEditBrandImage(null)}
-          />
+          
         </div>
       </Modal>
 

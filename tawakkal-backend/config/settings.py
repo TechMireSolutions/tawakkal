@@ -7,6 +7,7 @@ For more information on this file, see
 https://docs.djangoproject.com/en/6.0/topics/settings/
 """
 
+import sys
 import environ
 import os
 import urllib.parse
@@ -16,6 +17,9 @@ from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Python path mein 'apps' folder ko add karna taake apps direct call ho sakein
+sys.path.insert(0, os.path.join(BASE_DIR, 'apps'))
 
 env = environ.Env()
 
@@ -53,7 +57,7 @@ INSTALLED_APPS = [
     'apps.core',
     'apps.users',
     'apps.audit',
-    'apps.media',
+    'media',          # <-- Yahan direct 'media' kar diya taake dependency issue solve ho jaye
     'apps.catalog',
     'apps.customers',
     'apps.orders',
@@ -81,11 +85,14 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = env.list('CORS_ALLOWED_ORIGINS', default=[])
 CORS_ALLOWED_ORIGINS.extend([
     'https://tawakkal-frontend.vercel.app',
     'http://localhost:5173',
     'http://localhost:3000',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:3000',
     'https://tawakkal.store',
     'https://www.tawakkal.store'
 ])
@@ -121,7 +128,39 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database configuration
-if DEBUG:
+db_url = env('DATABASE_URL', default='')
+has_db_env = env('DB_NAME', default='') or env('DB_USER', default='')
+
+if db_url:
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=db_url,
+            conn_max_age=600,
+        )
+    }
+elif has_db_env:
+    db_name = env('DB_NAME')
+    db_user = env('DB_USER')
+    db_password = env('DB_PASSWORD', default='')
+    db_host = env('DB_HOST', default='localhost')
+    db_port = env('DB_PORT', default='3306')
+    
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': db_name,
+            'USER': db_user,
+            'PASSWORD': db_password,
+            'HOST': db_host,
+            'PORT': db_port,
+            'OPTIONS': {
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            }
+        }
+    }
+elif DEBUG:
+    # Local development fallback to SQLite
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
@@ -129,37 +168,27 @@ if DEBUG:
         }
     }
 else:
-    db_url = os.environ.get('DATABASE_URL')
+    # Fallback to direct MySQL settings if DATABASE_URL is not set (Live production)
+    db_name = env('DB_NAME', default='sql_tawakkal_store')
+    db_user = env('DB_USER', default='sql_tawakkal_store')
+    db_password = env('DB_PASSWORD', default='613e0ce6dc83f')
+    db_host = env('DB_HOST', default='localhost')
+    db_port = env('DB_PORT', default='3306')
     
-    if db_url:
-        import dj_database_url
-        DATABASES = {
-            'default': dj_database_url.config(
-                default=db_url,
-                conn_max_age=600,
-            )
-        }
-    else:
-        # Fallback to direct MySQL settings if DATABASE_URL is not set
-        db_name = env('DB_NAME', default='tawakkal.store')
-        db_user = env('DB_USER', default='tawakkal.store')
-        db_password = env('DB_PASSWORD', default='mXdrETcYbYBLM8SJ')
-        db_host = env('DB_HOST', default='localhost')
-        db_port = env('DB_PORT', default='3306')
-        
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.mysql',
-                'NAME': db_name,
-                'USER': db_user,
-                'PASSWORD': db_password,
-                'HOST': db_host,
-                'PORT': db_port,
-                'OPTIONS': {
-                    'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-                }
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': db_name,
+            'USER': db_user,
+            'PASSWORD': db_password,
+            'HOST': db_host,
+            'PORT': db_port,
+            'OPTIONS': {
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
             }
         }
+    }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -252,5 +281,24 @@ LOGGING = {
         },
     },
 }
+# Email Configuration
+import ssl
+from django.core.mail.backends.smtp import EmailBackend as SmtpEmailBackend
+
+class UnverifiedSmtpEmailBackend(SmtpEmailBackend):
+    @property
+    def ssl_context(self):
+        context = ssl.create_default_context()
+        context.check_hostname = False
+        context.verify_mode = ssl.CERT_NONE
+        return context
+
+EMAIL_BACKEND = 'config.settings.UnverifiedSmtpEmailBackend'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'mail.tawakkal.store')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', 'info@tawakkal.store')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER

@@ -8,7 +8,7 @@ const sortOptions = ['Featured', 'Price: Low to High', 'Price: High to Low', 'Ne
 
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const [categories, setCategories] = useState(['All']);
+  const [allCategories, setAllCategories] = useState([]);
   
   const activeCategory = searchParams.get('category') || 'All';
   const activeSort = searchParams.get('sort') || 'Featured';
@@ -23,14 +23,35 @@ const Products = () => {
     const loadCategories = async () => {
       try {
         const data = await fetchCategories();
-        const publishedCats = data.filter(cat => cat.status === true).map(cat => cat.name);
-        setCategories(['All', ...publishedCats]);
+        setAllCategories(data.filter(cat => cat.status === true));
       } catch (err) {
         console.error("Error fetching categories:", err);
       }
     };
     loadCategories();
   }, []);
+
+  const minLevel = allCategories.length > 0 ? Math.min(...allCategories.map(c => c.level)) : 0;
+  const rootCategories = allCategories.filter(cat => cat.level === minLevel);
+  const activeCatObj = allCategories.find(c => c.name === activeCategory);
+  
+  let activeRootCategory = 'All';
+  if (activeCatObj) {
+    if (activeCatObj.level === minLevel) {
+      activeRootCategory = activeCatObj.name;
+    } else {
+      const rootCat = rootCategories.find(rc => activeCatObj.path.startsWith(rc.path));
+      if (rootCat) activeRootCategory = rootCat.name;
+    }
+  }
+
+  let subCategories = [];
+  if (activeRootCategory !== 'All') {
+      const rootCat = rootCategories.find(rc => rc.name === activeRootCategory);
+      if (rootCat) {
+          subCategories = allCategories.filter(c => c.level === rootCat.level + 1 && c.path.startsWith(rootCat.path));
+      }
+  }
 
   const handleCategoryChange = (cat) => {
     const newParams = new URLSearchParams(searchParams);
@@ -97,16 +118,25 @@ const Products = () => {
             {/* Category Filters */}
             <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
               <SlidersHorizontal size={18} className="text-gray-400 mr-1 md:mr-2 flex-shrink-0" />
-              {categories.map((cat) => (
+              <button
+                onClick={() => handleCategoryChange('All')}
+                className={`px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-semibold whitespace-nowrap transition-all ${activeRootCategory === 'All'
+                  ? 'bg-charcoal text-white shadow-lg'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  }`}
+              >
+                All
+              </button>
+              {rootCategories.map((cat) => (
                 <button
-                  key={cat}
-                  onClick={() => handleCategoryChange(cat)}
-                  className={`px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-semibold whitespace-nowrap transition-all ${activeCategory === cat
+                  key={cat.id}
+                  onClick={() => handleCategoryChange(cat.name)}
+                  className={`px-3 py-1.5 md:px-4 md:py-2 rounded-full text-xs md:text-sm font-semibold whitespace-nowrap transition-all ${activeRootCategory === cat.name
                     ? 'bg-charcoal text-white shadow-lg'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                 >
-                  {cat}
+                  {cat.name}
                 </button>
               ))}
             </div>
@@ -161,8 +191,29 @@ const Products = () => {
       </div>
 
       {/* Products Grid */}
-      <div className="max-w-[1600px] mx-auto px-0 py-12">
-        <ProductGrid category={activeCategory} sortBy={activeSort} badge={activeBadge} search={activeSearch} gridView={gridView} />
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 md:py-12">
+        {subCategories.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-6 lg:mb-8 pt-4 border-t border-gray-100/50">
+                <button 
+                   onClick={() => handleCategoryChange(activeRootCategory)}
+                   className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all shadow-sm ${activeCategory === activeRootCategory ? 'bg-gold text-white border-gold' : 'bg-white border border-gray-200 text-gray-600 hover:border-gold'}`}
+                >
+                   All {activeRootCategory}
+                </button>
+                {subCategories.map(sub => (
+                    <button 
+                       key={sub.id}
+                       onClick={() => handleCategoryChange(sub.name)}
+                       className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all shadow-sm ${activeCategory === sub.name ? 'bg-gold text-white border-gold' : 'bg-white border border-gray-200 text-gray-600 hover:border-gold'}`}
+                    >
+                       {sub.name}
+                    </button>
+                ))}
+            </div>
+        )}
+        <div className="-mx-4 sm:mx-0">
+            <ProductGrid category={activeCategory} sortBy={activeSort} badge={activeBadge} search={activeSearch} gridView={gridView} />
+        </div>
       </div>
     </div>
   );

@@ -35,13 +35,36 @@ class CustomerTimelineSerializer(serializers.ModelSerializer):
 
 class CustomerListSerializer(serializers.ModelSerializer):
     tags = CustomerTagSerializer(many=True, read_only=True)
-    
+    city = serializers.SerializerMethodField()
+    total_orders = serializers.SerializerMethodField()
+    total_spent = serializers.SerializerMethodField()
+    last_order_date = serializers.SerializerMethodField()
+
     class Meta:
         model = Customer
         fields = [
             'id', 'customer_code', 'first_name', 'last_name', 'email', 
-            'phone', 'status', 'tier', 'loyalty_points', 'tags', 'created_at'
+            'phone', 'status', 'tier', 'loyalty_points', 'tags', 'created_at',
+            'total_orders', 'total_spent', 'last_order_date', 'city'
         ]
+
+    def get_city(self, obj):
+        default_addr = obj.addresses.filter(is_default=True, is_deleted=False).first()
+        if not default_addr:
+            default_addr = obj.addresses.filter(is_deleted=False).first()
+        return default_addr.city if default_addr else 'N/A'
+
+    def get_total_orders(self, obj):
+        return obj.orders.filter(is_deleted=False).count()
+
+    def get_total_spent(self, obj):
+        from django.db.models import Sum
+        val = obj.orders.filter(is_deleted=False).aggregate(total=Sum('total_amount'))['total']
+        return str(val) if val is not None else "0.00"
+
+    def get_last_order_date(self, obj):
+        last_order = obj.orders.filter(is_deleted=False).order_by('-created_at').first()
+        return last_order.created_at if last_order else None
 
 class CustomerDetailSerializer(serializers.ModelSerializer):
     tags = CustomerTagSerializer(many=True, read_only=True)

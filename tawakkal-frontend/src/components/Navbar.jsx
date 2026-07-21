@@ -43,40 +43,40 @@ const Navbar = () => {
   );
 
   useEffect(() => {
-  const handleScroll = () => {
-    setScrolled(window.scrollY > 20);
-  };
-  window.addEventListener("scroll", handleScroll);
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
 
-  const loadData = async () => {
-    try {
-      // REMOVED: await import("../api") 
-      // Instead, ensure ALL imports are at the top of your file:
-      // import { fetchCategories, fetchPages, fetchBrands, fetchBadges } from "../api";
+    const loadData = async () => {
+      try {
+        // REMOVED: await import("../api") 
+        // Instead, ensure ALL imports are at the top of your file:
+        // import { fetchCategories, fetchPages, fetchBrands, fetchBadges } from "../api";
 
-      const catData = await fetchCategories();
-      setCategories(catData.filter((cat) => cat.status === true));
+        const catData = await fetchCategories();
+        setCategories(catData.filter((cat) => cat.status === true));
 
-      const brandData = await fetchBrands();
-      setBrands(brandData.filter((b) => b.status === true || b.status === 'true' || b.status === 1));
+        const brandData = await fetchBrands();
+        setBrands(brandData.filter((b) => b.status === true || b.status === 'true' || b.status === 1));
 
-      const badgeData = await fetchBadges();
-      setBadges(badgeData.filter((b) => b.status === true || b.status === 'true' || b.status === 1));
+        const badgeData = await fetchBadges();
+        setBadges(badgeData.filter((b) => b.status === true || b.status === 'true' || b.status === 1));
 
-      const pagesData = await fetchPages();
-      setPages(pagesData.filter((p) => p.status === "published" || p.status === true || p.status === 'true' || p.status === 1));
-    } catch (err) {
-      console.error("Error fetching data for navbar:", err);
-    }
-  };
-  
-  loadData();
+        const pagesData = await fetchPages();
+        setPages(pagesData.filter((p) => p.status === "published" || p.status === true || p.status === 'true' || p.status === 1));
+      } catch (err) {
+        console.error("Error fetching data for navbar:", err);
+      }
+    };
 
-  return () => {
-    window.removeEventListener("scroll", handleScroll);
-    if (closeTimeout.current) clearTimeout(closeTimeout.current);
-  };
-}, []); // Keep empty if you only want to fetch once on site-load
+    loadData();
+
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      if (closeTimeout.current) clearTimeout(closeTimeout.current);
+    };
+  }, []); // Keep empty if you only want to fetch once on site-load
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
@@ -117,15 +117,15 @@ const Navbar = () => {
             <div className="flex-shrink-0 flex items-center">
               <Link to="/">
                 {siteSettings?.navbar_logo_url ||
-                siteSettings?.main_logo_url ? (
+                  siteSettings?.main_logo_url ? (
                   <img
                     src={
                       scrolled
                         ? siteSettings?.sticky_navbar_logo_url ||
-                          siteSettings?.navbar_logo_url ||
-                          siteSettings?.main_logo_url
+                        siteSettings?.navbar_logo_url ||
+                        siteSettings?.main_logo_url
                         : siteSettings?.navbar_logo_url ||
-                          siteSettings?.main_logo_url
+                        siteSettings?.main_logo_url
                     }
                     alt={siteSettings?.site_name || "Tawakkal"}
                     className="h-6 md:h-8 w-auto object-contain transition-all duration-300"
@@ -194,16 +194,36 @@ const Navbar = () => {
                               Collections
                             </h4>
                             <ul className="space-y-3">
-                              {categories.map((cat) => (
-                                <li key={cat.id}>
-                                  <Link
-                                    to={`/category/${encodeURIComponent(cat.slug)}`}
-                                    className="text-[11px] text-gray-500 hover:text-gold font-medium uppercase"
-                                  >
-                                    {cat.name}
-                                  </Link>
-                                </li>
-                              ))}
+                              {categories
+                                .filter((cat) => cat.level === Math.min(...categories.map(c => c.level)))
+                                .slice(0, 5)
+                                .map((parent) => {
+                                  const children = categories.filter(c => c.path.startsWith(parent.path) && c.id !== parent.id);
+                                  return (
+                                    <li key={parent.id} className="group/parent">
+                                      <Link
+                                        to={`/category/${encodeURIComponent(parent.slug)}`}
+                                        className="text-[11px] text-charcoal font-bold hover:text-gold uppercase transition-colors"
+                                      >
+                                        {parent.name}
+                                      </Link>
+                                      {children.length > 0 && (
+                                        <ul className="hidden group-hover/parent:block ml-4 mt-2 space-y-2">
+                                          {children.slice(0, 5).map((child) => (
+                                            <li key={child.id}>
+                                              <Link
+                                                to={`/category/${encodeURIComponent(child.slug)}`}
+                                                className="text-[11px] text-gray-500 hover:text-gold font-medium uppercase transition-colors"
+                                              >
+                                                {child.name}
+                                              </Link>
+                                            </li>
+                                          ))}
+                                        </ul>
+                                      )}
+                                    </li>
+                                  );
+                                })}
                             </ul>
                           </div>
                         </div>

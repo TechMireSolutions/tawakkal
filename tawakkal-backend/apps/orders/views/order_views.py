@@ -82,7 +82,7 @@ class OrderViewSet(SoftDeleteModelMixin, RestoreModelMixin, viewsets.ModelViewSe
         
         return Response(OrderDetailSerializer(order).data, status=status.HTTP_201_CREATED)
 
-    @action(detail=True, methods=['post'])
+    @action(detail=True, methods=['post', 'patch'], url_path='status')
     def update_status(self, request, pk=None):
         serializer = OrderStatusUpdateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

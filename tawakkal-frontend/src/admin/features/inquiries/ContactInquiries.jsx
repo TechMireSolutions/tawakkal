@@ -9,7 +9,7 @@ import Avatar from '../../components/ui/Avatar';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { TableSkeleton } from '../../components/ui/Skeleton';
 import { useToast } from '../../components/ui/Toast';
-import { getMessages, replyToMessage } from '../../services/api';
+import { getMessages, replyToMessage, clearMessages } from '../../services/api';
 import { formatRelativeDate } from '../../utils/formatters';
 
 export default function ContactInquiries() {
@@ -31,16 +31,39 @@ export default function ContactInquiries() {
 
   const handleReply = async () => {
     if (!reply.trim()) return;
-    await replyToMessage(selected.id, reply);
-    toast.success('Reply sent', `Your reply to ${selected.name} has been sent.`);
-    setReply('');
+    try {
+      await replyToMessage(selected.id, reply);
+      toast.success('Reply sent', `Your reply to ${selected.name} has been sent.`);
+      setReply('');
+      const res = await getMessages();
+      setMessages(res);
+      setSelected(res.find(m => m.id === selected.id) || null);
+    } catch (e) {
+      toast.error('Failed to reply', e.response?.data?.message || 'There was an error sending your reply.');
+    }
   };
 
-  const statusColors = { unread: 'info', read: 'neutral', replied: 'success' };
+  const handleClearAll = async () => {
+    if (window.confirm("Are you sure you want to clear all inquiries?")) {
+      try {
+        await clearMessages();
+        setMessages([]);
+        setSelected(null);
+        toast.success('Inquiries Cleared', 'All inquiries have been deleted.');
+      } catch (e) {
+        toast.error('Error', 'Failed to clear inquiries.');
+      }
+    }
+  };
+
+  const statusColors = { unread: 'info', replied: 'success' };
 
   return (
     <PageContainer>
-      <PageHeader title="Contact Inquiries" subtitle={`${messages.length} total messages`} breadcrumbs={[{ label: 'Inquiries' }]} />
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <PageHeader title="Contact Inquiries" subtitle={`${messages.length} total messages`} breadcrumbs={[{ label: 'Inquiries' }]} />
+        <Button variant="danger" onClick={handleClearAll}>Clear All</Button>
+      </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: selected ? '380px 1fr' : '1fr', gap: '20px', minHeight: '500px' }} className="admin-inbox">
         <style>{`@media(max-width:900px){.admin-inbox{grid-template-columns:1fr!important;}}`}</style>
@@ -50,7 +73,7 @@ export default function ContactInquiries() {
           <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--admin-border-light)' }}>
             <Input placeholder="Search messages..." icon={HiOutlineMagnifyingGlass} value={search} onChange={(e) => setSearch(e.target.value)} size="sm" />
             <div style={{ display: 'flex', gap: '4px', marginTop: '10px' }}>
-              {['', 'unread', 'read', 'replied'].map(f => (
+              {['', 'unread', 'replied'].map(f => (
                 <button key={f} onClick={() => setFilter(f)} style={{
                   padding: '4px 10px', borderRadius: 'var(--admin-radius-full)', border: 'none', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
                   background: filter === f ? 'var(--admin-primary)' : 'var(--admin-surface-secondary)',

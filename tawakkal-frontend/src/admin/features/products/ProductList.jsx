@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
   HiOutlinePlus, HiOutlineMagnifyingGlass,
   HiOutlinePencilSquare, HiOutlineTrash, HiOutlineEye,
-  HiOutlineSquares2X2, HiOutlineListBullet, HiOutlineArrowDownTray,
+  HiOutlineSquares2X2, HiOutlineListBullet, HiOutlineArrowDownTray, HiOutlineArrowUpTray,
 } from 'react-icons/hi2';
 import { PLACEHOLDER_IMAGE } from '../../utils/constants';
 import { PageContainer, PageHeader } from '../../components/ui/PageLayout';
@@ -17,7 +17,8 @@ import Dialog from '../../components/ui/Dialog';
 import { EmptyState, NoSearchResults } from '../../components/ui/EmptyState';
 import { TableSkeleton } from '../../components/ui/Skeleton';
 import { useToast } from '../../components/ui/Toast';
-import { getProducts, deleteProduct } from '../../services/api';
+import { exportToPDF } from '../../utils/exportToPDF';
+import { getProducts, deleteProduct, createProduct } from '../../services/api';
 import { formatCurrency } from '../../utils/formatters';
 import { PRODUCT_STATUSES } from '../../utils/constants';
 
@@ -26,6 +27,7 @@ const PAGE_SIZE = 8;
 export default function ProductList() {
   const navigate = useNavigate();
   const toast = useToast();
+  const fileInputRef = useRef(null);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -47,7 +49,6 @@ export default function ProductList() {
   };
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadProducts();
   }, []);
 
@@ -81,6 +82,70 @@ export default function ProductList() {
     }
   };
 
+  const handleDeleteAll = async () => {
+    if (!window.confirm("Are you sure you want to delete all products? This action cannot be undone.")) return;
+    
+    setLoading(true);
+    let errorCount = 0;
+    for (const p of products) {
+      try {
+        await deleteProduct(p.id);
+      } catch (err) {
+        errorCount++;
+      }
+    }
+    
+    if (errorCount === 0) {
+      toast.success('Deleted', 'All products deleted successfully.');
+    } else {
+      toast.warning('Completed with errors', `Deleted products, but ${errorCount} failed.`);
+    }
+    
+    loadProducts();
+  };
+
+  const handleExport = () => {
+    const headers = ['ID', 'Name', 'SKU', 'Category', 'Price', 'Status'];
+    const data = products.map(p => [
+      p.id,
+      p.name,
+      p.sku || '-',
+      p.category_name || '-',
+      p.price,
+      p.status
+    ]);
+    exportToPDF('Product List', 'products', headers, data);
+  };
+
+  const handleImport = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      try {
+        const json = JSON.parse(event.target.result);
+        if (Array.isArray(json)) {
+          let successCount = 0;
+          for (const item of json) {
+            try { 
+              await createProduct(item);
+              successCount++; 
+            } catch (err) { console.error('Import row failed', err); }
+          }
+          toast.success(`Imported ${successCount} products`);
+          loadProducts();
+        } else {
+          toast.error("Invalid JSON format. Expected an array.");
+        }
+      } catch (err) {
+        toast.error("Failed to parse JSON file");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = null;
+  };
+
+
   const getStatusBadge = (status) => {
     const config = PRODUCT_STATUSES[status] || PRODUCT_STATUSES.draft;
     return <Badge variant={config.color} dot>{config.label}</Badge>;
@@ -96,9 +161,18 @@ export default function ProductList() {
         actionIcon={HiOutlinePlus}
         onAction={() => navigate('/admin/products/create')}
         secondaryAction={
-          <Button variant="secondary" icon={HiOutlineArrowDownTray} size="sm">
-            Export
-          </Button>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <Button variant="danger" icon={HiOutlineTrash} size="sm" onClick={handleDeleteAll}>
+              Delete All
+            </Button>
+            <input type="file" accept=".json" ref={fileInputRef} style={{ display: 'none' }} onChange={handleImport} />
+            <Button variant="secondary" icon={HiOutlineArrowUpTray} size="sm" onClick={() => fileInputRef.current?.click()}>
+              Import
+            </Button>
+            <Button variant="secondary" icon={HiOutlineArrowDownTray} size="sm" onClick={handleExport}>
+              Export
+            </Button>
+          </div>
         }
       />
 

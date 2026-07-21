@@ -67,6 +67,17 @@ class CategoryViewSet(SoftDeleteModelMixin, RestoreModelMixin, viewsets.ModelVie
         serializer = self.get_serializer(instance)
         return format_api_response(success=True, data=serializer.data)
 
+    def destroy(self, request, *args, **kwargs):
+        try:
+            return super().destroy(request, *args, **kwargs)
+        except ValidationError as e:
+            return format_api_response(
+                success=False,
+                message="Validation Error",
+                errors=list(e.messages) if hasattr(e, 'messages') else str(e),
+                status_code=status.HTTP_400_BAD_REQUEST
+            )
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():

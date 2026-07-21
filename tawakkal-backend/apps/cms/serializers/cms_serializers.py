@@ -2,7 +2,7 @@ from rest_framework import serializers
 from ..models import (
     BlogCategory, Tag, Author, BlogPost, Page, Policy, HeroBanner, Announcement,
     StaticBlock, HomepageSection, Faq, ContactInformation, SocialLink,
-    NavigationMenu, FooterContent, PublishStatus, Testimonial
+    NavigationMenu, FooterContent, PublishStatus, Testimonial, ContactMessage
 )
 
 CMS_READ_ONLY = ['id', 'created_at', 'updated_at', 'created_by', 'updated_by', 'is_deleted', 'deleted_at']
@@ -33,6 +33,18 @@ class BlogPostSerializer(CmsBaseSerializer):
         model = BlogPost
         fields = '__all__'
         read_only_fields = CMS_READ_ONLY
+
+    def to_representation(self, instance):
+        repr = super().to_representation(instance)
+        if instance.category:
+            repr['category_name'] = instance.category.name
+        if instance.featured_image and instance.featured_image.file:
+            request = self.context.get('request')
+            url = instance.featured_image.file.url
+            if request:
+                url = request.build_absolute_uri(url)
+            repr['featured_image_url'] = url
+        return repr
 
 class PageSerializer(CmsBaseSerializer):
     class Meta:
@@ -103,5 +115,11 @@ class FooterContentSerializer(CmsBaseSerializer):
 class TestimonialSerializer(CmsBaseSerializer):
     class Meta:
         model = Testimonial
+        fields = '__all__'
+        read_only_fields = CMS_READ_ONLY
+
+class ContactMessageSerializer(CmsBaseSerializer):
+    class Meta:
+        model = ContactMessage
         fields = '__all__'
         read_only_fields = CMS_READ_ONLY

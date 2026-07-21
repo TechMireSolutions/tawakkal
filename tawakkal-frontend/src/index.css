@@ -9,7 +9,7 @@
   --color-charcoal-light: #333333;
   --color-charcoal: #000000;
   --color-charcoal-dark: #111111;
-  --color-ivory: #ffffff;
+  --color-ivory: #FFFFF0;
   
   --font-serif: "Playfair Display", serif;
   --font-sans: Montserrat, Inter, sans-serif;
@@ -22,7 +22,7 @@
 
   color-scheme: light;
   color: #000000;
-  background-color: #ffffff;
+  background-color: #FFFFF0;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -45,6 +45,34 @@ h1, h2, h3, h4, h5, h6 {
   background: rgba(26, 26, 26, 0.7);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+/* ===================================================================
+   ACCESSIBILITY & CONTRAST FIXES
+   Ensures all input boxes are clearly visible on extremely bright screens
+   =================================================================== */
+input, textarea, select {
+  background-color: #e5e7eb !important; /* Tailwind gray-200 for deep contrast */
+  border: 1px solid #9ca3af !important; /* Tailwind gray-400 for visible boundaries */
+  color: #111111 !important;
+  border-radius: 0.375rem;
+}
+
+input:focus, textarea:focus, select:focus {
+  background-color: #ffffff !important; /* Turns white when active */
+  border-color: #e6a13b !important; /* Gold border on focus */
+  outline: none !important;
+  box-shadow: 0 0 0 2px rgba(230, 161, 59, 0.2) !important;
+}
+
+/* Specifically target the Store Locator cards and other white cards the user complained about */
+.bg-white, .bg-gray-50 {
+  border: 1px solid #d1d5db; /* Ensure all light backgrounds have a visible border */
+}
+
+/* Revert border on main structural sections to prevent full-width borders */
+section.bg-white, section.bg-gray-50, header.bg-white, footer.bg-white {
+  border: none;
 }
 
 .gold-gradient {
@@ -111,3 +139,5 @@ h1, h2, h3, h4, h5, h6 {
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
+

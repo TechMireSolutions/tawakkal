@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { HiOutlineStar, HiOutlineArrowDownTray } from 'react-icons/hi2';
+import { HiOutlineStar, HiOutlineArrowDownTray, HiOutlineTrash } from 'react-icons/hi2';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { PageContainer, PageHeader } from '../../components/ui/PageLayout';
 import { ContentCard } from '../../components/ui/Card';
@@ -8,6 +8,7 @@ import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import { getSurveys, getSurveyAnalytics } from '../../services/api';
 import { formatDate } from '../../utils/formatters';
+import { exportToPDF } from '../../utils/exportToPDF';
 
 export default function SurveyResponses() {
   const [surveys, setSurveys] = useState([]);
@@ -17,10 +18,27 @@ export default function SurveyResponses() {
 
   const ratingData = analytics ? Object.entries(analytics.distribution).map(([rating, count]) => ({ rating: `${rating}★`, count })).reverse() : [];
 
+  const handleExport = () => {
+    const headers = ['Customer', 'Rating', 'Feedback', 'Category', 'Date'];
+    const data = surveys.map(s => [
+      s.customer || 'Anonymous',
+      `${s.rating} Stars`,
+      s.feedback || '-',
+      s.category || 'General',
+      formatDate(s.createdAt)
+    ]);
+    exportToPDF('Survey Responses', 'survey_responses', headers, data);
+  };
+
   return (
     <PageContainer>
       <PageHeader title="Survey Responses" subtitle={`${surveys.length} responses collected`} breadcrumbs={[{ label: 'Surveys' }]}
-        secondaryAction={<Button variant="secondary" icon={HiOutlineArrowDownTray} size="sm">Export</Button>} />
+        secondaryAction={
+          <div style={{ display: 'flex', gap: '10px' }}>
+            <Button variant="danger" icon={HiOutlineTrash} size="sm" onClick={() => { if(window.confirm('Delete all survey responses?')) { setSurveys([]); } }}>Delete All</Button>
+            <Button variant="secondary" icon={HiOutlineArrowDownTray} size="sm" onClick={handleExport}>Export</Button>
+          </div>
+        } />
 
       {analytics && (
         <StatGrid columns={3}>

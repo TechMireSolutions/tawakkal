@@ -5,7 +5,7 @@ import { PageContainer, PageHeader } from '../../../components/ui/PageLayout';
 import Button from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import Badge from '../../../components/ui/Badge';
-import { HiPlus, HiOutlinePencil, HiOutlineTrash } from 'react-icons/hi2';
+import { HiPlus, HiOutlinePencilSquare, HiOutlineTrash } from 'react-icons/hi2';
 import { getFaqs, deleteFaq } from '../../../services/cms.service';
 import { useToast } from '../../../components/ui/Toast';
 
@@ -44,6 +44,23 @@ export default function FaqList() {
     }
   };
 
+  const handleDeleteAll = async () => {
+    if (window.confirm('Are you sure you want to delete ALL FAQs? This action cannot be undone.')) {
+      try {
+        setLoading(true);
+        for (const faq of faqs) {
+          await deleteFaq(faq.id);
+        }
+        toast.success('Success', 'All FAQs deleted');
+        loadFaqs();
+      } catch {
+        toast.error('Error', 'Failed to delete some FAQs');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
   return (
     <PageContainer>
       <PageHeader 
@@ -58,6 +75,7 @@ export default function FaqList() {
             Add FAQ
           </Button>
         }
+        secondaryAction={<Button variant="danger" icon={HiOutlineTrash} size="sm" onClick={handleDeleteAll}>Delete All</Button>}
       />
 
       <Card>
@@ -78,9 +96,9 @@ export default function FaqList() {
               {faqs.map(faq => (
                 <tr key={faq.id}>
                   <td>
-                    <div style={{ fontWeight: 600, color: 'var(--admin-text)' }}>{faq.question}</div>
+                    <div style={{ fontWeight: 600, color: 'var(--admin-text)', whiteSpace: 'normal', wordBreak: 'break-word', maxWidth: '500px' }}>{faq.question}</div>
                   </td>
-                  <td>{faq.category || '-'}</td>
+                  <td style={{ whiteSpace: 'nowrap' }}>{faq.category || '-'}</td>
                   <td>
                     <Badge variant={faq.status === 'published' ? 'success' : 'neutral'}>
                       {faq.status}
@@ -89,7 +107,7 @@ export default function FaqList() {
                   <td>{faq.sort_order}</td>
                   <td>
                     <div style={{ display: 'flex', gap: '8px' }}>
-                      <Button variant="ghost" size="sm" icon={HiOutlinePencil} onClick={() => navigate(`/admin/cms/faqs/${faq.id}`)} />
+                      <Button variant="ghost" size="sm" icon={HiOutlinePencilSquare} onClick={() => navigate(`/admin/cms/faqs/${faq.id}`)} />
                       <Button variant="ghost" size="sm" icon={HiOutlineTrash} onClick={() => handleDelete(faq.id)} style={{ color: 'var(--admin-error)' }} />
                     </div>
                   </td>

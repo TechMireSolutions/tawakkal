@@ -14,45 +14,64 @@ class PublicCheckoutView(APIView):
 
     @transaction.atomic
     def post(self, request, *args, **kwargs):
+        try:
+            return self._post(request, *args, **kwargs)
+        except Exception as e:
+            import traceback
+            print("Checkout Exception:", traceback.format_exc())
+            err_msg = str(e)
+            if hasattr(e, 'detail'):
+                if isinstance(e.detail, list):
+                    err_msg = ' '.join([str(d) for d in e.detail])
+                elif isinstance(e.detail, dict):
+                    err_msg = ', '.join([f"{k}: {' '.join(v) if isinstance(v, list) else v}" for k, v in e.detail.items()])
+                else:
+                    err_msg = str(e.detail)
+            return Response({'error': err_msg}, status=status.HTTP_400_BAD_REQUEST)
+
+    def _post(self, request, *args, **kwargs):
         data = request.data
         
         # 1. Extract customer details
-        customer_name = data.get('customer_name', '')
-        email = data.get('email')
-        phone = data.get('phone', '')
-        address_str = data.get('address', '')
+        customer_name = str(data.get('customer_name', '')).strip()
+        email = str(data.get('email', '')).strip()
+        phone = str(data.get('phone', '')).strip()[:50]
+        address_str = str(data.get('address', '')).strip()
         
         if not email:
             return Response({'error': 'Email is required'}, status=status.HTTP_400_BAD_REQUEST)
             
         parts = customer_name.split(' ', 1)
-        first_name = parts[0] if parts else ''
-        last_name = parts[1] if len(parts) > 1 else ''
+        first_name = parts[0][:150] if parts else ''
+        last_name = parts[1][:150] if len(parts) > 1 else ''
         
-        # 2. Get or create Customer
-        customer, created = Customer.objects.get_or_create(
-            email=email,
-            defaults={
-                'first_name': first_name,
-                'last_name': last_name,
-                'phone': phone,
-                'customer_code': f'CUST-{uuid.uuid4().hex[:8].upper()}'
-            }
-        )
-        
-        # Update details if existing
-        if not created:
+        # 2. Get or create Customer (using all_objects to handle soft-deleted & case-insensitive matches)
+        email_clean = email.strip().lower()
+        customer = Customer.all_objects.filter(email__iexact=email_clean).first()
+        if customer:
+            if customer.is_deleted:
+                customer.is_deleted = False
+                customer.deleted_at = None
             customer.first_name = first_name or customer.first_name
             customer.last_name = last_name or customer.last_name
             customer.phone = phone or customer.phone
-            customer.save(update_fields=['first_name', 'last_name', 'phone'])
+            customer.save()
+        else:
+            customer = Customer.objects.create(
+                email=email_clean,
+                first_name=first_name,
+                last_name=last_name,
+                phone=phone,
+                customer_code=f'CUST-{uuid.uuid4().hex[:8].upper()}'
+            )
             
         # 3. Create Customer Address
-        # Parse city and country from address_str (Address, City, Country)
         addr_parts = [p.strip() for p in address_str.split(',')]
-        country = addr_parts[-1] if len(addr_parts) > 0 else 'Pakistan'
-        city = addr_parts[-2] if len(addr_parts) > 1 else ''
-        line1 = ', '.join(addr_parts[:-2]) if len(addr_parts) > 2 else address_str
+        country = (addr_parts[-1] if len(addr_parts) > 0 else 'Pakistan')[:100]
+        city = (addr_parts[-2] if len(addr_parts) > 1 else 'N/A')[:100]
+        line1 = (', '.join(addr_parts[:-2]) if len(addr_parts) > 2 else address_str)[:255]
+        if not line1:
+            line1 = 'N/A'
         
         shipping_address = CustomerAddress.objects.create(
             customer=customer,
@@ -79,14 +98,11 @@ class PublicCheckoutView(APIView):
         }
         
         # 5. Call Order Service
-        try:
-            order = OrderService.create_order(
-                data=service_data,
-                items_data=data.get('order_items', []),
-                user=None,
-                request=request
-            )
-        except Exception as e:
-            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        order = OrderService.create_order(
+            data=service_data,
+            items_data=data.get('order_items', []),
+            user=None,
+            request=request
+        )
             
         return Response(OrderDetailSerializer(order).data, status=status.HTTP_201_CREATED)
