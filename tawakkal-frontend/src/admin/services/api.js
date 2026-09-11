@@ -43,6 +43,12 @@ export const getOrder = orderService.getOrder;
 export const updateOrderStatus = orderService.updateOrderStatus;
 export const deleteOrder = orderService.deleteOrder;
 
+/* ═══════ Sales Employees ═══════ */
+export const getSalesEmployees = orderService.getSalesEmployees;
+export const createSalesEmployee = orderService.createSalesEmployee;
+export const updateSalesEmployee = orderService.updateSalesEmployee;
+export const deleteSalesEmployee = orderService.deleteSalesEmployee;
+
 /* ═══════ Customers ═══════ */
 export const getCustomers = customerService.getCustomers;
 export const getCustomer = customerService.getCustomer;

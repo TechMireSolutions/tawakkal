@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useCart } from "./CartContext.jsx";
 import { useNavigate } from 'react-router-dom';
-import { createOrder } from '../api';
+import { createOrder, validateCoupon } from '../api';
 import { useCurrency } from '../context/CurrencyContext';
 import { useSiteSettings } from '../context/SiteSettingsContext';
-import { Check, ArrowRight, Loader2 } from 'lucide-react';
+import { Check, ArrowRight, Loader2, Tag, X } from 'lucide-react';
 
 const Checkout = () => {
   const { cartItems, clearCart, setNotification } = useCart();
@@ -13,6 +13,11 @@ const Checkout = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [orderComplete, setOrderComplete] = useState(false);
+
+  const [couponCode, setCouponCode] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponError, setCouponError] = useState('');
+  const [validatingCoupon, setValidatingCoupon] = useState(false);
 
   const shippingFee = siteSettings?.shipping_fee ?? 250;
   const freeShippingThreshold = siteSettings?.free_shipping_threshold ?? 5000;
@@ -50,6 +55,37 @@ const Checkout = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  const handleApplyCoupon = async (e) => {
+    e.preventDefault();
+    if (!couponCode.trim()) return;
+    
+    setValidatingCoupon(true);
+    setCouponError('');
+    
+    try {
+      const response = await validateCoupon(couponCode);
+      // Backend middleware wraps responses in { data: {...} }
+      const res = response.data || response;
+      
+      if (res.valid) {
+        setAppliedCoupon({ code: couponCode.trim(), employee_name: res.employee_name });
+        setCouponCode('');
+      }
+    } catch (err) {
+      const errData = err.response?.data;
+      const errorMsg = errData?.errors?.error || errData?.error || 'Invalid coupon code';
+      setCouponError(errorMsg);
+      setAppliedCoupon(null);
+    } finally {
+      setValidatingCoupon(false);
+    }
+  };
+
+  const removeCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponError('');
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -68,7 +104,8 @@ const Checkout = () => {
           size: item.selectedSize,
           color: item.selectedColor?.name,
           is_wholesale: !!item.isWholesale
-        }))
+        })),
+        ...(appliedCoupon ? { coupon_code: appliedCoupon.code } : {})
       };
 
       await createOrder(orderData);
@@ -214,6 +251,53 @@ const Checkout = () => {
                     </div>
                   </div>
                 ))}
+              </div>
+
+              <div className="h-px bg-gray-100" />
+
+              {/* Coupon / Referral Section */}
+              <div className="space-y-3">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Sales Representative Code</label>
+                
+                {appliedCoupon ? (
+                  <div className="flex items-center justify-between p-3 bg-green-50 border border-green-100 rounded-xl">
+                    <div className="flex items-center gap-2">
+                      <Tag size={14} className="text-green-600" />
+                      <div>
+                        <p className="text-xs font-bold text-green-700 uppercase tracking-wider">{appliedCoupon.code}</p>
+                        <p className="text-[10px] text-green-600 font-medium">Attributed to: {appliedCoupon.employee_name}</p>
+                      </div>
+                    </div>
+                    <button 
+                      type="button" 
+                      onClick={removeCoupon}
+                      className="p-1 hover:bg-green-100 rounded-full text-green-600 transition-colors"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex gap-2">
+                      <input 
+                        type="text" 
+                        value={couponCode} 
+                        onChange={(e) => { setCouponCode(e.target.value); setCouponError(''); }} 
+                        className="flex-1 bg-gray-50 border border-transparent rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-gold outline-none transition-all uppercase" 
+                        placeholder="ENTER CODE" 
+                      />
+                      <button 
+                        type="button"
+                        onClick={handleApplyCoupon}
+                        disabled={!couponCode.trim() || validatingCoupon}
+                        className="bg-charcoal text-white px-6 rounded-xl text-xs font-bold uppercase tracking-wider hover:bg-gold transition-colors disabled:opacity-50"
+                      >
+                        {validatingCoupon ? <Loader2 size={16} className="animate-spin" /> : 'Apply'}
+                      </button>
+                    </div>
+                    {couponError && <p className="text-red-500 text-[10px] mt-2 ml-1 font-bold tracking-wide">{couponError}</p>}
+                  </div>
+                )}
               </div>
 
               <div className="h-px bg-gray-100" />

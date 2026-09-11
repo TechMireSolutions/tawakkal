@@ -115,7 +115,7 @@ export default function OrderList() {
         {loading ? <TableSkeleton rows={5} columns={6} /> : filtered.length === 0 ? <EmptyState title="No orders found" /> : (
           <div style={{ overflowX: 'auto' }}>
             <table className="admin-table" style={{ minWidth: '800px' }}>
-              <thead><tr><th>Order</th><th>Customer</th><th>Date</th><th>Status</th><th>Payment</th><th style={{ textAlign: 'right' }}>Total</th><th style={{ width: 60 }}></th></tr></thead>
+              <thead><tr><th>Order</th><th>Customer</th><th>Date</th><th>Sold By</th><th>Status</th><th>Payment</th><th style={{ textAlign: 'right' }}>Total</th><th style={{ width: 60 }}></th></tr></thead>
               <tbody>
                 {paginated.map(order => {
                   const statusKey = order.status?.toLowerCase() || 'pending';
@@ -137,6 +137,9 @@ export default function OrderList() {
                         <p style={{ fontSize: '12px', color: 'var(--admin-text-muted)', margin: '2px 0 0' }}>{custEmail}</p>
                       </td>
                       <td style={{ fontSize: '13px', color: 'var(--admin-text-secondary)' }}>{formatDate(orderDate)}</td>
+                      <td style={{ fontSize: '13px', color: 'var(--admin-text)' }}>
+                        {order.sold_by_employee_name || <span style={{ color: 'var(--admin-text-muted)' }}>Direct</span>}
+                      </td>
                       <td><Badge variant={os.color} dot>{os.label}</Badge></td>
                       <td><Badge variant={ps.color}>{ps.label}</Badge></td>
                       <td style={{ textAlign: 'right', fontWeight: 700, color: 'var(--admin-text)' }}>{formatCurrency(totalAmt)}</td>
@@ -205,10 +208,17 @@ export default function OrderList() {
                 </div>
                 <div style={{ padding: '16px', borderRadius: 'var(--admin-radius-lg)', border: '1px solid var(--admin-border-light)' }}>
                   <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--admin-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 8px' }}>Shipping Address</p>
-                  <p style={{ fontSize: '13px', color: 'var(--admin-text)', margin: 0 }}>{street}</p>
+                  <p style={{ fontSize: '13px', color: 'var(--admin-text)' }}>{street}</p>
                   <p style={{ fontSize: '13px', color: 'var(--admin-text-secondary)', margin: '2px 0 0' }}>{city}{zip ? `, ${zip}` : ''}</p>
                 </div>
               </div>
+
+              {selectedOrder.sold_by_employee_name && (
+                <div style={{ padding: '12px 16px', borderRadius: 'var(--admin-radius-lg)', background: 'var(--admin-surface-secondary)', border: '1px solid var(--admin-border-light)' }}>
+                  <p style={{ fontSize: '11px', fontWeight: 600, color: 'var(--admin-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', margin: '0 0 4px' }}>Attributed To (Sales Employee)</p>
+                  <p style={{ fontSize: '14px', fontWeight: 600, color: 'var(--admin-text)', margin: 0 }}>{selectedOrder.sold_by_employee_name}</p>
+                </div>
+              )}
 
               {/* Items */}
               <div>

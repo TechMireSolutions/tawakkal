@@ -15,6 +15,7 @@ import {
   HiOutlineBell,
   HiOutlineStar,
   HiOutlineBriefcase,
+  HiOutlineIdentification,
 } from 'react-icons/hi2';
 
 export const PLACEHOLDER_IMAGE = "https://placehold.co/600x400/1b3622/ffffff?text=No+Image";
@@ -78,6 +79,12 @@ export const SIDEBAR_NAVIGATION = [
         path: '/admin/customers',
         icon: HiOutlineUsers,
         permission: 'customers',
+      },
+      {
+        label: 'Sales Employees',
+        path: '/admin/employees',
+        icon: HiOutlineIdentification,
+        permission: 'orders',
       },
     ],
   },

@@ -26,6 +26,7 @@ class Order(BaseModel):
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT, related_name='orders')
     
     store = models.ForeignKey('stores.Store', on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
+    sold_by_employee = models.ForeignKey('orders.SalesEmployee', on_delete=models.SET_NULL, null=True, blank=True, related_name='orders')
     
     # Store addresses as foreign keys, but in a real ERP you might snapshot the address fields to avoid mutations
     # affecting historical orders. For now, linking is fine as long as we don't allow modifying address fields in place.

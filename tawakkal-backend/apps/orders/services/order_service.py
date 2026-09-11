@@ -48,6 +48,16 @@ class OrderService(BaseService):
         shipping_address = data['shipping_address']
         billing_address = data.get('billing_address') or shipping_address
         
+        coupon_code = data.get('coupon_code')
+        sold_by_employee = None
+        if coupon_code:
+            from apps.orders.models.sales_employee import SalesEmployee
+            clean_code = str(coupon_code).strip()
+            sales_employee = SalesEmployee.objects.filter(coupon_code__iexact=clean_code, is_active=True).first()
+            if not sales_employee:
+                raise ValidationError({"coupon_code": "Invalid or inactive coupon code."})
+            sold_by_employee = sales_employee
+        
         order = Order(
             order_number=cls._generate_order_number(),
             customer=customer,
@@ -59,6 +69,7 @@ class OrderService(BaseService):
             payment_provider=data.get('payment_provider') or '',
             payment_reference=data.get('payment_reference') or '',
             payment_method=data.get('payment_method') or '',
+            sold_by_employee=sold_by_employee,
         )
         
         # Save order first to get an ID for related items

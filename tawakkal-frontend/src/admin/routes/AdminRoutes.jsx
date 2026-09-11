@@ -12,6 +12,7 @@ import CreateProduct from '../features/products/CreateProduct';
 import ProductEdit from '../features/products/ProductEdit';
 import OrderList from '../features/orders/OrderList';
 import CustomerList from '../features/customers/CustomerList';
+import SalesEmployeeList from '../features/employees/SalesEmployeeList';
 import CategoryList from '../features/categories/CategoryList';
 import Settings from '../features/settings/Settings';
 import SystemConfig from '../features/settings/SystemConfig';
@@ -47,6 +48,7 @@ export default function AdminRoutes() {
               <Route path="products/:id/edit" element={<ProductEdit />} />
               <Route path="orders" element={<OrderList />} />
               <Route path="customers" element={<CustomerList />} />
+              <Route path="employees" element={<SalesEmployeeList />} />
               <Route path="categories" element={<CategoryList />} />
               <Route path="brands" element={<BrandList />} />
               <Route path="badges" element={<BadgeList />} />

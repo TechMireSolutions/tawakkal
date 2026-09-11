@@ -28,13 +28,20 @@ from apps.customers.serializers.customer_serializers import CustomerListSerializ
 class OrderListSerializer(serializers.ModelSerializer):
     customer_details = CustomerListSerializer(source='customer', read_only=True)
     shipping_address_details = CustomerAddressSerializer(source='shipping_address', read_only=True)
+    sold_by_employee_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
         fields = [
             'id', 'order_number', 'customer', 'customer_details', 'shipping_address_details',
-            'status', 'total_amount', 'currency', 'payment_status', 'shipping_status', 'created_at'
+            'status', 'total_amount', 'currency', 'payment_status', 'shipping_status', 'created_at',
+            'sold_by_employee_name'
         ]
+
+    def get_sold_by_employee_name(self, obj):
+        if obj.sold_by_employee:
+            return f"{obj.sold_by_employee.first_name} {obj.sold_by_employee.last_name}"
+        return None
 
 class OrderDetailSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True, read_only=True)
@@ -43,6 +50,12 @@ class OrderDetailSerializer(serializers.ModelSerializer):
     customer_details = CustomerListSerializer(source='customer', read_only=True)
     shipping_address_details = CustomerAddressSerializer(source='shipping_address', read_only=True)
     billing_address_details = CustomerAddressSerializer(source='billing_address', read_only=True)
+    sold_by_employee_name = serializers.SerializerMethodField()
+
+    def get_sold_by_employee_name(self, obj):
+        if obj.sold_by_employee:
+            return f"{obj.sold_by_employee.first_name} {obj.sold_by_employee.last_name}"
+        return None
 
     class Meta:
         model = Order
@@ -64,6 +77,7 @@ class OrderCreateSerializer(serializers.Serializer):
     payment_provider = serializers.CharField(max_length=50, required=False, allow_blank=True)
     payment_reference = serializers.CharField(max_length=100, required=False, allow_blank=True)
     payment_method = serializers.CharField(max_length=50, required=False, allow_blank=True)
+    coupon_code = serializers.CharField(max_length=50, required=False, allow_blank=True, write_only=True)
     
     items = OrderItemCreateSerializer(many=True, min_length=1)
 

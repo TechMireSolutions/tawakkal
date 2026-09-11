@@ -1,3 +1,4 @@
+from decimal import Decimal
 from rest_framework import serializers
 from ..models.method import PaymentMethod
 from ..models.invoice import Invoice, InvoiceItem
@@ -39,7 +40,8 @@ class PaymentSerializer(serializers.ModelSerializer):
 class ProcessPaymentSerializer(serializers.Serializer):
     order_id = serializers.UUIDField()
     payment_method_id = serializers.UUIDField()
-    amount = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=0.01)
+    # 2. Wrap '0.01' inside Decimal()
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=Decimal('0.01'))
     transaction_id = serializers.CharField(max_length=255, required=False, allow_blank=True)
 
 class RefundSerializer(serializers.ModelSerializer):

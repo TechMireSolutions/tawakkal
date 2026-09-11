@@ -8,6 +8,24 @@ import uuid
 from apps.customers.models import Customer, CustomerAddress
 from ..services.order_service import OrderService
 from ..serializers.order_serializers import OrderDetailSerializer
+from ..models.sales_employee import SalesEmployee
+
+class CouponValidateView(APIView):
+    permission_classes = [AllowAny]
+
+    def post(self, request, *args, **kwargs):
+        coupon_code = request.data.get('coupon_code', '').strip()
+        if not coupon_code:
+            return Response({'error': 'Coupon code is required.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        employee = SalesEmployee.objects.filter(coupon_code__iexact=coupon_code, is_active=True).first()
+        if not employee:
+            return Response({'error': 'Invalid or inactive coupon code.'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        return Response({
+            'valid': True,
+            'employee_name': f"{employee.first_name} {employee.last_name}"
+        }, status=status.HTTP_200_OK)
 
 class PublicCheckoutView(APIView):
     permission_classes = [AllowAny]
@@ -95,6 +113,7 @@ class PublicCheckoutView(APIView):
             'shipping_amount': data.get('shipping_amount', 0),
             'discount_amount': data.get('discount_amount', 0),
             'payment_method': data.get('payment_method', 'COD'),
+            'coupon_code': data.get('coupon_code', None),
         }
         
         # 5. Call Order Service
