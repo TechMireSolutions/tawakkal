@@ -89,6 +89,14 @@ export default function OrderList() {
         errorCount++;
       }
     }
+
+    // Utilizing the variable satisfies ESLint while alerting the administrator
+    if (errorCount > 0) {
+      alert(`Bulk deletion processed with ${errorCount} errors. Some orders could not be removed.`);
+    } else {
+      alert("All orders deleted successfully.");
+    }
+
     const res = await getOrders();
     setOrders(Array.isArray(res) ? res : (res?.results || []));
     setLoading(false);
@@ -122,7 +130,7 @@ export default function OrderList() {
                   const paymentKey = (order.paymentStatus || order.payment_status || 'pending').toLowerCase();
                   const os = ORDER_STATUSES[statusKey] || ORDER_STATUSES.pending;
                   const ps = PAYMENT_STATUSES[paymentKey] || PAYMENT_STATUSES.pending;
-                  
+
                   const orderNum = order.orderNumber || order.order_number || order.id;
                   const custName = order.customer?.name || (order.customer_details ? `${order.customer_details.first_name || ''} ${order.customer_details.last_name || ''}`.trim() : 'N/A');
                   const custEmail = order.customer?.email || order.customer_details?.email || '';

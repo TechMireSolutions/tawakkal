@@ -3,6 +3,7 @@ import { HiOutlineMagnifyingGlass, HiOutlinePaperAirplane } from 'react-icons/hi
 import { PageContainer, PageHeader } from '../../components/ui/PageLayout';
 import { ContentCard } from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 import Input, { Textarea } from '../../components/ui/Input';
 import Button from '../../components/ui/Button';
 import Avatar from '../../components/ui/Avatar';
@@ -16,6 +17,7 @@ export default function ContactInquiries() {
   const toast = useToast();
   const [messages, setMessages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [confirmConfig, setConfirmConfig] = useState({ isOpen: false });
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('');
   const [selected, setSelected] = useState(null);
@@ -43,18 +45,24 @@ export default function ContactInquiries() {
     }
   };
 
-  const handleClearAll = async () => {
-    if (window.confirm("Are you sure you want to clear all inquiries?")) {
-      try {
-        await clearMessages();
-        setMessages([]);
-        setSelected(null);
-        toast.success('Inquiries Cleared', 'All inquiries have been deleted.');
-      } catch (e) {
-        toast.error('Error', 'Failed to clear inquiries.');
+  const handleClearAll = () => {
+    setConfirmConfig({
+      isOpen: true,
+      title: "Clear All Inquiries",
+      message: "Are you sure you want to clear all inquiries?",
+      onConfirm: async () => {
+        try {
+          await clearMessages();
+          setMessages([]);
+          setSelected(null);
+          toast.success('Inquiries Cleared', 'All inquiries have been deleted.');
+        } catch {
+          toast.error('Error', 'Failed to clear inquiries.');
+        }
       }
-    }
+    });
   };
+
 
   const statusColors = { unread: 'info', replied: 'success' };
 
@@ -134,6 +142,16 @@ export default function ContactInquiries() {
           </ContentCard>
         )}
       </div>
+
+      <ConfirmModal
+        isOpen={confirmConfig.isOpen}
+        onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+        onConfirm={confirmConfig.onConfirm}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        confirmText="Confirm"
+        variant="danger"
+      />
     </PageContainer>
   );
 }

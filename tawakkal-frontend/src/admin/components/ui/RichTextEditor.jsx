@@ -1,7 +1,7 @@
 import { useRef, useEffect } from 'react';
-import { 
-  HiOutlineBold, HiOutlineItalic, HiOutlineUnderline, HiOutlineLink, 
-  HiOutlineListBullet, HiOutlineDocumentText 
+import {
+  HiOutlineBold, HiOutlineItalic, HiOutlineUnderline, HiOutlineLink,
+  HiOutlineListBullet
 } from 'react-icons/hi2';
 
 const ToolbarButton = ({ icon: Icon, label, onClick }) => (
@@ -31,7 +31,7 @@ const ToolbarButton = ({ icon: Icon, label, onClick }) => (
 
 export default function RichTextEditor({ value, onChange, placeholder = 'Start writing...' }) {
   const editorRef = useRef(null);
-  
+
   useEffect(() => {
     if (editorRef.current && value !== editorRef.current.innerHTML) {
       editorRef.current.innerHTML = value || '';
@@ -70,9 +70,9 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Start w
         flexDirection: 'column'
       }}
     >
-      <div 
-        style={{ 
-          display: 'flex', alignItems: 'center', gap: '4px', 
+      <div
+        style={{
+          display: 'flex', alignItems: 'center', gap: '4px',
           padding: '8px', borderBottom: '1px solid var(--admin-border-light)',
           background: 'var(--admin-surface-secondary)',
           flexWrap: 'wrap'
@@ -83,7 +83,7 @@ export default function RichTextEditor({ value, onChange, placeholder = 'Start w
         <ToolbarButton icon={HiOutlineUnderline} label="Underline" onClick={() => exec('underline')} />
         <div style={{ width: 1, height: 20, background: 'var(--admin-border)', margin: '0 4px' }} />
         <ToolbarButton icon={HiOutlineListBullet} label="Bullet List" onClick={() => exec('insertUnorderedList')} />
-        <ToolbarButton icon={() => <span style={{fontWeight: 'bold', fontSize: '12px'}}>1.</span>} label="Numbered List" onClick={() => exec('insertOrderedList')} />
+        <ToolbarButton icon={() => <span style={{ fontWeight: 'bold', fontSize: '12px' }}>1.</span>} label="Numbered List" onClick={() => exec('insertOrderedList')} />
         <ToolbarButton icon={HiOutlineLink} label="Link" onClick={handleLink} />
       </div>
 

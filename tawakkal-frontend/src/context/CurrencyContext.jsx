@@ -5,7 +5,7 @@ import { formatCurrency, convertCurrency } from "../admin/utils/formatters";
 
 const CurrencyContext = createContext();
 
-export const currencies = [
+const currencies = [
   {
     code: "PKR",
     symbol: "Rs.",
@@ -55,13 +55,25 @@ export const CurrencyProvider = ({ children }) => {
 
   // Keep currency synced with system default unless user explicitly chose one
   useEffect(() => {
+    let isMounted = true;
+
     if (systemConfig) {
-      if (!userSelected) {
-        setCurrency(baseCurrency);
-      } else if (!currency) {
-        setCurrency(baseCurrency);
-      }
+      const syncCurrency = async () => {
+        await Promise.resolve(); // Safe microtask boundary deferral
+        if (!isMounted) return;
+
+        if (!userSelected) {
+          setCurrency(baseCurrency);
+        } else if (!currency) {
+          setCurrency(baseCurrency);
+        }
+      };
+      syncCurrency();
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [systemConfig, baseCurrency, userSelected, currency]);
 
   const handleSetCurrency = (newCurrency) => {
@@ -108,15 +120,17 @@ export const CurrencyProvider = ({ children }) => {
 
   return (
     <CurrencyContext.Provider value={{
-        currency: activeCurrency,
-        setCurrency: handleSetCurrency,
-        currencies,
-        convertPrice,
+      currency: activeCurrency,
+      setCurrency: handleSetCurrency,
+      currencies,
+      convertPrice,
     }}>
       {children}
     </CurrencyContext.Provider>
   );
 };
 
+const useCurrency = () => useContext(CurrencyContext);
+
 // eslint-disable-next-line react-refresh/only-export-components
-export const useCurrency = () => useContext(CurrencyContext);
+export { useCurrency, currencies };

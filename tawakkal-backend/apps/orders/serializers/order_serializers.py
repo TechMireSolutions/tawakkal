@@ -4,6 +4,7 @@ from ..models.item import OrderItem
 from ..models.timeline import OrderTimeline
 from ..models.note import OrderNote
 from decimal import Decimal
+from django.core.validators import MinLengthValidator
 
 class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
@@ -35,7 +36,7 @@ class OrderListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'order_number', 'customer', 'customer_details', 'shipping_address_details',
             'status', 'total_amount', 'currency', 'payment_status', 'shipping_status', 'created_at',
-            'sold_by_employee_name'
+            'sold_by_employee_name', 'discount_amount', 'shipping_amount', 'tax_amount'
         ]
 
     def get_sold_by_employee_name(self, obj):
@@ -79,7 +80,11 @@ class OrderCreateSerializer(serializers.Serializer):
     payment_method = serializers.CharField(max_length=50, required=False, allow_blank=True)
     coupon_code = serializers.CharField(max_length=50, required=False, allow_blank=True, write_only=True)
     
-    items = OrderItemCreateSerializer(many=True, min_length=1)
+    # Reference the cleanly imported core validator directly
+    items = OrderItemCreateSerializer(
+        many=True, 
+        validators=[MinLengthValidator(1, message="Ensure this field has at least 1 item.")]
+    )
 
 class OrderStatusUpdateSerializer(serializers.Serializer):
     status = serializers.CharField(max_length=20)

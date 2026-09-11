@@ -6,6 +6,8 @@ import { ContentCard } from '../../components/ui/Card';
 import StatCard, { StatGrid } from '../../components/ui/StatCard';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
+import ConfirmModal from '../../components/ui/ConfirmModal';
+import { useToast } from '../../components/ui/Toast';
 import { getSurveys, getSurveyAnalytics } from '../../services/api';
 import { formatDate } from '../../utils/formatters';
 import { exportToPDF } from '../../utils/exportToPDF';
@@ -13,6 +15,8 @@ import { exportToPDF } from '../../utils/exportToPDF';
 export default function SurveyResponses() {
   const [surveys, setSurveys] = useState([]);
   const [analytics, setAnalytics] = useState(null);
+  const [confirmConfig, setConfirmConfig] = useState({ isOpen: false });
+  const toast = useToast();
 
   useEffect(() => { Promise.all([getSurveys(), getSurveyAnalytics()]).then(([s, a]) => { setSurveys(s); setAnalytics(a); }); }, []);
 
@@ -35,7 +39,14 @@ export default function SurveyResponses() {
       <PageHeader title="Survey Responses" subtitle={`${surveys.length} responses collected`} breadcrumbs={[{ label: 'Surveys' }]}
         secondaryAction={
           <div style={{ display: 'flex', gap: '10px' }}>
-            <Button variant="danger" icon={HiOutlineTrash} size="sm" onClick={() => { if(window.confirm('Delete all survey responses?')) { setSurveys([]); } }}>Delete All</Button>
+            <Button variant="danger" icon={HiOutlineTrash} size="sm" onClick={() => {
+              setConfirmConfig({
+                isOpen: true,
+                title: "Delete All",
+                message: "Delete all survey responses?",
+                onConfirm: () => { setSurveys([]); toast.success("Cleared all responses"); }
+              });
+            }}>Delete All</Button>
             <Button variant="secondary" icon={HiOutlineArrowDownTray} size="sm" onClick={handleExport}>Export</Button>
           </div>
         } />
@@ -74,6 +85,15 @@ export default function SurveyResponses() {
           </div>
         </ContentCard>
       </div>
+      <ConfirmModal
+        isOpen={confirmConfig.isOpen}
+        onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+        onConfirm={confirmConfig.onConfirm}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        confirmText="Confirm"
+        variant="danger"
+      />
     </PageContainer>
   );
 }

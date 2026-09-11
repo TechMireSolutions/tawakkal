@@ -5,6 +5,7 @@ import { PageContainer, PageHeader } from '../../../components/ui/PageLayout';
 import Button from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import Badge from '../../../components/ui/Badge';
+import ConfirmModal from '../../../components/ui/ConfirmModal';
 import { HiPlus, HiOutlinePencilSquare, HiOutlineTrash } from 'react-icons/hi2';
 import { getPages, deletePage } from '../../../services/cms.service';
 import { useToast } from '../../../components/ui/Toast';
@@ -12,6 +13,7 @@ import { useToast } from '../../../components/ui/Toast';
 export default function PageList() {
   const [pages, setPages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [confirmConfig, setConfirmConfig] = useState({ isOpen: false });
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -32,33 +34,43 @@ export default function PageList() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this page?')) {
-      try {
-        await deletePage(id);
-        toast.success('Success', 'Page deleted successfully');
-        loadPages();
-      } catch {
-        toast.error('Error', 'Failed to delete page');
+  const handleDelete = (id) => {
+    setConfirmConfig({
+      isOpen: true,
+      title: "Delete Page",
+      message: 'Are you sure you want to delete this page?',
+      onConfirm: async () => {
+        try {
+          await deletePage(id);
+          toast.success('Success', 'Page deleted successfully');
+          loadPages();
+        } catch {
+          toast.error('Error', 'Failed to delete page');
+        }
       }
-    }
+    });
   };
 
-  const handleDeleteAll = async () => {
-    if (window.confirm('Are you sure you want to delete ALL pages? This action cannot be undone.')) {
-      try {
-        setLoading(true);
-        for (const page of pages) {
-          await deletePage(page.id);
+  const handleDeleteAll = () => {
+    setConfirmConfig({
+      isOpen: true,
+      title: "Delete All Pages",
+      message: 'Are you sure you want to delete ALL pages? This action cannot be undone.',
+      onConfirm: async () => {
+        try {
+          setLoading(true);
+          for (const page of pages) {
+            await deletePage(page.id);
+          }
+          toast.success('Success', 'All pages deleted');
+          loadPages();
+        } catch {
+          toast.error('Error', 'Failed to delete some pages');
+        } finally {
+          setLoading(false);
         }
-        toast.success('Success', 'All pages deleted');
-        loadPages();
-      } catch {
-        toast.error('Error', 'Failed to delete some pages');
-      } finally {
-        setLoading(false);
       }
-    }
+    });
   };
 
   return (
@@ -121,6 +133,16 @@ export default function PageList() {
           </table>
         )}
       </Card>
+
+      <ConfirmModal
+        isOpen={confirmConfig.isOpen}
+        onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+        onConfirm={confirmConfig.onConfirm}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        confirmText="Confirm"
+        variant="danger"
+      />
     </PageContainer>
   );
 }

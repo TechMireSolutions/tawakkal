@@ -8,8 +8,7 @@ import {
 import {
   HiOutlineShoppingBag, HiOutlineTag, HiOutlineUsers, HiOutlineClipboardDocumentList,
   HiOutlineCurrencyDollar, HiOutlineEnvelope, HiOutlineChatBubbleLeftRight,
-  HiOutlineChartBar, HiOutlinePlus, HiOutlinePencilSquare, HiOutlineCog6Tooth,
-  HiOutlineCheckCircle
+  HiOutlineChartBar, HiOutlinePlus, HiOutlinePencilSquare, HiOutlineCog6Tooth
 } from 'react-icons/hi2';
 import { useAdmin } from '../../contexts/AdminContext';
 import { getDashboardStats, getRecentActivity, getNotifications } from '../../services/api';
@@ -17,7 +16,6 @@ import { formatCurrency, formatRelativeDate } from '../../utils/formatters';
 import { PageContainer } from '../../components/ui/PageLayout';
 import StatCard, { StatGrid } from '../../components/ui/StatCard';
 import { ContentCard } from '../../components/ui/Card';
-import Badge from '../../components/ui/Badge';
 import { CardSkeleton } from '../../components/ui/Skeleton';
 
 export default function Dashboard() {
@@ -62,7 +60,7 @@ export default function Dashboard() {
           <div className="admin-skeleton" style={{ width: 200, height: 16, borderRadius: 6 }} />
         </div>
         <StatGrid>
-          {[1,2,3,4,5,6].map(i => <CardSkeleton key={i} />)}
+          {[1, 2, 3, 4, 5, 6].map(i => <CardSkeleton key={i} />)}
         </StatGrid>
       </PageContainer>
     );
@@ -187,19 +185,19 @@ export default function Dashboard() {
                 <Area type="monotone" dataKey="revenue" stroke="#1B3622" strokeWidth={2.5} fill="url(#revenueGradient)" />
               </AreaChart>
             ) : (
-  <div style={{ 
-    display: 'flex', 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    height: '280px', // Explicitly matches your ResponsiveContainer height
-    padding: '0 24px', // Keeps text away from the card edges
-    textAlign: 'center', 
-    color: 'var(--admin-text-muted)',
-    fontSize: '14px'
-  }}>
-    No revenue data available
-  </div>
-)}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '280px', // Explicitly matches your ResponsiveContainer height
+                padding: '0 24px', // Keeps text away from the card edges
+                textAlign: 'center',
+                color: 'var(--admin-text-muted)',
+                fontSize: '14px'
+              }}>
+                No revenue data available
+              </div>
+            )}
           </ResponsiveContainer>
         </ContentCard>
 
@@ -232,19 +230,19 @@ export default function Dashboard() {
                 />
               </PieChart>
             ) : (
-  <div style={{ 
-    display: 'flex', 
-    alignItems: 'center', 
-    justifyContent: 'center', 
-    height: '280px', // Matches your ResponsiveContainer height
-    padding: '0 24px', 
-    textAlign: 'center', 
-    color: 'var(--admin-text-muted)',
-    fontSize: '14px'
-  }}>
-    No traffic data available
-  </div>
-)}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                height: '280px', // Matches your ResponsiveContainer height
+                padding: '0 24px',
+                textAlign: 'center',
+                color: 'var(--admin-text-muted)',
+                fontSize: '14px'
+              }}>
+                No traffic data available
+              </div>
+            )}
           </ResponsiveContainer>
         </ContentCard>
       </div>

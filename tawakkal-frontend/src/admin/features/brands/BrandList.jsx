@@ -8,6 +8,7 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Modal from '../../components/ui/Modal';
 import Dialog from '../../components/ui/Dialog';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 import { useToast } from '../../components/ui/Toast';
 import { CardSkeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -21,22 +22,24 @@ export default function BrandList() {
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState({ open: false, brand: null });
-  
+  const [confirmConfig, setConfirmConfig] = useState({ isOpen: false });
+
   const [newBrand, setNewBrand] = useState({ name: '', slug: '', description: '' });
   const [newBrandImage, setNewBrandImage] = useState(null);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
-  
+
   const [showEditModal, setShowEditModal] = useState(false);
   const [editBrand, setEditBrand] = useState({ id: '', name: '', slug: '', description: '', status: true, display_order: 0, seo_title: '', seo_description: '', seo_keywords: '', is_featured: false });
   const [editBrandImage, setEditBrandImage] = useState(null);
   const [editSubmitting, setEditSubmitting] = useState(false);
 
-  const fetchBrands = async () => {
+  const fetchBrands = async (triggerLoader = false) => {
     try {
-      setLoading(true);
+      if (triggerLoader) {
+        setLoading(true);
+      }
       const data = await getBrands();
-      // data might be wrapped depending on pagination
       setBrands(data?.results || data);
     } catch (err) {
       console.error(err);
@@ -47,10 +50,19 @@ export default function BrandList() {
 
   useEffect(() => {
     let isMounted = true;
-    if (isMounted) {
-      fetchBrands();
-    }
-    return () => { isMounted = false; };
+
+    const loadData = async () => {
+      await Promise.resolve();
+      if (isMounted) {
+        await fetchBrands(true);
+      }
+    };
+
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
 
   const handleSave = async () => {
@@ -66,7 +78,7 @@ export default function BrandList() {
     try {
       let imageId = null;
       if (newBrandImage) {
-        const uploadRes = await uploadMedia(newBrandImage, () => {});
+        const uploadRes = await uploadMedia(newBrandImage, () => { });
         if (uploadRes && uploadRes.id) {
           imageId = uploadRes.id;
         }
@@ -78,7 +90,7 @@ export default function BrandList() {
         description: newBrand.description,
         logo: imageId
       });
-      
+
       toast.success('Brand created successfully');
       setShowModal(false);
       setNewBrand({ name: '', slug: '', description: '' });
@@ -122,7 +134,7 @@ export default function BrandList() {
     try {
       let imageId = undefined;
       if (editBrandImage) {
-        const uploadRes = await uploadMedia(editBrandImage, () => {});
+        const uploadRes = await uploadMedia(editBrandImage, () => { });
         if (uploadRes && uploadRes.id) {
           imageId = uploadRes.id;
         }
@@ -139,11 +151,11 @@ export default function BrandList() {
         seo_keywords: editBrand.seo_keywords,
         is_featured: editBrand.is_featured,
       };
-      
+
       if (imageId) payload.logo = imageId;
 
       await updateBrand(editBrand.id, payload);
-      
+
       toast.success('Brand updated successfully');
       setShowEditModal(false);
       fetchBrands();
@@ -173,57 +185,62 @@ export default function BrandList() {
     }
   };
 
-  const handleDeleteAll = async () => {
-    if (!window.confirm('Are you sure you want to delete ALL brands? This action cannot be undone.')) return;
-    try {
-      setLoading(true);
-      for (const brand of brands) {
-        await deleteBrand(brand.id);
-      }
-      toast.success('All brands have been deleted');
-      fetchBrands();
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to delete some brands');
-    } finally {
-      setLoading(false);
-    }
-  };
+  const handleDeleteAll = () => {
+    setConfirmConfig({
+      isOpen: true,
+      title: "Delete All Brands",
+      message: "Are you sure you want to delete ALL brands? This action cannot be undone.",
+      onConfirm: async () => {
+        setLoading(true);
+        for (const brand of brands) {
+          try {
+            await deleteBrand(brand.id);
+          } catch (err) {
 
+            console.error(`Failed to delete brand ${brand.id}:`, err);
+          }
+        }
+        const data = await getBrands();
+        setBrands(data?.results || data);
+        setLoading(false);
+        toast.success("Deleted all brands");
+      }
+    });
+  };
 
   const filtered = search ? brands.filter(b => b.name.toLowerCase().includes(search.toLowerCase())) : brands;
 
   return (
     <PageContainer>
-      <PageHeader 
-        title="Brands" 
-        subtitle={`${brands.length} brands in your catalog`} 
-        breadcrumbs={[{ label: 'Brands' }]} 
-        actionLabel="Add Brand" 
-        actionIcon={HiOutlinePlus} 
+      <PageHeader
+        title="Brands"
+        subtitle={`${brands.length} brands in your catalog`}
+        breadcrumbs={[{ label: 'Brands' }]}
+        actionLabel="Add Brand"
+        actionIcon={HiOutlinePlus}
         onAction={() => {
           if (brands.length >= 10) {
             toast.error('Maximum of 10 brands allowed.');
             return;
           }
           setShowModal(true);
-        }} 
+        }}
         secondaryAction={<Button variant="danger" icon={HiOutlineTrash} size="sm" onClick={handleDeleteAll}>Delete All</Button>}
       />
 
       <div style={{ marginBottom: '20px', maxWidth: '340px' }}>
-        <Input 
-          placeholder="Search brands..." 
-          icon={HiOutlineMagnifyingGlass} 
-          value={search} 
-          onChange={(e) => setSearch(e.target.value)} 
-          size="sm" 
+        <Input
+          placeholder="Search brands..."
+          icon={HiOutlineMagnifyingGlass}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          size="sm"
         />
       </div>
 
       {loading ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
-          {[1,2,3,4,5,6].map(i => <CardSkeleton key={i} />)}
+          {[1, 2, 3, 4, 5, 6].map(i => <CardSkeleton key={i} />)}
         </div>
       ) : filtered.length === 0 ? (
         <EmptyState title="No brands found" actionLabel="Add Brand" onAction={() => {
@@ -262,11 +279,11 @@ export default function BrandList() {
         </div>
       )}
 
-      <Modal 
-        isOpen={showModal} 
-        onClose={() => setShowModal(false)} 
-        title="Add Brand" 
-        size="sm" 
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title="Add Brand"
+        size="sm"
         footer={
           <>
             <Button variant="secondary" onClick={() => setShowModal(false)} disabled={submitting}>Cancel</Button>
@@ -275,37 +292,38 @@ export default function BrandList() {
         }
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <Input 
-            label="Brand Name" 
-            placeholder="e.g. Khaadi" 
-            value={newBrand.name} 
-            onChange={(e) => { setNewBrand(p => ({...p, name: e.target.value})); if(errors.slug) setErrors({}); }}
+          {/* cspell:disable-next-line */}
+          <Input
+            label="Brand Name"
+            placeholder="e.g. Khaadi"
+            value={newBrand.name}
+            onChange={(e) => { setNewBrand(p => ({ ...p, name: e.target.value })); if (errors.slug) setErrors({}); }}
             required
           />
-          <Input 
-            label="Slug (optional)" 
-            placeholder="e.g. khaadi" 
-            value={newBrand.slug} 
-            onChange={(e) => { setNewBrand(p => ({...p, slug: e.target.value})); if(errors.slug) setErrors({}); }}
+          {/* cspell:disable-next-line */}
+          <Input
+            label="Slug (optional)"
+            placeholder="e.g. khaadi"
+            value={newBrand.slug}
+            onChange={(e) => { setNewBrand(p => ({ ...p, slug: e.target.value })); if (errors.slug) setErrors({}); }}
             error={errors.slug}
           />
           {errors.slug && <p style={{ color: 'var(--admin-danger)', fontSize: '13px', marginTop: '-12px', marginBottom: '8px' }}>{errors.slug}</p>}
-          <Input 
-            label="Description" 
+          <Input
+            label="Description"
             as="textarea"
             rows={2}
-            value={newBrand.description} 
-            onChange={(e) => setNewBrand(p => ({...p, description: e.target.value}))}
+            value={newBrand.description}
+            onChange={(e) => setNewBrand(p => ({ ...p, description: e.target.value }))}
           />
-          
         </div>
       </Modal>
 
-      <Modal 
-        isOpen={showEditModal} 
-        onClose={() => setShowEditModal(false)} 
-        title="Edit Brand" 
-        size="md" 
+      <Modal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        title="Edit Brand"
+        size="md"
         footer={
           <>
             <Button variant="secondary" onClick={() => setShowEditModal(false)} disabled={editSubmitting}>Cancel</Button>
@@ -315,56 +333,69 @@ export default function BrandList() {
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <Input 
-              label="Name" 
-              value={editBrand.name} 
-              onChange={(e) => { setEditBrand(p => ({...p, name: e.target.value})); if(errors.slug) setErrors({}); }}
+            <Input
+              label="Name"
+              value={editBrand.name}
+              onChange={(e) => { setEditBrand(p => ({ ...p, name: e.target.value })); if (errors.slug) setErrors({}); }}
             />
-            <Input 
-              label="Slug" 
-              value={editBrand.slug} 
-              onChange={(e) => { setEditBrand(p => ({...p, slug: e.target.value})); if(errors.slug) setErrors({}); }}
+            <Input
+              label="Slug"
+              value={editBrand.slug}
+              onChange={(e) => { setEditBrand(p => ({ ...p, slug: e.target.value })); if (errors.slug) setErrors({}); }}
               error={errors.slug}
             />
             {errors.slug && <p style={{ color: 'var(--admin-danger)', fontSize: '13px', marginTop: '-12px', marginBottom: '8px' }}>{errors.slug}</p>}
           </div>
-          <Input label="Description" as="textarea" rows={3} value={editBrand.description} onChange={e => setEditBrand({...editBrand, description: e.target.value})} />
+          <Input label="Description" as="textarea" rows={3} value={editBrand.description} onChange={e => setEditBrand({ ...editBrand, description: e.target.value })} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-             <Input label="Display Order" type="number" value={editBrand.display_order} onChange={e => setEditBrand({...editBrand, display_order: parseInt(e.target.value) || 0})} />
-             <div>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: 'var(--admin-text)', marginBottom: '8px' }}>Status</label>
-                <select 
-                    style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--admin-border)', borderRadius: 'var(--admin-radius-md)', outline: 'none', background: '#fff' }}
-                    value={editBrand.status ? 'true' : 'false'} 
-                    onChange={e => setEditBrand({...editBrand, status: e.target.value === 'true'})}
-                >
-                    <option value="true">Active</option>
-                    <option value="false">Inactive</option>
-                </select>
-             </div>
+            <Input label="Display Order" type="number" value={editBrand.display_order} onChange={e => setEditBrand({ ...editBrand, display_order: parseInt(e.target.value) || 0 })} />
+            <div>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: 'var(--admin-text)', marginBottom: '8px' }}>Status</label>
+              <select
+                style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--admin-border)', borderRadius: 'var(--admin-radius-md)', outline: 'none', background: '#fff' }}
+                value={editBrand.status ? 'true' : 'false'}
+                onChange={e => setEditBrand({ ...editBrand, status: e.target.value === 'true' })}
+              >
+                <option value="true">Active</option>
+                <option value="false">Inactive</option>
+              </select>
+            </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-             <input type="checkbox" id="is_featured" checked={editBrand.is_featured} onChange={e => setEditBrand({...editBrand, is_featured: e.target.checked})} />
-             <label htmlFor="is_featured" style={{ fontSize: '14px', color: 'var(--admin-text)' }}>Featured Brand</label>
+            <input type="checkbox" id="is_featured" checked={editBrand.is_featured} onChange={e => setEditBrand({ ...editBrand, is_featured: e.target.checked })} />
+            <label htmlFor="is_featured" style={{ fontSize: '14px', color: 'var(--admin-text)' }}>Featured Brand</label>
           </div>
           <div style={{ borderTop: '1px solid var(--admin-border)', paddingTop: '16px', marginTop: '8px' }}>
-             <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>SEO Settings</h4>
-             <Input label="SEO Title" value={editBrand.seo_title} onChange={e => setEditBrand({...editBrand, seo_title: e.target.value})} />
-             <div style={{ marginTop: '12px' }}><Input label="SEO Keywords" value={editBrand.seo_keywords} onChange={e => setEditBrand({...editBrand, seo_keywords: e.target.value})} /></div>
-             <div style={{ marginTop: '12px' }}><Input label="SEO Description" as="textarea" rows={2} value={editBrand.seo_description} onChange={e => setEditBrand({...editBrand, seo_description: e.target.value})} /></div>
+            <h4 style={{ fontSize: '14px', fontWeight: '600', marginBottom: '12px' }}>SEO Settings</h4>
+            <Input label="SEO Title" value={editBrand.seo_title} onChange={e => setEditBrand({ ...editBrand, seo_title: e.target.value })} />
+            <div style={{ marginTop: '12px' }}>
+              <Input label="SEO Keywords" value={editBrand.seo_keywords} onChange={e => setEditBrand({ ...editBrand, seo_keywords: e.target.value })} />
+            </div>
+            <div style={{ marginTop: '12px' }}>
+              <Input label="SEO Description" as="textarea" rows={2} value={editBrand.seo_description} onChange={e => setEditBrand({ ...editBrand, seo_description: e.target.value })} />
+            </div>
           </div>
-          
         </div>
       </Modal>
 
-      <Dialog 
-        isOpen={deleteDialog.open} 
-        onClose={() => setDeleteDialog({ open: false, brand: null })} 
-        onConfirm={handleDelete} 
-        title="Delete Brand" 
-        message={`Delete "${deleteDialog.brand?.name}"? Products belonging to this brand will not be deleted.`} 
-        variant="danger" 
-        confirmLabel="Delete" 
+      <Dialog
+        isOpen={deleteDialog.open}
+        onClose={() => setDeleteDialog({ open: false, brand: null })}
+        onConfirm={handleDelete}
+        title="Delete Brand"
+        message={`Delete "${deleteDialog.brand?.name}"? Products belonging to this brand will not be deleted.`}
+        variant="danger"
+        confirmLabel="Delete"
+      />
+
+      <ConfirmModal
+        isOpen={confirmConfig.isOpen}
+        onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+        onConfirm={confirmConfig.onConfirm}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        confirmText="Confirm"
+        variant="danger"
       />
     </PageContainer>
   );

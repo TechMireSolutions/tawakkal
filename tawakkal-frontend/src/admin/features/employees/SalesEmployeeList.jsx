@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { HiOutlineMagnifyingGlass, HiOutlineClipboardDocument, HiOutlinePlus } from 'react-icons/hi2';
 import { PageContainer, PageHeader } from '../../components/ui/PageLayout';
 import { ContentCard } from '../../components/ui/Card';
@@ -19,7 +19,7 @@ export default function SalesEmployeeList() {
   const [formData, setFormData] = useState({ first_name: '', last_name: '' });
   const [error, setError] = useState(null);
 
-  const fetchEmployees = async () => {
+  const fetchEmployees = useCallback(async () => {
     setLoading(true);
     try {
       const res = await getSalesEmployees();
@@ -29,11 +29,23 @@ export default function SalesEmployeeList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    fetchEmployees();
-  }, []);
+    let isMounted = true;
+
+    const loadData = async () => {
+      await Promise.resolve(); // Defers rendering logic frames smoothly out of layout steps
+      if (isMounted) {
+        await fetchEmployees();
+      }
+    };
+
+    loadData();
+    return () => {
+      isMounted = false;
+    };
+  }, [fetchEmployees]);
 
   const filtered = useMemo(() => {
     if (!search) return employees;
@@ -57,11 +69,11 @@ export default function SalesEmployeeList() {
     } catch (err) {
       if (err.response?.data) {
         if (typeof err.response.data === 'object' && err.response.data.non_field_errors) {
-            setError(err.response.data.non_field_errors[0]);
+          setError(err.response.data.non_field_errors[0]);
         } else if (Array.isArray(err.response.data)) {
-            setError(err.response.data[0]);
+          setError(err.response.data[0]);
         } else {
-            setError(Object.values(err.response.data).join(', '));
+          setError(Object.values(err.response.data).join(', '));
         }
       } else {
         setError('Failed to create sales employee. Ensure first and last name combination is unique.');
@@ -75,7 +87,7 @@ export default function SalesEmployeeList() {
     try {
       await updateSalesEmployee(employee.id, { is_active: !employee.is_active });
       await fetchEmployees();
-    } catch (err) {
+    } catch {
       alert("Failed to update status");
     }
   };
@@ -88,18 +100,18 @@ export default function SalesEmployeeList() {
   return (
     <PageContainer>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <PageHeader 
-          title="Sales Employees" 
-          subtitle={`${employees.length} sales employees configured`} 
-          breadcrumbs={[{ label: 'Employees' }]} 
+        <PageHeader
+          title="Sales Employees"
+          subtitle={`${employees.length} sales employees configured`}
+          breadcrumbs={[{ label: 'Employees' }]}
         />
-        <button 
+        <button
           onClick={() => { setError(null); setIsModalOpen(true); }}
-          style={{ 
+          style={{
             display: 'flex', alignItems: 'center', gap: '8px',
-            background: 'var(--admin-primary)', color: 'white', 
-            border: 'none', padding: '10px 16px', borderRadius: '8px', 
-            cursor: 'pointer', fontWeight: '500', marginTop: '20px' 
+            background: 'var(--admin-primary)', color: 'white',
+            border: 'none', padding: '10px 16px', borderRadius: '8px',
+            cursor: 'pointer', fontWeight: '500', marginTop: '20px'
           }}
         >
           <HiOutlinePlus size={20} /> Add Employee
@@ -108,16 +120,16 @@ export default function SalesEmployeeList() {
 
       <ContentCard noPadding>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--admin-border-light)' }}>
-          <Input 
-            placeholder="Search by name or code..." 
-            icon={HiOutlineMagnifyingGlass} 
-            value={search} 
-            onChange={(e) => setSearch(e.target.value)} 
-            size="sm" 
-            containerClassName="admin-product-search" 
+          <Input
+            placeholder="Search by name or code..."
+            icon={HiOutlineMagnifyingGlass}
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            size="sm"
+            containerClassName="admin-product-search"
           />
         </div>
-        
+
         {loading ? <TableSkeleton rows={5} columns={5} /> : filtered.length === 0 ? <EmptyState title="No employees found" /> : (
           <div style={{ overflowX: 'auto' }}>
             <table className="admin-table">
@@ -142,7 +154,7 @@ export default function SalesEmployeeList() {
                         <code style={{ background: 'var(--admin-bg-light)', padding: '4px 8px', borderRadius: '4px', border: '1px solid var(--admin-border-light)' }}>
                           {emp.coupon_code}
                         </code>
-                        <button 
+                        <button
                           onClick={() => copyToClipboard(emp.coupon_code)}
                           title="Copy Code"
                           style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--admin-text-secondary)', padding: '4px' }}
@@ -159,7 +171,7 @@ export default function SalesEmployeeList() {
                       </Badge>
                     </td>
                     <td style={{ textAlign: 'right' }}>
-                      <button 
+                      <button
                         onClick={() => toggleStatus(emp)}
                         style={{
                           background: 'none',
@@ -187,19 +199,19 @@ export default function SalesEmployeeList() {
           <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '24px' }}>
             <div>
               <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: 'var(--admin-text-primary)' }}>First Name</label>
-              <Input 
-                required 
-                value={formData.first_name} 
-                onChange={e => setFormData({...formData, first_name: e.target.value})} 
+              <Input
+                required
+                value={formData.first_name}
+                onChange={e => setFormData({ ...formData, first_name: e.target.value })}
                 placeholder="e.g. Hassan"
               />
             </div>
             <div>
               <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: '500', color: 'var(--admin-text-primary)' }}>Last Name</label>
-              <Input 
-                required 
-                value={formData.last_name} 
-                onChange={e => setFormData({...formData, last_name: e.target.value})} 
+              <Input
+                required
+                value={formData.last_name}
+                onChange={e => setFormData({ ...formData, last_name: e.target.value })}
                 placeholder="e.g. Ahmed"
               />
             </div>
@@ -208,15 +220,15 @@ export default function SalesEmployeeList() {
             </p>
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-            <button 
-              type="button" 
+            <button
+              type="button"
               onClick={() => setIsModalOpen(false)}
               style={{ background: 'none', border: '1px solid var(--admin-border-dark)', padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', color: 'var(--admin-text-primary)', fontWeight: '500' }}
             >
               Cancel
             </button>
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               disabled={submitting}
               style={{ background: 'var(--admin-primary)', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '6px', cursor: submitting ? 'not-allowed' : 'pointer', fontWeight: '500', opacity: submitting ? 0.7 : 1 }}
             >

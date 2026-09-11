@@ -127,7 +127,15 @@ class OrderService(BaseService):
             total_amount += item_total
             tax_amount += item_tax
             
-        order.total_amount = total_amount + order.shipping_amount
+        subtotal_and_shipping = total_amount + order.shipping_amount
+        
+        # Apply 5% discount if an employee coupon is used
+        if sold_by_employee:
+            order.discount_amount = round(subtotal_and_shipping * Decimal('0.05'), 2)
+        else:
+            order.discount_amount = Decimal('0.00')
+            
+        order.total_amount = subtotal_and_shipping - order.discount_amount
         order.tax_amount = tax_amount
         order.save()
         
@@ -173,43 +181,30 @@ class OrderService(BaseService):
         return order
 
     @classmethod
-    def send_order_confirmation_email(cls, order):
-        if not order or not order.customer or not order.customer.email:
-            return
-        
+    def _send_customer_email(cls, customer_email, customer_name, order_number, currency, total_amount, subject, top_heading, sub_heading, primary_message, secondary_message):
         from django.core.mail import send_mail
         from django.conf import settings
         
-        customer_email = order.customer.email.strip()
-        first_name = order.customer.first_name or 'Valued'
-        last_name = order.customer.last_name or 'Customer'
-        customer_name = f"{first_name} {last_name}".strip()
-        order_number = order.order_number
-        currency = order.currency or 'PKR'
-        total_amount = f"{order.total_amount:,.2f}"
-        
-        subject = f"Order Confirmation - {order_number} | Tawakkal Store"
-        
         plain_message = (
             f"Dear {customer_name},\n\n"
-            f"Thank you for your purchase with Tawakkal Store!\n"
+            f"{primary_message}\n\n"
             f"Your order ID is: {order_number}\n"
             f"Total Amount: {currency} {total_amount}\n\n"
-            f"We are preparing your items and will notify you as soon as your order ships.\n\n"
+            f"{secondary_message}\n\n"
             f"Thank you for shopping with us!\nTawakkal Store Team"
         )
         
         html_message = f"""
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
           <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #cda434;">
-            <h1 style="color: #1c1c1c; margin: 0; font-size: 26px; font-weight: 700;">Tawakkal Store</h1>
-            <p style="color: #cda434; font-size: 16px; font-weight: 600; margin: 6px 0 0;">Thank You For Your Order!</p>
+            <h1 style="color: #1c1c1c; margin: 0; font-size: 26px; font-weight: 700;">{top_heading}</h1>
+            <p style="color: #cda434; font-size: 16px; font-weight: 600; margin: 6px 0 0;">{sub_heading}</p>
           </div>
           
           <div style="padding: 24px 0;">
             <p style="font-size: 16px; color: #1f2937; margin: 0 0 16px;">Dear <strong>{customer_name}</strong>,</p>
             <p style="font-size: 15px; color: #4b5563; line-height: 1.6; margin: 0 0 20px;">
-              Thank you so much for your purchase! We have successfully received your order and our team is now preparing it for shipment.
+              {primary_message}
             </p>
             
             <div style="background-color: #f8fafc; border-left: 4px solid #cda434; border-radius: 8px; padding: 16px 20px; margin: 24px 0;">
@@ -221,7 +216,7 @@ class OrderService(BaseService):
             </div>
             
             <p style="font-size: 15px; color: #4b5563; line-height: 1.6; margin: 20px 0 0;">
-              We will contact you as soon as your parcel is dispatched. If you have any questions, feel free to reply directly to this email.
+              {secondary_message}
             </p>
           </div>
           
@@ -242,9 +237,107 @@ class OrderService(BaseService):
                 html_message=html_message,
                 fail_silently=True
             )
-            print(f"Order confirmation email sent to {customer_email} for {order_number}")
+            print(f"Email '{subject}' sent to {customer_email} for {order_number}")
         except Exception as e:
-            print(f"Failed to send order email: {e}")
+            print(f"Failed to send email: {e}")
+
+    @classmethod
+    def send_order_confirmation_email(cls, order):
+        if not order or not order.customer or not order.customer.email:
+            return
+        
+        customer_email = order.customer.email.strip()
+        first_name = order.customer.first_name or 'Valued'
+        last_name = order.customer.last_name or 'Customer'
+        customer_name = f"{first_name} {last_name}".strip()
+        
+        cls._send_customer_email(
+            customer_email=customer_email,
+            customer_name=customer_name,
+            order_number=order.order_number,
+            currency=order.currency or 'PKR',
+            total_amount=f"{order.total_amount:,.2f}",
+            subject=f"Order Confirmation - {order.order_number} | Tawakkal Store",
+            top_heading="Tawakkal Store",
+            sub_heading="Thank You For Your Order!",
+            primary_message="Thank you so much for your purchase! We have successfully received your order and our team is now preparing it for shipment.",
+            secondary_message="We will contact you as soon as your parcel is dispatched. If you have any questions, feel free to reply directly to this email."
+        )
+
+    @classmethod
+    def send_order_completion_email(cls, order):
+        if not order or not order.customer or not order.customer.email:
+            return
+            
+        customer_email = order.customer.email.strip()
+        first_name = order.customer.first_name or 'Valued'
+        last_name = order.customer.last_name or 'Customer'
+        customer_name = f"{first_name} {last_name}".strip()
+        
+        cls._send_customer_email(
+            customer_email=customer_email,
+            customer_name=customer_name,
+            order_number=order.order_number,
+            currency=order.currency or 'PKR',
+            total_amount=f"{order.total_amount:,.2f}",
+            subject=f"Order Delivered - {order.order_number} | Tawakkal Store",
+            top_heading="Tawakkal Store",
+            sub_heading="Your Order Has Been Delivered",
+            primary_message="Your order has been successfully delivered. We hope you are delighted with your purchase.",
+            secondary_message="Thank you for choosing Tawakkal Store! We look forward to serving you again."
+        )
+
+    @classmethod
+    def send_order_status_email(cls, order, new_status):
+        if not order or not order.customer or not order.customer.email:
+            return
+            
+        customer_email = order.customer.email.strip()
+        first_name = order.customer.first_name or 'Valued'
+        last_name = order.customer.last_name or 'Customer'
+        customer_name = f"{first_name} {last_name}".strip()
+        currency = order.currency or 'PKR'
+        total_amount = f"{order.total_amount:,.2f}"
+        
+        if new_status == OrderStatus.PROCESSING:
+            cls._send_customer_email(
+                customer_email=customer_email,
+                customer_name=customer_name,
+                order_number=order.order_number,
+                currency=currency,
+                total_amount=total_amount,
+                subject=f"Order is Being Processed - {order.order_number} | Tawakkal Store",
+                top_heading="Tawakkal Store",
+                sub_heading="Your Order Is Being Processed",
+                primary_message=f"Good news! Your order {order.order_number} is now being processed. Our team is preparing your order and we will keep you updated when it moves to the next stage.",
+                secondary_message="If you have any questions, feel free to reply directly to this email."
+            )
+        elif new_status == OrderStatus.SHIPPED:
+            cls._send_customer_email(
+                customer_email=customer_email,
+                customer_name=customer_name,
+                order_number=order.order_number,
+                currency=currency,
+                total_amount=total_amount,
+                subject=f"Order Shipped - {order.order_number} | Tawakkal Store",
+                top_heading="Tawakkal Store",
+                sub_heading="Your Order Has Been Shipped",
+                primary_message=f"Your order {order.order_number} has been shipped and is now on its way to you.",
+                secondary_message="We will notify you once your order has been delivered. If you have any questions, feel free to reply directly to this email."
+            )
+        elif new_status == OrderStatus.CANCELLED:
+            cls._send_customer_email(
+                customer_email=customer_email,
+                customer_name=customer_name,
+                order_number=order.order_number,
+                currency=currency,
+                total_amount=total_amount,
+                subject=f"Order Cancelled - {order.order_number} | Tawakkal Store",
+                top_heading="Tawakkal Store",
+                sub_heading="Your Order Has Been Cancelled",
+                primary_message=f"Your order {order.order_number} has been cancelled.",
+                secondary_message="If you believe this cancellation was made in error or you need further assistance, please contact our support team."
+            )
 
     @classmethod
     @transaction.atomic
@@ -313,7 +406,7 @@ class OrderService(BaseService):
         )
         
         log_audit(
-            action='UPDATE',
+            action=f"Status changed from {old_status} to {new_status}",
             instance=order,
             user=user,
             before_state={'status': old_status},
@@ -321,82 +414,9 @@ class OrderService(BaseService):
             request=request
         )
         
-        return order
-
-    @classmethod
-    def send_order_completion_email(cls, order):
-        if not order or not order.customer or not order.customer.email:
-            return
+        if new_status in [OrderStatus.PROCESSING, OrderStatus.SHIPPED, OrderStatus.CANCELLED]:
+            cls.send_order_status_email(order, new_status)
         
-        from django.core.mail import send_mail
-        from django.conf import settings
-        
-        customer_email = order.customer.email.strip()
-        first_name = order.customer.first_name or 'Valued'
-        last_name = order.customer.last_name or 'Customer'
-        customer_name = f"{first_name} {last_name}".strip()
-        order_number = order.order_number
-        currency = order.currency or 'PKR'
-        total_amount = f"{order.total_amount:,.2f}"
-        
-        subject = f"Order Completed - {order_number} | Tawakkal Store"
-        
-        plain_message = (
-            f"Dear {customer_name},\n\n"
-            f"Great news! Your order {order_number} has been marked as Completed.\n"
-            f"Total Amount: {currency} {total_amount}\n\n"
-            f"Thank you so much for shopping with Tawakkal Store. We hope to serve you again soon!\n\n"
-            f"Warm regards,\nTawakkal Store Team"
-        )
-        
-        html_message = f"""
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 16px; background-color: #ffffff;">
-          <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #10b981;">
-            <h1 style="color: #1c1c1c; margin: 0; font-size: 26px; font-weight: 700;">Tawakkal Store</h1>
-            <p style="color: #10b981; font-size: 16px; font-weight: 600; margin: 6px 0 0;">Order Completed Successfully! 🎉</p>
-          </div>
-          
-          <div style="padding: 24px 0;">
-            <p style="font-size: 16px; color: #1f2937; margin: 0 0 16px;">Dear <strong>{customer_name}</strong>,</p>
-            <p style="font-size: 15px; color: #4b5563; line-height: 1.6; margin: 0 0 20px;">
-              We are delighted to inform you that your order <strong>{order_number}</strong> has been marked as <strong>Completed</strong>!
-            </p>
-            
-            <div style="background-color: #f0fdf4; border-left: 4px solid #10b981; border-radius: 8px; padding: 16px 20px; margin: 24px 0;">
-              <p style="margin: 0 0 4px; font-size: 12px; font-weight: 600; text-transform: uppercase; color: #166534; letter-spacing: 0.05em;">Order Reference</p>
-              <p style="margin: 0 0 16px; font-size: 22px; font-weight: 700; color: #0f172a;">{order_number}</p>
-              
-              <p style="margin: 0 0 4px; font-size: 12px; font-weight: 600; text-transform: uppercase; color: #166534; letter-spacing: 0.05em;">Total Amount Paid</p>
-              <p style="margin: 0; font-size: 20px; font-weight: 700; color: #10b981;">{currency} {total_amount}</p>
-            </div>
-            
-            <p style="font-size: 15px; color: #4b5563; line-height: 1.6; margin: 20px 0 0;">
-              Thank you for trusting Tawakkal Store. We appreciate your business and look forward to serving you again soon!
-            </p>
-          </div>
-          
-          <div style="text-align: center; padding-top: 20px; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8;">
-            <p style="margin: 0;">&copy; 2026 Tawakkal Store. All rights reserved.</p>
-          </div>
-        </div>
-        """
-        
-        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@tawakkal.store')
-        
-        try:
-            send_mail(
-                subject=subject,
-                message=plain_message,
-                from_email=from_email,
-                recipient_list=[customer_email],
-                html_message=html_message,
-                fail_silently=True
-            )
-            print(f"Order completion email sent to {customer_email} for {order_number}")
-        except Exception as e:
-            print(f"Failed to send completion email: {e}")
-        
-        # Module 15: Notify Order Status Changed
         if hasattr(order.customer, 'user') and order.customer.user:
             template_code = f"ORDER_{new_status.upper()}"
             NotificationService.dispatch(

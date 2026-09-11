@@ -18,7 +18,7 @@ export default function ProductEdit() {
         const res = await getProduct(id);
         if (res && res.id) {
           const product = res;
-          
+
           // Map backend images to preview array for ImageUploader
           const initialPreviews = (product.images || []).map(img => ({
             id: img.media,
@@ -45,7 +45,7 @@ export default function ProductEdit() {
         setLoading(false);
       }
     };
-    
+
     if (id) {
       loadProduct();
     }
@@ -74,6 +74,8 @@ export default function ProductEdit() {
         if (errs.slug && setError) {
           setError('slug', { type: 'manual', message: errs.slug[0] || 'Invalid slug' });
         }
+        // Send the field errors to the toast before returning
+        toast.error('Update Failed', errMsg);
         return;
       } else if (error.response?.data?.message) {
         errMsg = error.response.data.message;

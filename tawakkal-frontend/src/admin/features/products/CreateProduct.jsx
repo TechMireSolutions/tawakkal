@@ -21,7 +21,7 @@ export default function CreateProduct() {
       }
     } catch (error) {
       console.error("Create Product Error:", error);
-      
+
       let errMsg = error.message || 'An unexpected error occurred.';
       if (error.response?.data?.errors) {
         const errs = error.response.data.errors;
@@ -31,11 +31,13 @@ export default function CreateProduct() {
         if (errs.slug && setError) {
           setError('slug', { type: 'manual', message: errs.slug[0] || 'Invalid slug' });
         }
+        // Send the detailed field errors to the toast before returning
+        toast.error('Creation Failed', errMsg);
         return;
       } else if (error.response?.data?.message) {
         errMsg = error.response.data.message;
       }
-      
+
       toast.error('Creation Failed', errMsg);
     } finally {
       setIsSubmitting(false);

@@ -9,6 +9,8 @@ import Avatar from '../../components/ui/Avatar';
 import Modal from '../../components/ui/Modal';
 import { TableSkeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
+import ConfirmModal from '../../components/ui/ConfirmModal';
+import { useToast } from '../../components/ui/Toast';
 import { getCustomers, getCustomer, deleteCustomer } from '../../services/api';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 
@@ -18,6 +20,8 @@ export default function CustomerList() {
   const [search, setSearch] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [confirmConfig, setConfirmConfig] = useState({ isOpen: false });
+  const toast = useToast();
   const PAGE_SIZE = 10;
 
   useEffect(() => {
@@ -55,20 +59,26 @@ export default function CustomerList() {
 
   const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
-  const handleDeleteAll = async () => {
-    if (!window.confirm("Are you sure you want to delete all customers? This action cannot be undone.")) return;
-    setLoading(true);
-    let errorCount = 0;
-    for (const c of customers) {
-      try {
-        await deleteCustomer(c.id);
-      } catch {
-        errorCount++;
+  const handleDeleteAll = () => {
+    setConfirmConfig({
+      isOpen: true,
+      title: "Delete All Customers",
+      message: "Are you sure you want to delete all customers? This action cannot be undone.",
+      onConfirm: async () => {
+        setLoading(true);
+        for (const c of customers) {
+          try {
+            await deleteCustomer(c.id);
+          } catch (err) {
+            console.error(`Failed to delete customer ${c.id}:`, err);
+          }
+        }
+        const res = await getCustomers();
+        setCustomers(Array.isArray(res) ? res : (res?.results || []));
+        setLoading(false);
+        toast.success('Deleted all customers');
       }
-    }
-    const res = await getCustomers();
-    setCustomers(Array.isArray(res) ? res : (res?.results || []));
-    setLoading(false);
+    });
   };
 
   return (
@@ -172,6 +182,16 @@ export default function CustomerList() {
           );
         })()}
       </Modal>
+
+      <ConfirmModal
+        isOpen={confirmConfig.isOpen}
+        onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+        onConfirm={confirmConfig.onConfirm}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        confirmText="Confirm"
+        variant="danger"
+      />
     </PageContainer>
   );
 }

@@ -5,6 +5,7 @@ import { Card } from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
 import Button from '../../components/ui/Button';
 import Modal from '../../components/ui/Modal';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 import Input from '../../components/ui/Input';
 import { useToast } from '../../components/ui/Toast';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -16,6 +17,7 @@ export default function StoreLocations() {
   const [stores, setStores] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+  const [confirmConfig, setConfirmConfig] = useState({ isOpen: false });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
@@ -91,33 +93,43 @@ export default function StoreLocations() {
     setShowModal(true);
   };
 
-  const handleDelete = async (id) => {
-    if (confirm('Are you sure you want to delete this store?')) {
-      try {
-        await deleteStore(id);
-        toast.success('Store deleted');
-        fetchStores();
-      } catch (err) {
-        toast.error('Failed to delete store');
+  const handleDelete = (id) => {
+    setConfirmConfig({
+      isOpen: true,
+      title: "Delete Store",
+      message: "Are you sure you want to delete this store?",
+      onConfirm: async () => {
+        try {
+          await deleteStore(id);
+          toast.success('Store deleted');
+          fetchStores();
+        } catch (err) {
+          toast.error('Failed to delete store');
+        }
       }
-    }
+    });
   };
 
-  const handleDeleteAll = async () => {
-    if (confirm('Are you sure you want to delete ALL stores? This action cannot be undone.')) {
-      try {
-        setLoading(true);
-        for (const store of stores) {
-          await deleteStore(store.id);
+  const handleDeleteAll = () => {
+    setConfirmConfig({
+      isOpen: true,
+      title: "Delete All Stores",
+      message: "Are you sure you want to delete ALL stores? This action cannot be undone.",
+      onConfirm: async () => {
+        try {
+          setLoading(true);
+          for (const store of stores) {
+            await deleteStore(store.id);
+          }
+          toast.success('All stores deleted');
+          fetchStores();
+        } catch (err) {
+          toast.error('Failed to delete some stores');
+        } finally {
+          setLoading(false);
         }
-        toast.success('All stores deleted');
-        fetchStores();
-      } catch (err) {
-        toast.error('Failed to delete some stores');
-      } finally {
-        setLoading(false);
       }
-    }
+    });
   };
 
   return (
@@ -161,6 +173,15 @@ export default function StoreLocations() {
           </div>
         </div>
       </Modal>
+      <ConfirmModal
+        isOpen={confirmConfig.isOpen}
+        onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+        onConfirm={confirmConfig.onConfirm}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        confirmText="Confirm"
+        variant="danger"
+      />
     </PageContainer>
   );
 }

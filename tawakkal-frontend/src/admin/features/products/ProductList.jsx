@@ -1,4 +1,5 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
@@ -11,6 +12,7 @@ import { PageContainer, PageHeader } from '../../components/ui/PageLayout';
 import { ContentCard } from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import Badge from '../../components/ui/Badge';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 import Input from '../../components/ui/Input';
 import Pagination from '../../components/ui/Pagination';
 import Dialog from '../../components/ui/Dialog';
@@ -35,8 +37,9 @@ export default function ProductList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [viewMode, setViewMode] = useState('list');
   const [deleteDialog, setDeleteDialog] = useState({ open: false, product: null });
+  const [confirmConfig, setConfirmConfig] = useState({ isOpen: false });
 
-  const loadProducts = async () => {
+  const loadProducts = useCallback(async () => {
     try {
       const res = await getProducts();
       const rawData = Array.isArray(res) ? res : (res?.results || []);
@@ -46,11 +49,20 @@ export default function ProductList() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadProducts();
-  }, []);
+    let isMounted = true;
+    const loadInitialData = async () => {
+      await Promise.resolve(); // Defers initialization safely out of current render frame
+      if (isMounted) {
+        await loadProducts();
+      }
+    };
+    loadInitialData();
+    return () => { isMounted = false; };
+  }, [loadProducts]);
+
 
   const filtered = useMemo(() => {
     let data = [...products];
@@ -82,26 +94,27 @@ export default function ProductList() {
     }
   };
 
-  const handleDeleteAll = async () => {
-    if (!window.confirm("Are you sure you want to delete all products? This action cannot be undone.")) return;
-    
-    setLoading(true);
-    let errorCount = 0;
-    for (const p of products) {
-      try {
-        await deleteProduct(p.id);
-      } catch (err) {
-        errorCount++;
+  const handleDeleteAll = () => {
+    setConfirmConfig({
+      isOpen: true,
+      title: "Delete All Products",
+      message: "Are you sure you want to delete all products? This action cannot be undone.",
+      onConfirm: async () => {
+        setLoading(true);
+        for (const p of products) {
+          try {
+            await deleteProduct(p.id);
+          } catch (err) {
+            console.error(`Failed to delete product ${p.id}:`, err);
+          }
+        }
+
+        const res = await getProducts();
+        setProducts(Array.isArray(res) ? res : (res?.results || []));
+        setLoading(false);
+        toast.success("Deleted all products");
       }
-    }
-    
-    if (errorCount === 0) {
-      toast.success('Deleted', 'All products deleted successfully.');
-    } else {
-      toast.warning('Completed with errors', `Deleted products, but ${errorCount} failed.`);
-    }
-    
-    loadProducts();
+    });
   };
 
   const handleExport = () => {
@@ -127,17 +140,19 @@ export default function ProductList() {
         if (Array.isArray(json)) {
           let successCount = 0;
           for (const item of json) {
-            try { 
+            try {
               await createProduct(item);
-              successCount++; 
-            } catch (err) { console.error('Import row failed', err); }
+              successCount++;
+            } catch {
+              console.error('Import row failed');
+            }
           }
           toast.success(`Imported ${successCount} products`);
           loadProducts();
         } else {
           toast.error("Invalid JSON format. Expected an array.");
         }
-      } catch (err) {
+      } catch {
         toast.error("Failed to parse JSON file");
       }
     };
@@ -242,7 +257,7 @@ export default function ProductList() {
           <TableSkeleton rows={6} columns={6} />
         ) : filtered.length === 0 ? (
           search ? <NoSearchResults query={search} /> :
-          <EmptyState title="No products yet" message="Start by adding your first product." actionLabel="Add Product" onAction={() => navigate('/admin/products/create')} />
+            <EmptyState title="No products yet" message="Start by adding your first product." actionLabel="Add Product" onAction={() => navigate('/admin/products/create')} />
         ) : viewMode === 'list' ? (
           /* ── Table View ── */
           <div style={{ overflowX: 'auto' }}>
@@ -403,6 +418,16 @@ export default function ProductList() {
         title="Delete Product"
         message={`Are you sure you want to delete "${deleteDialog.product?.name}"? This action cannot be undone.`}
         confirmLabel="Delete"
+        variant="danger"
+      />
+
+      <ConfirmModal
+        isOpen={confirmConfig.isOpen}
+        onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+        onConfirm={confirmConfig.onConfirm}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        confirmText="Confirm"
         variant="danger"
       />
     </PageContainer>

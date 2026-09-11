@@ -8,6 +8,7 @@ import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
 import Modal from '../../components/ui/Modal';
 import Dialog from '../../components/ui/Dialog';
+import ConfirmModal from '../../components/ui/ConfirmModal';
 import { useToast } from '../../components/ui/Toast';
 import { CardSkeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
@@ -21,12 +22,13 @@ export default function BadgeList() {
   const [search, setSearch] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [deleteDialog, setDeleteDialog] = useState({ open: false, badge: null });
-  
+  const [confirmConfig, setConfirmConfig] = useState({ isOpen: false });
+
   const [newBadge, setNewBadge] = useState({ name: '', slug: '', background_color: '', text_color: '' });
   const [newBadgeIcon, setNewBadgeIcon] = useState(null);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
-  
+
   const [showEditModal, setShowEditModal] = useState(false);
   const [editBadge, setEditBadge] = useState({ id: '', name: '', slug: '', background_color: '', text_color: '', status: true, display_order: 0, priority: 0 });
   const [editBadgeIcon, setEditBadgeIcon] = useState(null);
@@ -46,11 +48,20 @@ export default function BadgeList() {
 
   useEffect(() => {
     let isMounted = true;
-    if (isMounted) {
-      fetchBadges();
-    }
-    return () => { isMounted = false; };
+
+    const loadData = async () => {
+      if (isMounted) {
+        await fetchBadges();
+      }
+    };
+
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
   }, []);
+
 
   const handleSave = async () => {
     if (badges.length >= 5) {
@@ -65,7 +76,7 @@ export default function BadgeList() {
     try {
       let iconId = null;
       if (newBadgeIcon) {
-        const uploadRes = await uploadMedia(newBadgeIcon, () => {});
+        const uploadRes = await uploadMedia(newBadgeIcon, () => { });
         if (uploadRes && uploadRes.id) {
           iconId = uploadRes.id;
         }
@@ -78,7 +89,7 @@ export default function BadgeList() {
         text_color: newBadge.text_color,
         icon: iconId
       });
-      
+
       toast.success('Badge created successfully');
       setShowModal(false);
       setNewBadge({ name: '', slug: '', background_color: '', text_color: '' });
@@ -120,7 +131,7 @@ export default function BadgeList() {
     try {
       let iconId = undefined;
       if (editBadgeIcon) {
-        const uploadRes = await uploadMedia(editBadgeIcon, () => {});
+        const uploadRes = await uploadMedia(editBadgeIcon, () => { });
         if (uploadRes && uploadRes.id) {
           iconId = uploadRes.id;
         }
@@ -135,11 +146,11 @@ export default function BadgeList() {
         display_order: editBadge.display_order,
         priority: editBadge.priority,
       };
-      
+
       if (iconId) payload.icon = iconId;
 
       await updateBadge(editBadge.id, payload);
-      
+
       toast.success('Badge updated successfully');
       setShowEditModal(false);
       fetchBadges();
@@ -169,34 +180,40 @@ export default function BadgeList() {
     }
   };
 
-  const handleDeleteAll = async () => {
-    if (!window.confirm('Are you sure you want to delete ALL badges? This action cannot be undone.')) return;
-    try {
-      setLoading(true);
-      for (const badge of badges) {
-        await deleteBadge(badge.id);
+  const handleDeleteAll = () => {
+    setConfirmConfig({
+      isOpen: true,
+      title: "Delete All Badges",
+      message: 'Are you sure you want to delete ALL badges? This action cannot be undone.',
+      onConfirm: async () => {
+        setLoading(true);
+        for (const badge of badges) {
+          try {
+            await deleteBadge(badge.id);
+          } catch (err) {
+            console.error(`Failed to delete badge ${badge.id}:`, err);
+          }
+        }
+        const data = await getBadges();
+        setBadges(data?.results || data);
+        setLoading(false);
+        toast.success("All badges deleted");
       }
-      toast.success('All badges have been deleted');
-      fetchBadges();
-    } catch (err) {
-      console.error(err);
-      toast.error('Failed to delete some badges');
-    } finally {
-      setLoading(false);
-    }
+    });
   };
+
 
 
   const filtered = search ? badges.filter(b => b.name.toLowerCase().includes(search.toLowerCase())) : badges;
 
   return (
     <PageContainer>
-      <PageHeader 
-        title="Badges" 
-        subtitle={`${badges.length} badges in your catalog`} 
-        breadcrumbs={[{ label: 'Badges' }]} 
-        actionLabel="Add Badge" 
-        actionIcon={HiOutlinePlus} 
+      <PageHeader
+        title="Badges"
+        subtitle={`${badges.length} badges in your catalog`}
+        breadcrumbs={[{ label: 'Badges' }]}
+        actionLabel="Add Badge"
+        actionIcon={HiOutlinePlus}
         onAction={() => {
           if (badges.length >= 5) {
             toast.error('Maximum of 5 badges allowed.');
@@ -208,18 +225,18 @@ export default function BadgeList() {
       />
 
       <div style={{ marginBottom: '20px', maxWidth: '340px' }}>
-        <Input 
-          placeholder="Search badges..." 
-          icon={HiOutlineMagnifyingGlass} 
-          value={search} 
-          onChange={(e) => setSearch(e.target.value)} 
-          size="sm" 
+        <Input
+          placeholder="Search badges..."
+          icon={HiOutlineMagnifyingGlass}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          size="sm"
         />
       </div>
 
       {loading ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: '16px' }}>
-          {[1,2,3,4,5,6].map(i => <CardSkeleton key={i} />)}
+          {[1, 2, 3, 4, 5, 6].map(i => <CardSkeleton key={i} />)}
         </div>
       ) : filtered.length === 0 ? (
         <EmptyState title="No badges found" actionLabel="Add Badge" onAction={() => {
@@ -258,11 +275,11 @@ export default function BadgeList() {
         </div>
       )}
 
-      <Modal 
-        isOpen={showModal} 
-        onClose={() => setShowModal(false)} 
-        title="Add Badge" 
-        size="sm" 
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title="Add Badge"
+        size="sm"
         footer={
           <>
             <Button variant="secondary" onClick={() => setShowModal(false)} disabled={submitting}>Cancel</Button>
@@ -271,44 +288,44 @@ export default function BadgeList() {
         }
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <Input 
-            label="Badge Name" 
-            placeholder="e.g. New Arrival" 
-            value={newBadge.name} 
-            onChange={(e) => { setNewBadge(p => ({...p, name: e.target.value})); if(errors.slug) setErrors({}); }}
+          <Input
+            label="Badge Name"
+            placeholder="e.g. New Arrival"
+            value={newBadge.name}
+            onChange={(e) => { setNewBadge(p => ({ ...p, name: e.target.value })); if (errors.slug) setErrors({}); }}
             required
           />
-          <Input 
-            label="Slug (optional)" 
-            placeholder="e.g. new-arrival" 
-            value={newBadge.slug} 
-            onChange={(e) => { setNewBadge(p => ({...p, slug: e.target.value})); if(errors.slug) setErrors({}); }}
+          <Input
+            label="Slug (optional)"
+            placeholder="e.g. new-arrival"
+            value={newBadge.slug}
+            onChange={(e) => { setNewBadge(p => ({ ...p, slug: e.target.value })); if (errors.slug) setErrors({}); }}
             error={errors.slug}
           />
           {errors.slug && <p style={{ color: 'var(--admin-danger)', fontSize: '13px', marginTop: '-12px', marginBottom: '8px' }}>{errors.slug}</p>}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <Input 
-              label="Background Color" 
-              placeholder="e.g. #FF0000" 
-              value={newBadge.background_color} 
-              onChange={(e) => setNewBadge(p => ({...p, background_color: e.target.value}))}
+            <Input
+              label="Background Color"
+              placeholder="e.g. #FF0000"
+              value={newBadge.background_color}
+              onChange={(e) => setNewBadge(p => ({ ...p, background_color: e.target.value }))}
             />
-            <Input 
-              label="Text Color" 
-              placeholder="e.g. #FFFFFF" 
-              value={newBadge.text_color} 
-              onChange={(e) => setNewBadge(p => ({...p, text_color: e.target.value}))}
+            <Input
+              label="Text Color"
+              placeholder="e.g. #FFFFFF"
+              value={newBadge.text_color}
+              onChange={(e) => setNewBadge(p => ({ ...p, text_color: e.target.value }))}
             />
           </div>
-          
+
         </div>
       </Modal>
 
-      <Modal 
-        isOpen={showEditModal} 
-        onClose={() => setShowEditModal(false)} 
-        title="Edit Badge" 
-        size="md" 
+      <Modal
+        isOpen={showEditModal}
+        onClose={() => setShowEditModal(false)}
+        title="Edit Badge"
+        size="md"
         footer={
           <>
             <Button variant="secondary" onClick={() => setShowEditModal(false)} disabled={editSubmitting}>Cancel</Button>
@@ -318,60 +335,70 @@ export default function BadgeList() {
       >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <Input 
-              label="Name" 
-              value={editBadge.name} 
-              onChange={(e) => { setEditBadge(p => ({...p, name: e.target.value})); if(errors.slug) setErrors({}); }}
+            <Input
+              label="Name"
+              value={editBadge.name}
+              onChange={(e) => { setEditBadge(p => ({ ...p, name: e.target.value })); if (errors.slug) setErrors({}); }}
             />
-            <Input 
-              label="Slug" 
-              value={editBadge.slug} 
-              onChange={(e) => { setEditBadge(p => ({...p, slug: e.target.value})); if(errors.slug) setErrors({}); }}
+            <Input
+              label="Slug"
+              value={editBadge.slug}
+              onChange={(e) => { setEditBadge(p => ({ ...p, slug: e.target.value })); if (errors.slug) setErrors({}); }}
               error={errors.slug}
             />
             {errors.slug && <p style={{ color: 'var(--admin-danger)', fontSize: '13px', marginTop: '-12px', marginBottom: '8px' }}>{errors.slug}</p>}
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <Input 
-              label="Background Color" 
-              placeholder="e.g. #FF0000" 
-              value={editBadge.background_color} 
-              onChange={(e) => setEditBadge(p => ({...p, background_color: e.target.value}))}
+            <Input
+              label="Background Color"
+              placeholder="e.g. #FF0000"
+              value={editBadge.background_color}
+              onChange={(e) => setEditBadge(p => ({ ...p, background_color: e.target.value }))}
             />
-            <Input 
-              label="Text Color" 
-              placeholder="e.g. #FFFFFF" 
-              value={editBadge.text_color} 
-              onChange={(e) => setEditBadge(p => ({...p, text_color: e.target.value}))}
+            <Input
+              label="Text Color"
+              placeholder="e.g. #FFFFFF"
+              value={editBadge.text_color}
+              onChange={(e) => setEditBadge(p => ({ ...p, text_color: e.target.value }))}
             />
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '16px' }}>
-             <Input label="Priority" type="number" helpText="Higher renders first" value={editBadge.priority} onChange={e => setEditBadge({...editBadge, priority: parseInt(e.target.value) || 0})} />
-             <Input label="Display Order" type="number" value={editBadge.display_order} onChange={e => setEditBadge({...editBadge, display_order: parseInt(e.target.value) || 0})} />
-             <div>
-                <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: 'var(--admin-text)', marginBottom: '8px' }}>Status</label>
-                <select 
-                    style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--admin-border)', borderRadius: 'var(--admin-radius-md)', outline: 'none', background: '#fff' }}
-                    value={editBadge.status ? 'true' : 'false'} 
-                    onChange={e => setEditBadge({...editBadge, status: e.target.value === 'true'})}
-                >
-                    <option value="true">Active</option>
-                    <option value="false">Inactive</option>
-                </select>
-             </div>
+            <Input label="Priority" type="number" helpText="Higher renders first" value={editBadge.priority} onChange={e => setEditBadge({ ...editBadge, priority: parseInt(e.target.value) || 0 })} />
+            <Input label="Display Order" type="number" value={editBadge.display_order} onChange={e => setEditBadge({ ...editBadge, display_order: parseInt(e.target.value) || 0 })} />
+            <div>
+              <label style={{ display: 'block', fontSize: '14px', fontWeight: '500', color: 'var(--admin-text)', marginBottom: '8px' }}>Status</label>
+              <select
+                style={{ width: '100%', padding: '8px 12px', border: '1px solid var(--admin-border)', borderRadius: 'var(--admin-radius-md)', outline: 'none', background: '#fff' }}
+                value={editBadge.status ? 'true' : 'false'}
+                onChange={e => setEditBadge({ ...editBadge, status: e.target.value === 'true' })}
+              >
+                <option value="true">Active</option>
+                <option value="false">Inactive</option>
+              </select>
+            </div>
           </div>
-          
+
         </div>
       </Modal>
 
-      <Dialog 
-        isOpen={deleteDialog.open} 
-        onClose={() => setDeleteDialog({ open: false, badge: null })} 
-        onConfirm={handleDelete} 
-        title="Delete Badge" 
-        message={`Delete "${deleteDialog.badge?.name}"? It will be removed from all products.`} 
-        variant="danger" 
-        confirmLabel="Delete" 
+      <Dialog
+        isOpen={deleteDialog.open}
+        onClose={() => setDeleteDialog({ open: false, badge: null })}
+        onConfirm={handleDelete}
+        title="Delete Badge"
+        message={`Delete "${deleteDialog.badge?.name}"? It will be removed from all products.`}
+        variant="danger"
+        confirmLabel="Delete"
+      />
+
+      <ConfirmModal
+        isOpen={confirmConfig.isOpen}
+        onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+        onConfirm={confirmConfig.onConfirm}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        confirmText="Confirm"
+        variant="danger"
       />
     </PageContainer>
   );

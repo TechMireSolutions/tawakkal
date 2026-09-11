@@ -54,94 +54,105 @@ const StoreLocator = () => {
 
           <div className="space-y-16">
             {/* Store Info Cards & Maps */}
-            {stores.map((store, index) => (
-              <div key={index} className="grid lg:grid-cols-2 gap-12 items-start">
-                <div className="bg-white p-8 shadow-lg border-l-4 border-gold h-full">
-                  <h3 className="text-2xl font-bold mb-6 tracking-tight">
-                    {store.name}
-                  </h3>
+            {loading ? (
+              <div className="text-center py-12 text-sm text-gray-500 font-medium tracking-wide">
+                Loading store details...
+              </div>
+            ) : stores.length === 0 ? (
+              <div className="text-center py-12 text-sm text-gray-500 font-medium tracking-wide">
+                No stores found.
+              </div>
+            ) : (
+              stores.map((store, index) => (
+                <div key={index} className="grid lg:grid-cols-2 gap-12 items-start">
+                  <div className="bg-white p-8 shadow-lg border-l-4 border-gold h-full">
+                    <h3 className="text-2xl font-bold mb-6 tracking-tight">
+                      {store.name}
+                    </h3>
 
-                  <div className="space-y-4">
-                    <div className="flex items-start gap-4">
-                      <MapPin className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="font-medium">{store.address}</p>
-                        <p className="text-gray-600">{store.city}, {store.country || 'Pakistan'}</p>
+                    <div className="space-y-4">
+                      <div className="flex items-start gap-4">
+                        <MapPin className="w-5 h-5 text-gold flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-medium">{store.address}</p>
+                          <p className="text-gray-600">{store.city}, {store.country || 'Pakistan'}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-4">
+                        <Phone className="w-5 h-5 text-gold flex-shrink-0" />
+                        <a
+                          href={`tel:${store.phone}`}
+                          className="hover:text-gold transition-colors"
+                        >
+                          {store.phone}
+                        </a>
+                      </div>
+
+                      <div className="flex items-center gap-4">
+                        <Clock className="w-5 h-5 text-gold flex-shrink-0" />
+                        <span>{store.hours || "10:00 AM - 8:00 PM"}</span>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                      <Phone className="w-5 h-5 text-gold flex-shrink-0" />
-                      <a
-                        href={`tel:${store.phone}`}
-                        className="hover:text-gold transition-colors"
-                      >
-                        {store.phone}
-                      </a>
+                    <div className="mt-6 pt-6 border-t border-gray-100">
+                      <p className="text-sm text-gray-500 mb-3">
+                        Store Features:
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {(
+                          store.features || [
+                            "Full Collection Available",
+                            "In-store Stitching",
+                          ]
+                        ).map((feature, idx) => (
+                          <span
+                            key={idx}
+                            className="bg-gold/10 text-gold px-3 py-1 text-xs font-medium"
+                          >
+                            {feature}
+                          </span>
+                        ))}
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                      <Clock className="w-5 h-5 text-gold flex-shrink-0" />
-                      <span>{store.hours || "10:00 AM - 8:00 PM"}</span>
-                    </div>
+                    <a
+                      href={
+                        store.latitude && store.longitude
+                          ? `https://google.com{store.latitude},${store.longitude}`
+                          : `https://google.com{encodeURIComponent(store.name + ' ' + store.address + ' ' + store.city)}`
+                      }
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-6 inline-flex items-center gap-2 bg-charcoal text-white px-6 py-3 text-[11px] font-bold uppercase tracking-widest hover:bg-gold transition-colors"
+                    >
+                      <Navigation size={14} />
+                      Get Directions
+                    </a>
                   </div>
 
-                  <div className="mt-6 pt-6 border-t border-gray-100">
-                    <p className="text-sm text-gray-500 mb-3">
-                      Store Features:
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                      {(
-                        store.features || [
-                          "Full Collection Available",
-                          "In-store Stitching",
-                        ]
-                      ).map((feature, idx) => (
-                        <span
-                          key={idx}
-                          className="bg-gold/10 text-gold px-3 py-1 text-xs font-medium"
-                        >
-                          {feature}
-                        </span>
-                      ))}
-                    </div>
+                  {/* Individual Store Map */}
+                  <div className="aspect-square lg:aspect-auto lg:h-full min-h-[300px] bg-gray-100 relative shadow-lg">
+                    <iframe
+                      src={
+                        store.latitude && store.longitude
+                          ? `https://google.com{store.latitude},${store.longitude}&output=embed`
+                          : `https://google.com{encodeURIComponent(store.name + ' ' + store.address + ' ' + store.city)}&output=embed`
+                      }
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      allowFullScreen
+                      loading="lazy"
+                      referrerPolicy="no-referrer-when-downgrade"
+                      title={`${store.name} Location`}
+                      className="grayscale hover:grayscale-0 transition-all duration-500 w-full h-full object-cover"
+                    />
                   </div>
+                </div>
+              ))
+            )}
 
-                  <a
-                    href={
-                      store.latitude && store.longitude
-                        ? `https://maps.google.com/?q=${store.latitude},${store.longitude}`
-                        : `https://maps.google.com/?q=${encodeURIComponent(store.name + ' ' + store.address + ' ' + store.city)}`
-                    }
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-6 inline-flex items-center gap-2 bg-charcoal text-white px-6 py-3 text-[11px] font-bold uppercase tracking-widest hover:bg-gold transition-colors"
-                  >
-                    <Navigation size={14} />
-                    Get Directions
-                  </a>
-                </div>
-                
-                {/* Individual Store Map */}
-                <div className="aspect-square lg:aspect-auto lg:h-full min-h-[300px] bg-gray-100 relative shadow-lg">
-                  <iframe
-                    src={
-                      store.latitude && store.longitude
-                        ? `https://maps.google.com/maps?q=${store.latitude},${store.longitude}&output=embed`
-                        : `https://maps.google.com/maps?q=${encodeURIComponent(store.name + ' ' + store.address + ' ' + store.city)}&output=embed`
-                    }
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0 }}
-                    allowFullScreen
-                    loading="lazy"
-                    referrerPolicy="no-referrer-when-downgrade"
-                    title={`${store.name} Location`}
-                    className="grayscale hover:grayscale-0 transition-all duration-500 w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-            ))}
 
             {/* Contact Info */}
             <div className="bg-black/5 p-10 border-y border-gold/10 max-w-4xl mx-auto shadow-sm">

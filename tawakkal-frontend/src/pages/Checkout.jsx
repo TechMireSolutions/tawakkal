@@ -49,7 +49,8 @@ const Checkout = () => {
   const subtotal = calculateSubtotal();
   const shipping = subtotal >= freeShippingThreshold ? 0 : shippingFee;
   const tax = taxPercent > 0 ? Math.round(subtotal * taxPercent / 100) : 0;
-  const total = subtotal + shipping + tax;
+  const discount = appliedCoupon ? Math.round((subtotal + shipping + tax) * 0.05) : 0;
+  const total = subtotal + shipping + tax - discount;
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -58,15 +59,15 @@ const Checkout = () => {
   const handleApplyCoupon = async (e) => {
     e.preventDefault();
     if (!couponCode.trim()) return;
-    
+
     setValidatingCoupon(true);
     setCouponError('');
-    
+
     try {
       const response = await validateCoupon(couponCode);
       // Backend middleware wraps responses in { data: {...} }
       const res = response.data || response;
-      
+
       if (res.valid) {
         setAppliedCoupon({ code: couponCode.trim(), employee_name: res.employee_name });
         setCouponCode('');
@@ -105,7 +106,8 @@ const Checkout = () => {
           color: item.selectedColor?.name,
           is_wholesale: !!item.isWholesale
         })),
-        ...(appliedCoupon ? { coupon_code: appliedCoupon.code } : {})
+        ...(appliedCoupon ? { coupon_code: appliedCoupon.code } : {}),
+        discount_amount: discount
       };
 
       await createOrder(orderData);
@@ -148,7 +150,7 @@ const Checkout = () => {
           <p className="text-gray-500 mb-10 leading-relaxed">
             Your order has been placed successfully. We'll contact you shortly for confirmation.
           </p>
-          <button 
+          <button
             onClick={() => navigate('/products')}
             className="w-full bg-charcoal text-white py-4 rounded-xl font-bold uppercase tracking-[0.2em] text-xs hover:bg-gold transition-all"
           >
@@ -163,13 +165,13 @@ const Checkout = () => {
     <div className="bg-[#fcfcfc] min-h-screen text-charcoal pt-32 pb-20">
       <div className="max-w-[1400px] mx-auto px-6">
         <h1 className="text-4xl font-black tracking-tight mb-12">Checkout</h1>
-        
+
         <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-12 gap-16">
           {/* Shipping Details */}
           <div className="lg:col-span-7 space-y-10">
             <div className="bg-white p-10 rounded-[2.5rem] shadow-sm border border-gray-100 space-y-8">
               <h2 className="text-xl font-bold uppercase tracking-widest border-b border-gray-50 pb-4">Shipping Information</h2>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">First Name</label>
@@ -215,14 +217,14 @@ const Checkout = () => {
             </div>
 
             <div className="bg-white p-10 rounded-[2.5rem] shadow-sm border border-gray-100 space-y-6">
-               <h2 className="text-xl font-bold uppercase tracking-widest border-b border-gray-50 pb-4">Payment Method</h2>
-               <div className="flex items-center gap-4 p-6 bg-gold/5 border border-gold/20 rounded-2xl">
-                  <div className="w-6 h-6 rounded-full border-4 border-gold bg-white"></div>
-                  <div>
-                    <p className="text-sm font-bold">Cash on Delivery (COD)</p>
-                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Pay when you receive your order</p>
-                  </div>
-               </div>
+              <h2 className="text-xl font-bold uppercase tracking-widest border-b border-gray-50 pb-4">Payment Method</h2>
+              <div className="flex items-center gap-4 p-6 bg-gold/5 border border-gold/20 rounded-2xl">
+                <div className="w-6 h-6 rounded-full border-4 border-gold bg-white"></div>
+                <div>
+                  <p className="text-sm font-bold">Cash on Delivery (COD)</p>
+                  <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Pay when you receive your order</p>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -230,7 +232,7 @@ const Checkout = () => {
           <div className="lg:col-span-5">
             <div className="bg-white p-10 rounded-[2.5rem] shadow-2xl border border-gray-100 sticky top-32 space-y-8">
               <h2 className="text-xl font-bold uppercase tracking-widest">Your Order</h2>
-              
+
               <div className="space-y-6 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
                 {cartItems.map((item) => (
                   <div key={`${item.id}-${item.selectedSize || 'nosize'}-${item.selectedColor?.name || 'nocolor'}-${item.isWholesale}`} className="flex gap-4">
@@ -257,8 +259,8 @@ const Checkout = () => {
 
               {/* Coupon / Referral Section */}
               <div className="space-y-3">
-                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Sales Representative Code</label>
-                
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Discount Coupon</label>
+
                 {appliedCoupon ? (
                   <div className="flex items-center justify-between p-3 bg-green-50 border border-green-100 rounded-xl">
                     <div className="flex items-center gap-2">
@@ -268,8 +270,8 @@ const Checkout = () => {
                         <p className="text-[10px] text-green-600 font-medium">Attributed to: {appliedCoupon.employee_name}</p>
                       </div>
                     </div>
-                    <button 
-                      type="button" 
+                    <button
+                      type="button"
                       onClick={removeCoupon}
                       className="p-1 hover:bg-green-100 rounded-full text-green-600 transition-colors"
                     >
@@ -279,14 +281,14 @@ const Checkout = () => {
                 ) : (
                   <div>
                     <div className="flex gap-2">
-                      <input 
-                        type="text" 
-                        value={couponCode} 
-                        onChange={(e) => { setCouponCode(e.target.value); setCouponError(''); }} 
-                        className="flex-1 bg-gray-50 border border-transparent rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-gold outline-none transition-all uppercase" 
-                        placeholder="ENTER CODE" 
+                      <input
+                        type="text"
+                        value={couponCode}
+                        onChange={(e) => { setCouponCode(e.target.value); setCouponError(''); }}
+                        className="flex-1 bg-gray-50 border border-transparent rounded-xl px-4 py-3 text-sm focus:bg-white focus:border-gold outline-none transition-all uppercase"
+                        placeholder="ENTER CODE"
                       />
-                      <button 
+                      <button
                         type="button"
                         onClick={handleApplyCoupon}
                         disabled={!couponCode.trim() || validatingCoupon}
@@ -317,13 +319,22 @@ const Checkout = () => {
                     <span className="font-bold">{convertPrice(tax)}</span>
                   </div>
                 )}
+                {discount > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-green-600 font-bold uppercase tracking-widest flex items-center gap-1">
+                      <Tag size={14} />
+                      Discount (5%)
+                    </span>
+                    <span className="font-bold text-green-600">-{convertPrice(discount)}</span>
+                  </div>
+                )}
                 <div className="flex justify-between items-center pt-4 border-t border-gray-100">
                   <span className="text-lg font-black uppercase tracking-[0.2em]">Total</span>
                   <span className="text-2xl font-black text-gold">{convertPrice(total)}</span>
                 </div>
               </div>
 
-              <button 
+              <button
                 type="submit"
                 disabled={loading}
                 className="w-full bg-charcoal text-white py-6 rounded-2xl font-bold uppercase tracking-[0.2em] text-xs hover:bg-gold transition-all shadow-xl shadow-charcoal/10 flex items-center justify-center gap-3 disabled:opacity-50"
@@ -334,7 +345,7 @@ const Checkout = () => {
                   <><Check size={18} /> Place Order Now</>
                 )}
               </button>
-              
+
               <div className="flex items-center justify-center gap-2 text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em]">
                 <ArrowRight size={12} /> Secure Checkout Guaranteed
               </div>

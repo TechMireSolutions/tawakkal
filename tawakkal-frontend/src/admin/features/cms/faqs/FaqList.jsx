@@ -5,6 +5,7 @@ import { PageContainer, PageHeader } from '../../../components/ui/PageLayout';
 import Button from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import Badge from '../../../components/ui/Badge';
+import ConfirmModal from '../../../components/ui/ConfirmModal';
 import { HiPlus, HiOutlinePencilSquare, HiOutlineTrash } from 'react-icons/hi2';
 import { getFaqs, deleteFaq } from '../../../services/cms.service';
 import { useToast } from '../../../components/ui/Toast';
@@ -12,6 +13,7 @@ import { useToast } from '../../../components/ui/Toast';
 export default function FaqList() {
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [confirmConfig, setConfirmConfig] = useState({ isOpen: false });
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -32,40 +34,50 @@ export default function FaqList() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this FAQ?')) {
-      try {
-        await deleteFaq(id);
-        toast.success('Success', 'FAQ deleted successfully');
-        loadFaqs();
-      } catch {
-        toast.error('Error', 'Failed to delete FAQ');
+  const handleDelete = (id) => {
+    setConfirmConfig({
+      isOpen: true,
+      title: "Delete FAQ",
+      message: 'Are you sure you want to delete this FAQ?',
+      onConfirm: async () => {
+        try {
+          await deleteFaq(id);
+          toast.success('FAQ deleted');
+          loadFaqs();
+        } catch {
+          toast.error('Failed to delete FAQ');
+        }
       }
-    }
+    });
   };
 
-  const handleDeleteAll = async () => {
-    if (window.confirm('Are you sure you want to delete ALL FAQs? This action cannot be undone.')) {
-      try {
-        setLoading(true);
-        for (const faq of faqs) {
-          await deleteFaq(faq.id);
+  const handleDeleteAll = () => {
+    setConfirmConfig({
+      isOpen: true,
+      title: "Delete All FAQs",
+      message: 'Are you sure you want to delete ALL FAQs? This action cannot be undone.',
+      onConfirm: async () => {
+        try {
+          setLoading(true);
+          for (const faq of faqs) {
+            await deleteFaq(faq.id);
+          }
+          toast.success('All FAQs deleted');
+          loadFaqs();
+        } catch {
+          toast.error('Failed to delete some FAQs');
+        } finally {
+          setLoading(false);
         }
-        toast.success('Success', 'All FAQs deleted');
-        loadFaqs();
-      } catch {
-        toast.error('Error', 'Failed to delete some FAQs');
-      } finally {
-        setLoading(false);
       }
-    }
+    });
   };
 
   return (
     <PageContainer>
-      <PageHeader 
-        title="FAQs" 
-        subtitle="Manage frequently asked questions" 
+      <PageHeader
+        title="FAQs"
+        subtitle="Manage frequently asked questions"
         breadcrumbs={[
           { label: 'CMS', path: '/admin/cms' },
           { label: 'FAQs' }
@@ -122,6 +134,16 @@ export default function FaqList() {
           </table>
         )}
       </Card>
+
+      <ConfirmModal
+        isOpen={confirmConfig.isOpen}
+        onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+        onConfirm={confirmConfig.onConfirm}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        confirmText="Confirm"
+        variant="danger"
+      />
     </PageContainer>
   );
 }

@@ -5,6 +5,7 @@ import { PageContainer, PageHeader } from '../../../components/ui/PageLayout';
 import Button from '../../../components/ui/Button';
 import { Card } from '../../../components/ui/Card';
 import Badge from '../../../components/ui/Badge';
+import ConfirmModal from '../../../components/ui/ConfirmModal';
 import { HiPlus, HiOutlinePencilSquare, HiOutlineTrash } from 'react-icons/hi2';
 import { getBlogs, deleteBlog } from '../../../services/cms.service';
 import { useToast } from '../../../components/ui/Toast';
@@ -12,6 +13,7 @@ import { useToast } from '../../../components/ui/Toast';
 export default function BlogList() {
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [confirmConfig, setConfirmConfig] = useState({ isOpen: false });
   const navigate = useNavigate();
   const toast = useToast();
 
@@ -32,33 +34,43 @@ export default function BlogList() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Are you sure you want to delete this blog post?')) {
-      try {
-        await deleteBlog(id);
-        toast.success('Success', 'Blog post deleted successfully');
-        loadBlogs();
-      } catch {
-        toast.error('Error', 'Failed to delete blog');
+  const handleDelete = (id) => {
+    setConfirmConfig({
+      isOpen: true,
+      title: "Delete Blog Post",
+      message: 'Are you sure you want to delete this blog post?',
+      onConfirm: async () => {
+        try {
+          await deleteBlog(id);
+          toast.success('Success', 'Blog post deleted successfully');
+          loadBlogs();
+        } catch {
+          toast.error('Error', 'Failed to delete blog');
+        }
       }
-    }
+    });
   };
 
-  const handleDeleteAll = async () => {
-    if (window.confirm('Are you sure you want to delete ALL blog posts? This action cannot be undone.')) {
-      try {
-        setLoading(true);
-        for (const blog of blogs) {
-          await deleteBlog(blog.id);
+  const handleDeleteAll = () => {
+    setConfirmConfig({
+      isOpen: true,
+      title: "Delete All Blog Posts",
+      message: 'Are you sure you want to delete ALL blog posts? This action cannot be undone.',
+      onConfirm: async () => {
+        try {
+          setLoading(true);
+          for (const blog of blogs) {
+            await deleteBlog(blog.id);
+          }
+          toast.success('Success', 'All blog posts deleted');
+          loadBlogs();
+        } catch {
+          toast.error('Error', 'Failed to delete some posts');
+        } finally {
+          setLoading(false);
         }
-        toast.success('Success', 'All blog posts deleted');
-        loadBlogs();
-      } catch {
-        toast.error('Error', 'Failed to delete some posts');
-      } finally {
-        setLoading(false);
       }
-    }
+    });
   };
 
   return (
@@ -123,6 +135,16 @@ export default function BlogList() {
           </table>
         )}
       </Card>
+
+      <ConfirmModal
+        isOpen={confirmConfig.isOpen}
+        onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}
+        onConfirm={confirmConfig.onConfirm}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        confirmText="Confirm"
+        variant="danger"
+      />
     </PageContainer>
   );
 }
