@@ -23,7 +23,7 @@ const ReelCard = ({ reel }) => {
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center">
           <svg className="w-12 h-12 text-white/30" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.42a8.16 8.16 0 004.77 1.52V7.5a4.85 4.85 0 01-1-.81z"/>
+            <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.42a8.16 8.16 0 004.77 1.52V7.5a4.85 4.85 0 01-1-.81z" />
           </svg>
         </div>
       )}
@@ -35,7 +35,7 @@ const ReelCard = ({ reel }) => {
       <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
         <div className="w-14 h-14 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/40">
           <svg className="w-6 h-6 text-white ml-1" fill="currentColor" viewBox="0 0 24 24">
-            <path d="M8 5v14l11-7z"/>
+            <path d="M8 5v14l11-7z" />
           </svg>
         </div>
       </div>
@@ -43,7 +43,7 @@ const ReelCard = ({ reel }) => {
       {/* TikTok icon top-right */}
       <div className="absolute top-3 right-3">
         <svg className="w-5 h-5 text-white drop-shadow-lg" fill="currentColor" viewBox="0 0 24 24">
-          <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.42a8.16 8.16 0 004.77 1.52V7.5a4.85 4.85 0 01-1-.81z"/>
+          <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.28 6.28 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V9.42a8.16 8.16 0 004.77 1.52V7.5a4.85 4.85 0 01-1-.81z" />
         </svg>
       </div>
 
@@ -67,34 +67,31 @@ const ReelsFromDB = ({ reels }) => (
   </div>
 );
 
-// ── Embed widget (Elfsight / EmbedSocial / etc.) ──────────────────────────────
+// ── Embed widget (Elfsight optimized) ────────────────────────────────────────
 const EmbedWidget = ({ code }) => {
   useEffect(() => {
-    // Parse script tags from embed code string
+    if (!code) return;
+
     const parser = new DOMParser();
     const doc = parser.parseFromString(code, 'text/html');
+
     doc.querySelectorAll('script').forEach((el) => {
       if (el.src) {
+        // Check if script is already present globally in the document
         const existing = document.querySelector(`script[src="${el.src}"]`);
         if (!existing) {
           const s = document.createElement('script');
           s.src = el.src;
           s.async = true;
           document.body.appendChild(s);
-        } else {
-          // Script already loaded — tell Elfsight to re-scan the DOM
-          window.eapps?.platform?.start?.();
         }
-      } else if (el.textContent.trim()) {
-        const s = document.createElement('script');
-        s.textContent = el.textContent;
-        document.body.appendChild(s);
+        // NOTE: Removed window.eapps call to completely stop the 5-sec reload loop
       }
     });
   }, [code]);
 
-  // Strip <script> tags before rendering — they won't execute via innerHTML anyway
-  const html = code.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+  // Strip script tags for innerHTML rendering safely
+  const html = code ? code.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') : '';
 
   return <div dangerouslySetInnerHTML={{ __html: html }} />;
 };
@@ -111,11 +108,10 @@ const ReelsGallery = () => {
         setEmbedCode(settings?.tiktok_embed_code || null);
         setReels(reelData || []);
       })
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   }, []);
 
-  // Nothing to show
   if (!loading && !embedCode && reels.length === 0) return null;
 
   return (
@@ -132,7 +128,6 @@ const ReelsGallery = () => {
         </div>
 
         {loading ? (
-          // Skeleton placeholders
           <div className="flex gap-4 justify-center">
             {[1, 2, 3, 4].map((i) => (
               <div
