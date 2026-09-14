@@ -40,7 +40,7 @@ const ProductCard = ({ product, className = '' }) => {
               </div>
             ))}
           {product.discount_percentage && product.discount_percentage > 0 && (
-            <div className="bg-[#ff3333] text-white text-[8px] sm:text-[10px] font-bold uppercase tracking-widest px-2 py-1 sm:px-3 sm:py-1.5 rounded-full shadow-lg">
+            <div className="bg-red-600 text-white text-[8px] sm:text-[10px] font-bold uppercase tracking-widest px-2 py-1 sm:px-3 sm:py-1.5 rounded-full shadow-lg">
               {product.discount_percentage}% OFF
             </div>
           )}
@@ -49,6 +49,8 @@ const ProductCard = ({ product, className = '' }) => {
         <img
           src={product.primary_image?.image_url || 'https://placehold.co/400x533?text=No+Image'}
           alt={product.name}
+          loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
 

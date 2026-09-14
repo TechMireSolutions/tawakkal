@@ -103,7 +103,7 @@ const Footer = ({ id }) => {
         {/* Bottom Bar */}
         <div className="border-t border-white/10 pt-4 md:pt-4 flex justify-center">
           <p className="text-[12px] uppercase tracking-[0.2em] text-white/40 text-center">
-          © 2026 - {settings?.site_name?.toUpperCase() || "TAWAKKAL"} | Developed by <span className="text-gold hover:text-orange-200 transition-colors"><a href="https://techmiresolutions.com/" target="_blank" rel="noopener noreferrer">Techmire Solutions</a></span>
+          © 2026 - {settings?.site_name?.toUpperCase() || "TAWAKKAL"} | Developed by <span className="text-gold hover:text-orange-200 transition-colors"><a href="https://techmiresolutions.com/" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">Techmire Solutions</a></span>
           </p>
         </div>
       </div>

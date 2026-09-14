@@ -17,6 +17,9 @@ from apps.catalog.models.product import Product, ProductVariant
 from apps.catalog.services.product_service import ProductService
 from apps.customers.models import CustomerTimeline
 from apps.notifications.services.notification_service import NotificationService
+import logging
+
+logger = logging.getLogger(__name__)
 
 class OrderService(BaseService):
     repository = OrderRepository
@@ -240,9 +243,9 @@ class OrderService(BaseService):
                 html_message=html_message,
                 fail_silently=True
             )
-            print(f"Email '{subject}' sent to {customer_email} for {order_number}")
+            logger.info(f"Email '{subject}' sent to {customer_email} for {order_number}")
         except Exception as e:
-            print(f"Failed to send email: {e}")
+            logger.error(f"Failed to send email to {customer_email}: {e}")
 
     @classmethod
     def send_order_confirmation_email(cls, order):

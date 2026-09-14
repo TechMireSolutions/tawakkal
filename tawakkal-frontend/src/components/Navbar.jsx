@@ -128,6 +128,8 @@ const Navbar = () => {
                         siteSettings?.main_logo_url
                     }
                     alt={siteSettings?.site_name || "Tawakkal"}
+                    width="220"
+                    height="32"
                     className="h-6 md:h-8 w-auto object-contain transition-all duration-300"
                   />
                 ) : (
@@ -372,6 +374,7 @@ const Navbar = () => {
                 <button
                   onClick={() => setIsSearchOpen(!isSearchOpen)}
                   className={`${scrolled || isDarkHeroPage ? "text-white" : "text-charcoal"} hover:text-gold transition-colors`}
+                  aria-label="Toggle Search"
                 >
                   {isSearchOpen ? <X size={20} /> : <Search size={20} />}
                 </button>
@@ -413,6 +416,7 @@ const Navbar = () => {
               <a
                 href="/auth"
                 className={`hidden md:block ${scrolled || isDarkHeroPage ? "text-white" : "text-charcoal"} hover:text-gold transition-colors`}
+                aria-label="Account / Login"
               >
                 <User size={20} />
               </a>
@@ -420,6 +424,7 @@ const Navbar = () => {
               <Link
                 to="/wishlist"
                 className={`relative ${scrolled || isDarkHeroPage ? "text-white" : "text-charcoal"} hover:text-gold transition-colors`}
+                aria-label="Wishlist"
               >
                 <Heart size={20} />
                 {wishlistItems.length > 0 && (
@@ -432,6 +437,7 @@ const Navbar = () => {
               <Link
                 to="/cart"
                 className={`relative ${scrolled || isDarkHeroPage ? "text-white" : "text-charcoal"} hover:text-gold transition-colors`}
+                aria-label="Shopping Cart"
               >
                 <ShoppingBag size={20} />
                 {cartItems.length > 0 && (
@@ -447,6 +453,7 @@ const Navbar = () => {
                 <button
                   onClick={() => setIsOpen(!isOpen)}
                   className={`${scrolled || isDarkHeroPage ? "text-white" : "text-charcoal"}`}
+                  aria-label="Toggle Mobile Menu"
                 >
                   {isOpen ? <X size={24} /> : <Menu size={24} />}
                 </button>

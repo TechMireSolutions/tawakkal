@@ -12,8 +12,10 @@ import { EmptyState } from '../../components/ui/EmptyState';
 import { getOrders, getOrder, updateOrderStatus, deleteOrder } from '../../services/api';
 import { formatCurrency, formatDate } from '../../utils/formatters';
 import { ORDER_STATUSES, PAYMENT_STATUSES } from '../../utils/constants';
+import { useToast } from '../../components/ui/Toast';
 
 export default function OrderList() {
+  const toast = useToast();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -21,6 +23,7 @@ export default function OrderList() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [isDeleteAllModalOpen, setIsDeleteAllModalOpen] = useState(false);
   const PAGE_SIZE = 10;
 
   useEffect(() => {
@@ -54,7 +57,7 @@ export default function OrderList() {
       const res = await getOrders();
       setOrders(Array.isArray(res) ? res : (res?.results || []));
     } catch (err) {
-      alert("Failed to update status: " + (err.response?.data?.message || err.message));
+      toast.error("Failed to update status: " + (err.response?.data?.message || err.message));
     } finally {
       setUpdatingStatus(false);
     }
@@ -79,7 +82,11 @@ export default function OrderList() {
   const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
 
   const handleDeleteAll = async () => {
-    if (!window.confirm("Are you sure you want to delete all orders? This action cannot be undone.")) return;
+    setIsDeleteAllModalOpen(true);
+  };
+
+  const confirmDeleteAll = async () => {
+    setIsDeleteAllModalOpen(false);
     setLoading(true);
     let errorCount = 0;
     for (const o of orders) {
@@ -90,11 +97,10 @@ export default function OrderList() {
       }
     }
 
-    // Utilizing the variable satisfies ESLint while alerting the administrator
     if (errorCount > 0) {
-      alert(`Bulk deletion processed with ${errorCount} errors. Some orders could not be removed.`);
+      toast.error(`Bulk deletion processed with ${errorCount} errors. Some orders could not be removed.`);
     } else {
-      alert("All orders deleted successfully.");
+      toast.success("All orders deleted successfully.");
     }
 
     const res = await getOrders();
@@ -287,6 +293,20 @@ export default function OrderList() {
           );
         })()}
       </Modal>
+
+      <Modal
+        isOpen={isDeleteAllModalOpen}
+        onClose={() => setIsDeleteAllModalOpen(false)}
+        title="Delete All Orders"
+        subtitle="Are you sure you want to delete all orders? This action cannot be undone."
+        size="sm"
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+            <Button variant="secondary" onClick={() => setIsDeleteAllModalOpen(false)}>Cancel</Button>
+            <Button variant="danger" onClick={confirmDeleteAll}>Delete All</Button>
+          </div>
+        }
+      />
     </PageContainer>
   );
 }

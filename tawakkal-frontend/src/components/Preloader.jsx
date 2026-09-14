@@ -37,6 +37,8 @@ const Preloader = ({ onComplete }) => {
               siteSettings?.preloader_logo_url || siteSettings?.main_logo_url
             }
             alt={siteSettings?.site_name || "Tawakkal"}
+            width="991"
+            height="144"
             className="h-20 md:h-24 lg:h-36 w-auto object-contain mx-auto"
           />
         )}

@@ -4,10 +4,12 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Mail, Phone, MapPin, Clock, Send, MessageCircle, Plus, Minus, ChevronDown } from 'lucide-react';
 import { useSiteSettings } from '../context/SiteSettingsContext';
 import { submitContactForm } from '../api';
+import { useToast } from '../admin/components/ui/Toast';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const Contact = () => {
+  const toast = useToast();
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -75,7 +77,7 @@ const Contact = () => {
     e.preventDefault();
 
     if (!formData.subject) {
-      alert("Please select a subject before sending your message.");
+      toast.error("Please select a subject before sending your message.");
       return;
     }
 
@@ -88,7 +90,7 @@ const Contact = () => {
       setTimeout(() => setSubmitted(false), 5000);
     } catch (err) {
       console.error("Failed to submit form:", err);
-      alert("Failed to send message. Please try again later.");
+      toast.error("Failed to send message. Please try again later.");
     } finally {
       setIsSubmitting(false);
     }
@@ -385,32 +387,32 @@ const Contact = () => {
           {faqs.length > 0 ? (
             <div className="max-w-3xl mx-auto space-y-4">
               {faqs.map((faq, index) => (
-                  <div key={index} className="bg-gray-300 border border-gray-400 shadow-md rounded-xl overflow-hidden">
-                    <button
-                      onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
-                      className="w-full p-6 text-left flex items-center justify-between hover:bg-gray-400 transition-colors"
-                    >
-                      <div className="text-left pr-4">
-                        {faq.category && (
-                          <div className="text-[10px] text-gold uppercase tracking-wider mb-1 font-bold">
-                            {faq.category.replace('_', ' ')}
-                          </div>
-                        )}
-                        <h3 className="font-bold text-charcoal text-sm">{faq.question}</h3>
-                      </div>
-                      <div className="relative w-5 h-5 flex items-center justify-center flex-shrink-0">
-                        <Plus className={`absolute w-5 h-5 text-gold transition-all duration-300 ${openFaqIndex === index ? 'rotate-90 opacity-0 scale-50' : 'rotate-0 opacity-100 scale-100'}`} />
-                        <Minus className={`absolute w-5 h-5 text-gold transition-all duration-300 ${openFaqIndex === index ? 'rotate-0 opacity-100 scale-100' : '-rotate-90 opacity-0 scale-50'}`} />
-                      </div>
-                    </button>
-                    <div className={`grid transition-all duration-300 ease-in-out ${openFaqIndex === index ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-                      <div className="overflow-hidden">
-                        <div className="px-6 pb-6 pt-4 border-t border-gray-400 text-center">
-                          <p className="text-gray-800 text-sm leading-relaxed">{faq.answer}</p>
+                <div key={index} className="bg-gray-300 border border-gray-400 shadow-md rounded-xl overflow-hidden">
+                  <button
+                    onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
+                    className="w-full p-6 text-left flex items-center justify-between hover:bg-gray-400 transition-colors"
+                  >
+                    <div className="text-left pr-4">
+                      {faq.category && (
+                        <div className="text-[10px] text-gold uppercase tracking-wider mb-1 font-bold">
+                          {faq.category.replace('_', ' ')}
                         </div>
+                      )}
+                      <h3 className="font-bold text-charcoal text-sm">{faq.question}</h3>
+                    </div>
+                    <div className="relative w-5 h-5 flex items-center justify-center flex-shrink-0">
+                      <Plus className={`absolute w-5 h-5 text-gold transition-all duration-300 ${openFaqIndex === index ? 'rotate-90 opacity-0 scale-50' : 'rotate-0 opacity-100 scale-100'}`} />
+                      <Minus className={`absolute w-5 h-5 text-gold transition-all duration-300 ${openFaqIndex === index ? 'rotate-0 opacity-100 scale-100' : '-rotate-90 opacity-0 scale-50'}`} />
+                    </div>
+                  </button>
+                  <div className={`grid transition-all duration-300 ease-in-out ${openFaqIndex === index ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+                    <div className="overflow-hidden">
+                      <div className="px-6 pb-6 pt-4 border-t border-gray-400 text-center">
+                        <p className="text-gray-800 text-sm leading-relaxed">{faq.answer}</p>
                       </div>
                     </div>
                   </div>
+                </div>
               ))}
             </div>
           ) : (

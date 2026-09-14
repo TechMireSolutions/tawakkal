@@ -9,8 +9,10 @@ import { TableSkeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { getSalesEmployees, createSalesEmployee, updateSalesEmployee } from '../../services/api';
 import { formatDate } from '../../utils/formatters';
+import { useToast } from '../../components/ui/Toast';
 
 export default function SalesEmployeeList() {
+  const toast = useToast();
   const [employees, setEmployees] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -87,14 +89,15 @@ export default function SalesEmployeeList() {
     try {
       await updateSalesEmployee(employee.id, { is_active: !employee.is_active });
       await fetchEmployees();
+      toast.success("Status updated");
     } catch {
-      alert("Failed to update status");
+      toast.error("Failed to update status");
     }
   };
 
   const copyToClipboard = (text) => {
     navigator.clipboard.writeText(text);
-    alert(`Copied ${text} to clipboard!`);
+    toast.success(`Copied ${text} to clipboard!`);
   };
 
   return (

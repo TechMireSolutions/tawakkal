@@ -5,6 +5,7 @@ import { PageContainer, PageHeader } from '../../components/ui/PageLayout';
 import { ContentCard } from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { useToast } from '../../components/ui/Toast';
+import Modal from '../../components/ui/Modal';
 import { getNotifications, markAllNotificationsRead } from '../../services/api';
 import { formatRelativeDate } from '../../utils/formatters';
 
@@ -15,6 +16,7 @@ export default function NotificationCenter() {
   const toast = useToast();
   const [notifications, setNotifications] = useState([]);
   const [filter, setFilter] = useState('all');
+  const [isClearModalOpen, setIsClearModalOpen] = useState(false);
 
   useEffect(() => { getNotifications().then(n => { setNotifications(n); }); }, []);
 
@@ -32,7 +34,7 @@ export default function NotificationCenter() {
       <PageHeader title="Notifications" subtitle={`${unreadCount} unread notifications`} breadcrumbs={[{ label: 'Notifications' }]}
         secondaryAction={
           <div style={{ display: 'flex', gap: '10px' }}>
-            <Button variant="danger" size="sm" icon={HiOutlineTrash} onClick={() => { if(window.confirm('Clear all notifications?')) { setNotifications([]); toast.success('Cleared all'); } }}>Clear All</Button>
+            <Button variant="danger" size="sm" icon={HiOutlineTrash} onClick={() => setIsClearModalOpen(true)}>Clear All</Button>
             {unreadCount > 0 ? <Button variant="secondary" size="sm" icon={HiOutlineCheckCircle} onClick={handleMarkAllRead}>Mark All Read</Button> : null}
           </div>
         } />
@@ -81,6 +83,24 @@ export default function NotificationCenter() {
           )}
         </div>
       </ContentCard>
+
+      <Modal
+        isOpen={isClearModalOpen}
+        onClose={() => setIsClearModalOpen(false)}
+        title="Clear Notifications"
+        subtitle="Are you sure you want to clear all notifications? This action cannot be undone."
+        size="sm"
+        footer={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+            <Button variant="secondary" onClick={() => setIsClearModalOpen(false)}>Cancel</Button>
+            <Button variant="danger" onClick={() => {
+              setNotifications([]);
+              toast.success('Cleared all');
+              setIsClearModalOpen(false);
+            }}>Clear All</Button>
+          </div>
+        }
+      />
     </PageContainer>
   );
 }

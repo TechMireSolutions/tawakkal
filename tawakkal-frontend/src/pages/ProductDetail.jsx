@@ -136,7 +136,7 @@ const ProductDetail = () => {
                   </div>
                 )}
                 {product.discount_percent > 0 && (
-                  <div className="bg-[#ff3333] text-white text-[10px] font-bold uppercase tracking-widest px-6 py-2.5 rounded-full shadow-xl">
+                  <div className="bg-red-600 text-white text-[10px] font-bold uppercase tracking-widest px-6 py-2.5 rounded-full shadow-xl">
                     {product.discount_percent}% OFF
                   </div>
                 )}
@@ -460,7 +460,7 @@ const ProductDetail = () => {
                       </div>
                     ))}
                     {item.discount_percentage && item.discount_percentage > 0 && (
-                      <div className="bg-[#ff3333] text-white text-[8px] sm:text-[10px] font-bold uppercase tracking-widest px-2 py-1 sm:px-3 sm:py-1.5 rounded-full shadow-lg">
+                      <div className="bg-red-600 text-white text-[8px] sm:text-[10px] font-bold uppercase tracking-widest px-2 py-1 sm:px-3 sm:py-1.5 rounded-full shadow-lg">
                         {item.discount_percentage}% OFF
                       </div>
                     )}

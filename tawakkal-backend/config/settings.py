@@ -293,7 +293,7 @@ class UnverifiedSmtpEmailBackend(SmtpEmailBackend):
         context.verify_mode = ssl.CERT_NONE
         return context
 
-EMAIL_BACKEND = 'config.settings.UnverifiedSmtpEmailBackend'
+EMAIL_BACKEND = env('EMAIL_BACKEND', default='config.settings.UnverifiedSmtpEmailBackend')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'mail.tawakkal.store')
