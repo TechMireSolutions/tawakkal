@@ -246,6 +246,7 @@ const HeroSection = () => {
             <div className="w-1/2 lg:w-[25%] hero-fade-in lg:order-1 flex justify-center lg:justify-start">
               <Link
                 to={leftBtnLink}
+                aria-label={leftBtnText || 'View Collection'}
                 className="group block relative float-card w-full max-w-[280px] lg:max-w-[320px]"
               >
                 <div className="product-card-reveal relative mx-auto lg:ml-0">
@@ -280,6 +281,7 @@ const HeroSection = () => {
             <div className="w-1/2 lg:w-[25%] hero-fade-in lg:order-3 flex justify-center lg:justify-end">
               <Link
                 to={rightBtnLink}
+                aria-label={rightBtnText || 'View Collection'}
                 className="group block relative float-card w-full max-w-[280px] lg:max-w-[320px]"
               >
                 <div className="product-card-reveal relative mx-auto lg:mr-0">

@@ -365,6 +365,7 @@ const Navbar = () => {
                   <input
                     type="text"
                     placeholder="Search products..."
+                    aria-label="Search products"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className={`w-full bg-transparent border-b ${scrolled || isDarkHeroPage ? "border-white/50 text-white placeholder-white/50" : "border-charcoal/30 text-charcoal placeholder-charcoal/50"} focus:outline-none focus:border-gold py-1 text-xs`}

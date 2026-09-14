@@ -30,7 +30,7 @@ const ProductMarquee = ({ id, limit = 8 }) => {
     getProducts();
   }, [limit]);
 
-  if (loading) return <div className="py-24 text-center text-gray-400 animate-pulse">Loading Collection...</div>;
+  if (loading) return <div className="py-24 text-center text-gray-500 animate-pulse">Loading Collection...</div>;
   if (products.length === 0) return null;
 
   return (

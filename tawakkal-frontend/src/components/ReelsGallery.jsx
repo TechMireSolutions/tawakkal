@@ -10,6 +10,7 @@ const ReelCard = ({ reel }) => {
       href={reel.video_url}
       target="_blank"
       rel="noopener noreferrer"
+      aria-label={reel.title || 'Watch TikTok Reel'}
       className="group relative flex-shrink-0 w-[160px] sm:w-[180px] md:w-[200px] overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1"
       style={{ aspectRatio: '9/16' }}
     >

@@ -73,7 +73,7 @@ const CategoryGallery = () => {
   if (loading) {
     return (
       <section className="py-16 md:py-24 bg-gradient-to-b from-white to-ivory text-center">
-        <p className="text-gray-400 animate-pulse">Loading Categories...</p>
+        <p className="text-gray-500 animate-pulse">Loading Categories...</p>
       </section>
     );
   }
