@@ -3,7 +3,7 @@ name: Deploy Tawakkal Store
 on:
   push:
     branches:
-      - main # Ya aapki default branch ka naam
+      - main
 
 jobs:
   deploy:
@@ -23,11 +23,11 @@ jobs:
             git config --global --add safe.directory /www/wwwroot/tawakkal.store
             cd /www/wwwroot/tawakkal.store
             git pull origin main
-            
+
             echo "==== 2. Backend Deployment ===="
             cd /www/wwwroot/tawakkal.store/tawakkal-backend
 
-            # Requirements install (mysqlclient exclude aur PyMySQL ensure)
+            # Requirements clean and install
             sed -i '/mysqlclient/d' requirements.txt 2>/dev/null || true
             sed -i 's/python-magic-bin/python-magic/g' requirements.txt 2>/dev/null || true
             sed -i 's/python-magic==0.4.14/python-magic>=0.4.27/g' requirements.txt 2>/dev/null || true
@@ -35,14 +35,8 @@ jobs:
             ./venv/bin/pip install pymysql
             ./venv/bin/pip install -r requirements.txt
 
-            # PyMySQL injection verification
-            python3 -c '
-            with open("config/__init__.py", "r+") as f:
-                content = f.read()
-                if "pymysql" not in content:
-                    f.seek(0, 0)
-                    f.write("import pymysql\npymysql.install_as_MySQLdb()\n" + content)
-            '
+            # PyMySQL injection (single line format to avoid SSH injection syntax error)
+            grep -q "pymysql.install_as_MySQLdb" config/__init__.py || sed -i '1s/^/import pymysql\npymysql.install_as_MySQLdb()\n/' config/__init__.py
 
             # Migrations & Statics
             ./venv/bin/python manage.py migrate
@@ -56,7 +50,7 @@ jobs:
             npm install
             npm run build
 
-            # Dist aur Assets update (Images issue fix)
+            # Dist aur Assets sync
             rm -rf /www/wwwroot/tawakkal.store/dist/*
             cp -r dist/* /www/wwwroot/tawakkal.store/dist/
             cp -r public/* /www/wwwroot/tawakkal.store/dist/
