@@ -20,9 +20,10 @@ jobs:
           script_stop: true
           script: |
             echo "==== 1. Pulling Latest Code ===="
+            git config --global --add safe.directory /www/wwwroot/tawakkal.store
             cd /www/wwwroot/tawakkal.store
             git pull origin main
-
+            
             echo "==== 2. Backend Deployment ===="
             cd /www/wwwroot/tawakkal.store/tawakkal-backend
 
