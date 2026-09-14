@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { fetchSiteSettings, fetchTikTokReels } from '../api';
 
 // ── Fallback: reel cards from database ───────────────────────────────────────
@@ -69,8 +69,29 @@ const ReelsFromDB = ({ reels }) => (
 
 // ── Embed widget (Elfsight optimized) ────────────────────────────────────────
 const EmbedWidget = ({ code }) => {
+  const containerRef = useRef(null);
+  const [isInView, setIsInView] = useState(false);
+
   useEffect(() => {
-    if (!code) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: '200px' }
+    );
+    
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+    
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    if (!code || !isInView) return;
 
     const parser = new DOMParser();
     const doc = parser.parseFromString(code, 'text/html');
@@ -85,15 +106,14 @@ const EmbedWidget = ({ code }) => {
           s.async = true;
           document.body.appendChild(s);
         }
-        // NOTE: Removed window.eapps call to completely stop the 5-sec reload loop
       }
     });
-  }, [code]);
+  }, [code, isInView]);
 
   // Strip script tags for innerHTML rendering safely
   const html = code ? code.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '') : '';
 
-  return <div dangerouslySetInnerHTML={{ __html: html }} />;
+  return <div ref={containerRef} dangerouslySetInnerHTML={{ __html: html }} />;
 };
 
 // ── Main component ────────────────────────────────────────────────────────────

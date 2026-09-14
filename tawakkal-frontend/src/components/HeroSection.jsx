@@ -162,6 +162,8 @@ const HeroSection = () => {
             <img
               src={bgImage}
               alt="Hero Background"
+              fetchpriority="high"
+              decoding="async"
               className="w-full h-full object-cover"
             />
           )

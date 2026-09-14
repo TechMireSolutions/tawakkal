@@ -84,6 +84,9 @@ const Footer = ({ id }) => {
                 <img 
                   src={settings?.footer_logo_url || settings?.main_logo_url} 
                   alt={settings?.site_name || "Tawakkal"} 
+                  width="160"
+                  height="40"
+                  loading="lazy"
                   className="h-10 w-auto object-contain"
                 />
               ) : null}
