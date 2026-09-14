@@ -41,10 +41,10 @@ const ProductMarquee = ({ id, limit = 8 }) => {
           <div className="space-y-2 md:space-y-3">
             <div className="flex items-center gap-3">
               <div className="w-8 h-px bg-gold" />
-              <p className="text-gold tracking-[0.3em] uppercase text-[10px] font-bold">Trending Now</p>
+              <p className="text-gold-dark tracking-[0.3em] uppercase text-[10px] font-bold">Trending Now</p>
             </div>
             <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold">
-              Featured <span className="italic font-serif text-gold">Collection</span>
+              Featured <span className="italic font-serif text-gold-dark">Collection</span>
             </h2>
             <p className="text-gray-500 text-sm max-w-md">
               Discover our handpicked selection of premium fabrics and exquisite designs

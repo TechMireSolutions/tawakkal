@@ -38,15 +38,15 @@ const Footer = ({ id }) => {
             <h3 className="text-[14px] uppercase tracking-[0.2em] font-extrabold text-white mb-6">GET IN TOUCH</h3>
             <div className="space-y-2 text-xs text-white/60">
               <div className="flex flex-col space-y-0">
-                <span className="text-white uppercase text-[12px] tracking-wider opacity-40">Phone no</span>
+                <span className="text-white uppercase text-[12px] tracking-wider opacity-70">Phone no</span>
                 <a href={`tel:${phone}`} className="text-gray-300 uppercase text-[12px] tracking-wider font-light hover:text-gold transition-colors">{phone}</a>
               </div>
               <div className="flex flex-col space-y-1">
-                <span className="text-white uppercase text-[12px] tracking-wider opacity-40">Email</span>
+                <span className="text-white uppercase text-[12px] tracking-wider opacity-70">Email</span>
                 <a href={`mailto:${email}`} className="text-gray-300 uppercase text-[12px] tracking-wider font-light hover:text-gold transition-colors">{email}</a>
               </div>
               <div className="flex flex-col space-y-1">
-                <span className="text-white uppercase text-[12px] tracking-wider opacity-40">Address</span>
+                <span className="text-white uppercase text-[12px] tracking-wider opacity-70">Address</span>
                 <p className="text-gray-300 uppercase text-[12px] tracking-wider font-light">{address}</p>
               </div>
             </div>
@@ -92,9 +92,9 @@ const Footer = ({ id }) => {
               {settings?.site_description || "Luxury fashion destination crafting world-class textiles."}
             </p>
             <div className="mt-4 flex space-x-6 text-white/60">
-              <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors"><SocialIcons.Facebook /></a>
-              <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors"><SocialIcons.Instagram /></a>
-              <a href={tiktokUrl} target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors"><SocialIcons.TikTok /></a>
+              <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors" aria-label="Facebook"><SocialIcons.Facebook /></a>
+              <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors" aria-label="Instagram"><SocialIcons.Instagram /></a>
+              <a href={tiktokUrl} target="_blank" rel="noopener noreferrer" className="hover:text-gold transition-colors" aria-label="TikTok"><SocialIcons.TikTok /></a>
             </div>
           </div>
 
@@ -102,7 +102,7 @@ const Footer = ({ id }) => {
 
         {/* Bottom Bar */}
         <div className="border-t border-white/10 pt-4 md:pt-4 flex justify-center">
-          <p className="text-[12px] uppercase tracking-[0.2em] text-white/40 text-center">
+          <p className="text-[12px] uppercase tracking-[0.2em] text-white/70 text-center">
           © 2026 - {settings?.site_name?.toUpperCase() || "TAWAKKAL"} | Developed by <span className="text-gold hover:text-orange-200 transition-colors"><a href="https://techmiresolutions.com/" target="_blank" rel="noopener noreferrer" className="underline hover:no-underline">Techmire Solutions</a></span>
           </p>
         </div>

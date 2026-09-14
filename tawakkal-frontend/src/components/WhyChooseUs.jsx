@@ -44,11 +44,11 @@ const WhyChooseUs = () => {
         <div className="text-center mb-12 md:mb-20">
           <div className="inline-flex items-center gap-3 mb-4 md:mb-6 bg-white px-4 py-2 md:px-5 md:py-2.5 rounded-full shadow-sm border border-gray-100">
             <div className="w-2 h-2 rounded-full bg-gold animate-pulse" />
-            <p className="text-gold tracking-[0.2em] uppercase text-[10px] font-bold">Why Shop With Us</p>
+            <p className="text-gold-dark tracking-[0.2em] uppercase text-[10px] font-bold">Why Shop With Us</p>
             <div className="w-2 h-2 rounded-full bg-gold animate-pulse" />
           </div>
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold text-charcoal mb-4 md:mb-5">
-            The Tawakkal <span className="italic font-serif text-gold">Promise</span>
+            The Tawakkal <span className="italic font-serif text-gold-dark">Promise</span>
           </h2>
           <p className="text-gray-500 max-w-xl mx-auto text-sm md:text-base px-4">
             We are committed to providing you with the best shopping experience
@@ -85,7 +85,7 @@ const WhyChooseUs = () => {
                   
                   {/* Title & Subtitle together */}
                   <div className="flex-1 min-w-0 pt-0.5 md:pt-1">
-                    <p className="text-[9px] md:text-[10px] uppercase tracking-wider text-gray-400 font-bold mb-0.5 md:mb-1">
+                    <p className="text-[9px] md:text-[10px] uppercase tracking-wider text-gray-500 font-bold mb-0.5 md:mb-1">
                       {feature.subtitle}
                     </p>
                     <h3 className="text-sm md:text-lg lg:text-xl font-bold group-hover:text-gold transition-colors duration-300 flex items-center gap-1 md:gap-2 leading-tight">
@@ -105,7 +105,7 @@ const WhyChooseUs = () => {
                 <div className="absolute bottom-3 left-3 md:bottom-4 md:left-4 w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10 border-b-2 border-l-2 border-gold/30 rounded-bl-lg md:rounded-bl-xl opacity-0 group-hover:opacity-100 transition-all duration-300 group-hover:border-gold" />
                 
                 {/* Number Badge */}
-                <div className="absolute top-3 right-3 md:top-4 md:right-4 w-5 h-5 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-full bg-gray-100 flex items-center justify-center text-[10px] md:text-xs font-bold text-gray-400 group-hover:bg-gold group-hover:text-white transition-all duration-300">
+                <div className="absolute top-3 right-3 md:top-4 md:right-4 w-5 h-5 md:w-7 md:h-7 lg:w-8 lg:h-8 rounded-full bg-gray-100 flex items-center justify-center text-[10px] md:text-xs font-bold text-gray-500 group-hover:bg-gold group-hover:text-white transition-all duration-300">
                   0{index + 1}
                 </div>
               </div>
@@ -123,7 +123,7 @@ const WhyChooseUs = () => {
               </div>
               <div className="hidden md:block">
                 <p className="text-sm lg:text-base font-bold text-charcoal">25,000+</p>
-                <p className="text-[10px] text-gray-400 uppercase tracking-wider">Happy Customers</p>
+                <p className="text-[10px] text-gray-500 uppercase tracking-wider">Happy Customers</p>
               </div>
             </div>
             
@@ -134,7 +134,7 @@ const WhyChooseUs = () => {
               <div className="text-gold text-base md:text-xl lg:text-2xl flex-shrink-0">★★★★★</div>
               <div className="hidden md:block">
                 <p className="text-sm lg:text-base font-bold text-charcoal">4.9/5</p>
-                <p className="text-[10px] text-gray-400 uppercase tracking-wider">Rating</p>
+                <p className="text-[10px] text-gray-500 uppercase tracking-wider">Rating</p>
               </div>
             </div>
             
@@ -147,7 +147,7 @@ const WhyChooseUs = () => {
               </div>
               <div className="hidden md:block">
                 <p className="text-sm lg:text-base font-bold text-charcoal">100% Secure</p>
-                <p className="text-[10px] text-gray-400 uppercase tracking-wider">SSL Protected</p>
+                <p className="text-[10px] text-gray-500 uppercase tracking-wider">SSL Protected</p>
               </div>
             </div>
             
@@ -160,7 +160,7 @@ const WhyChooseUs = () => {
               </div>
               <div className="hidden md:block">
                 <p className="text-sm lg:text-base font-bold text-charcoal">Free Delivery</p>
-                <p className="text-[10px] text-gray-400 uppercase tracking-wider">On Orders 5k+</p>
+                <p className="text-[10px] text-gray-500 uppercase tracking-wider">On Orders 5k+</p>
               </div>
             </div>
           </div>

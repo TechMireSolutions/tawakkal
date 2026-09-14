@@ -250,7 +250,7 @@ const HeroSection = () => {
                   <div className="relative aspect-[3/4] overflow-hidden shadow-2xl transition-shadow duration-700">
                     <img
                       src={leftImage}
-                      alt={leftBtnText}
+                      alt=""
                       className="w-full h-full object-cover transition-transform duration-[2s] ease-out group-hover:scale-110"
                     />
                   </div>
@@ -284,7 +284,7 @@ const HeroSection = () => {
                   <div className="relative aspect-[3/4] overflow-hidden shadow-2xl transition-shadow duration-700">
                     <img
                       src={rightImage}
-                      alt={rightBtnText}
+                      alt=""
                       className="w-full h-full object-cover transition-transform duration-[2s] ease-out group-hover:scale-110"
                     />
                   </div>

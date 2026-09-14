@@ -60,6 +60,7 @@ const ProductCard = ({ product, className = '' }) => {
           <button
             onClick={handleWishlist}
             className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-charcoal hover:bg-gold hover:text-white transition-all"
+            aria-label="Add to Wishlist"
           >
             <Heart
               size={14}
@@ -70,7 +71,10 @@ const ProductCard = ({ product, className = '' }) => {
               }
             />
           </button>
-          <button className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-charcoal hover:bg-gold hover:text-white transition-all">
+          <button 
+            className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white shadow-lg flex items-center justify-center text-charcoal hover:bg-gold hover:text-white transition-all"
+            aria-label="Quick View"
+          >
             <Eye size={14} />
           </button>
         </div>
@@ -88,7 +92,7 @@ const ProductCard = ({ product, className = '' }) => {
 
       <div className="space-y-1 sm:space-y-2 px-1">
         <div className="flex items-center gap-1 sm:gap-2">
-          <p className="text-gold text-[8px] sm:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.2em] font-bold">
+          <p className="text-gold-dark text-[8px] sm:text-[10px] uppercase tracking-[0.1em] sm:tracking-[0.2em] font-bold">
             {product.category?.name || 'All'}
           </p>
           <div className="h-px flex-1 bg-gray-100 sm:bg-gray-200" />
@@ -103,7 +107,7 @@ const ProductCard = ({ product, className = '' }) => {
             </p>
             {product.compare_at_price &&
               parseFloat(product.compare_at_price) > parseFloat(product.base_price) && (
-                <p className="text-gray-400 line-through text-[10px] sm:text-sm font-medium">
+                <p className="text-gray-500 line-through text-[10px] sm:text-sm font-medium">
                   {convertPrice(product.compare_at_price)}
                 </p>
               )}
