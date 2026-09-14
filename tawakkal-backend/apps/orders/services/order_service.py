@@ -13,7 +13,7 @@ from ..models.timeline import OrderTimeline
 from ..models.note import OrderNote
 from ..repositories.order_repository import OrderRepository
 
-from apps.catalog.models import ProductVariant, InventoryReason
+from apps.catalog.models.product import Product, ProductVariant
 from apps.catalog.services.product_service import ProductService
 from apps.customers.models import CustomerTimeline
 from apps.notifications.services.notification_service import NotificationService
@@ -84,17 +84,20 @@ class OrderService(BaseService):
             quantity = item_data.get('quantity', 1)
             
             if not variant_id and product_id:
-                # Fallback: Find default variant or first variant for the product
-                from apps.catalog.models.product import ProductVariant
                 variant = ProductVariant.objects.filter(product_id=product_id).first()
                 if not variant:
-                    raise ValidationError(f"No variant found for product ID {product_id}")
+                    # Auto-create a default variant if a product is variant-less
+                    product = Product.objects.get(id=product_id)
+                    variant = ProductVariant.objects.create(
+                        product=product,
+                        sku=ProductService.generate_sku(prefix="VAR"),
+                        stock=product.stock
+                    )
                 variant_id = variant.id
             elif not variant_id:
                 raise ValidationError("Either variant_id or product_id must be provided for order items.")
             
             # Select variant for update to prevent concurrent reservation issues
-            from apps.catalog.models.product import ProductVariant
             variant = ProductVariant.objects.select_for_update().get(id=variant_id)
             
             if variant.available_stock < quantity:
@@ -372,7 +375,7 @@ class OrderService(BaseService):
             
         elif new_status == OrderStatus.SHIPPED:
             order.shipped_at = timezone.now()
-            # Note: Inventory deduction is now handled by ShipmentService on a per-shipment basis.
+            # Note: Inventory deduction is handled by ShipmentService on a per-shipment basis.
         elif new_status == OrderStatus.DELIVERED:
             order.delivered_at = timezone.now()
             
@@ -388,7 +391,7 @@ class OrderService(BaseService):
             cls.send_order_completion_email(order)
             
         elif new_status == OrderStatus.RETURNED:
-            # Note: Inventory restoration is now handled by ReturnService on a per-return basis.
+            # Note: Inventory restoration is handled by ReturnService on a per-return basis.
             CustomerTimeline.objects.create(
                 customer=order.customer,
                 event_type='Returned Order',

@@ -47,7 +47,7 @@ const Checkout = () => {
   };
 
   const subtotal = calculateSubtotal();
-  const shipping = subtotal >= freeShippingThreshold ? 0 : shippingFee;
+  const shipping = 250;
   const tax = taxPercent > 0 ? Math.round(subtotal * taxPercent / 100) : 0;
   const discount = appliedCoupon ? Math.round((subtotal + shipping + tax) * 0.05) : 0;
   const total = subtotal + shipping + tax - discount;
@@ -133,7 +133,10 @@ const Checkout = () => {
       } else if (resData?.message && resData.message !== 'An error occurred') {
         serverMsg = resData.message;
       }
-      alert(`Failed to place order: ${serverMsg}`);
+      setNotification({
+        type: 'error',
+        message: `Failed to place order: ${serverMsg}`
+      });
     } finally {
       setLoading(false);
     }
