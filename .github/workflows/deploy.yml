@@ -22,21 +22,14 @@ jobs:
             echo "==== 1. Pulling Latest Code ===="
             git config --global --add safe.directory /www/wwwroot/tawakkal.store
             cd /www/wwwroot/tawakkal.store
-            git pull origin main
+            git fetch origin main
+            git reset --hard origin/main
 
             echo "==== 2. Backend Deployment ===="
             cd /www/wwwroot/tawakkal.store/tawakkal-backend
 
-            # Requirements clean and install
-            sed -i '/mysqlclient/d' requirements.txt 2>/dev/null || true
-            sed -i 's/python-magic-bin/python-magic/g' requirements.txt 2>/dev/null || true
-            sed -i 's/python-magic==0.4.14/python-magic>=0.4.27/g' requirements.txt 2>/dev/null || true
             ./venv/bin/pip install --upgrade pip
-            ./venv/bin/pip install pymysql
             ./venv/bin/pip install -r requirements.txt
-
-            # PyMySQL injection (single line format to avoid SSH injection syntax error)
-            grep -q "pymysql.install_as_MySQLdb" config/__init__.py || sed -i '1s/^/import pymysql\npymysql.install_as_MySQLdb()\n/' config/__init__.py
 
             # Migrations & Statics
             ./venv/bin/python manage.py migrate
@@ -47,7 +40,7 @@ jobs:
 
             echo "==== 3. Frontend Deployment ===="
             cd /www/wwwroot/tawakkal.store/tawakkal-frontend
-            npm install
+            npm ci
             npm run build
 
             # Dist aur Assets sync
