@@ -34,6 +34,8 @@ class SiteSettingsSerializer(serializers.ModelSerializer):
     hero_mobile_left_image_url = serializers.SerializerMethodField()
     hero_mobile_right_image_url = serializers.SerializerMethodField()
 
+    hero_background_variants = serializers.SerializerMethodField()
+
     class Meta:
         model = SiteSettings
         exclude = ('created_at', 'updated_at', 'created_by', 'updated_by', 'is_deleted', 'deleted_at')
@@ -46,6 +48,26 @@ class SiteSettingsSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         url = media.file.url
         return request.build_absolute_uri(url) if request else url
+        
+    def get_media_variants(self, obj, field):
+        media = getattr(obj, field, None)
+        if not media or not media.variants:
+            return {}
+        request = self.context.get('request')
+        result = {}
+        for key, path in media.variants.items():
+            from django.core.files.storage import default_storage
+            try:
+                url = default_storage.url(path)
+                if request:
+                    url = request.build_absolute_uri(url)
+                result[key] = url
+            except Exception:
+                result[key] = None
+        return result
+
+    def get_hero_background_variants(self, obj):
+        return self.get_media_variants(obj, 'hero_background')
 
     def get_main_logo_url(self, obj):
         return self.get_media_url(obj, 'main_logo')

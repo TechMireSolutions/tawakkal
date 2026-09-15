@@ -56,7 +56,10 @@ class MediaService(BaseService):
         kwargs['size'] = uploaded_file.size
         kwargs['mime_type'] = mime_type
         
-        # We handle width and height in the serializer or by Pillow automatically
-        # if it's an image.
+        instance = super().create(user=user, request=request, **kwargs)
         
-        return super().create(user=user, request=request, **kwargs)
+        if mime_type.startswith('image/') and 'svg' not in mime_type:
+            from .utils import generate_variants
+            generate_variants(instance)
+            
+        return instance

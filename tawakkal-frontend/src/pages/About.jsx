@@ -103,6 +103,8 @@ const About = () => {
                   src="/about-page-img.png"
                   alt="Fashion Collection"
                   className="w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
                 />
               </div>
               <div className="absolute -bottom-4 -left-4 md:-bottom-8 md:-left-8 bg-gold text-white p-4 md:p-8">

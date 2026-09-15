@@ -160,7 +160,13 @@ const HeroSection = () => {
           siteSettings?.hero_background_enabled !== false &&
           bgImage && (
             <img
-              src={bgImage}
+              src={siteSettings.hero_background_variants?.large || bgImage}
+              srcSet={
+                siteSettings.hero_background_variants
+                  ? `${siteSettings.hero_background_variants.thumb || bgImage} 150w, ${siteSettings.hero_background_variants.card || bgImage} 400w, ${siteSettings.hero_background_variants.medium || bgImage} 800w, ${siteSettings.hero_background_variants.large || bgImage} 1600w`
+                  : undefined
+              }
+              sizes="100vw"
               alt="Hero Background"
               fetchpriority="high"
               decoding="async"

@@ -15,6 +15,7 @@ class Media(BaseModel):
     width = models.PositiveIntegerField(null=True, blank=True, help_text="Image width in pixels")
     height = models.PositiveIntegerField(null=True, blank=True, help_text="Image height in pixels")
     alt_text = models.CharField(max_length=255, null=True, blank=True)
+    variants = models.JSONField(default=dict, blank=True, help_text="Stores paths to generated variants (e.g. {'card': 'path', 'thumb': 'path'})")
 
     class Meta:
         verbose_name_plural = "Media"

@@ -3,6 +3,11 @@ import { fetchSystemConfig } from '../api';
 
 const SystemConfigContext = createContext(null);
 
+let preloadedConfigPromise = null;
+if (typeof window !== 'undefined') {
+  preloadedConfigPromise = fetchSystemConfig();
+}
+
 // eslint-disable-next-line react-refresh/only-export-components
 export const useSystemConfig = () => useContext(SystemConfigContext);
 
@@ -11,11 +16,15 @@ export const SystemConfigProvider = ({ children }) => {
 
   useEffect(() => {
     const fetchConfig = () => {
-      fetchSystemConfig()
+      const promise = preloadedConfigPromise || fetchSystemConfig();
+      promise
         .then((res) => {
           setConfig(res.data || res);
         })
-        .catch(console.error);
+        .catch(console.error)
+        .finally(() => {
+          preloadedConfigPromise = null;
+        });
     };
 
     fetchConfig();

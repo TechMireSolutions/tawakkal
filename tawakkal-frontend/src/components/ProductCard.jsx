@@ -47,7 +47,13 @@ const ProductCard = ({ product, className = '' }) => {
         </div>
 
         <img
-          src={product.primary_image?.image_url || 'https://placehold.co/400x533?text=No+Image'}
+          src={product.primary_image?.variants?.card || product.primary_image?.image_url || 'https://placehold.co/400x533?text=No+Image'}
+          srcSet={
+            product.primary_image?.variants 
+              ? `${product.primary_image.variants.thumb || product.primary_image.image_url} 150w, ${product.primary_image.variants.card || product.primary_image.image_url} 400w, ${product.primary_image.image_url} 800w`
+              : undefined
+          }
+          sizes="(max-width: 640px) 150px, 400px"
           alt={product.name}
           loading="lazy"
           decoding="async"

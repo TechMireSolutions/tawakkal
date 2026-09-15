@@ -17,10 +17,11 @@ class ProductSizeSerializer(serializers.ModelSerializer):
 
 class ProductImageSerializer(serializers.ModelSerializer):
     image_url = serializers.SerializerMethodField()
+    variants = serializers.SerializerMethodField()
 
     class Meta:
         model = ProductImage
-        fields = ['id', 'media', 'variant', 'display_order', 'is_primary', 'image_url']
+        fields = ['id', 'media', 'variant', 'display_order', 'is_primary', 'image_url', 'variants']
 
     def get_image_url(self, obj):
         request = self.context.get('request')
@@ -29,6 +30,23 @@ class ProductImageSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(obj.media.file.url)
             return obj.media.file.url
         return None
+
+    def get_variants(self, obj):
+        request = self.context.get('request')
+        if not obj.media or not obj.media.variants:
+            return {}
+        
+        result = {}
+        for key, path in obj.media.variants.items():
+            from django.core.files.storage import default_storage
+            try:
+                url = default_storage.url(path)
+                if request:
+                    url = request.build_absolute_uri(url)
+                result[key] = url
+            except Exception:
+                result[key] = None
+        return result
 
 class ProductVariantSerializer(serializers.ModelSerializer):
     color = ProductColorSerializer(read_only=True)

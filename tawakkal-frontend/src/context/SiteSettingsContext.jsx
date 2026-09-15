@@ -3,6 +3,11 @@ import { fetchSiteSettings } from '../api';
 
 const SiteSettingsContext = createContext(null);
 
+let preloadedSettingsPromise = null;
+if (typeof window !== 'undefined') {
+  preloadedSettingsPromise = fetchSiteSettings();
+}
+
 // eslint-disable-next-line react-refresh/only-export-components
 export const useSiteSettings = () => useContext(SiteSettingsContext);
 
@@ -10,9 +15,13 @@ export const SiteSettingsProvider = ({ children }) => {
   const [settings, setSettings] = useState(null);
 
   useEffect(() => {
-    fetchSiteSettings()
+    const promise = preloadedSettingsPromise || fetchSiteSettings();
+    promise
       .then(setSettings)
-      .catch(console.error);
+      .catch(console.error)
+      .finally(() => {
+        preloadedSettingsPromise = null;
+      });
   }, []);
 
   useEffect(() => {
@@ -53,7 +62,27 @@ export const SiteSettingsProvider = ({ children }) => {
       }
       twitterMeta.content = settings.social_sharing_image_url;
     }
-  }, [settings?.favicon_url, settings?.apple_touch_icon_url, settings?.social_sharing_image_url]);
+
+    if (settings?.hero_background_url) {
+      let preloadLink = document.querySelector(`link[rel="preload"][as="image"]`);
+      if (!preloadLink) {
+        preloadLink = document.createElement('link');
+        preloadLink.rel = 'preload';
+        preloadLink.as = 'image';
+        preloadLink.fetchPriority = 'high';
+        
+        if (settings.hero_background_variants) {
+          const variants = settings.hero_background_variants;
+          preloadLink.imageSrcSet = `${variants.thumb || settings.hero_background_url} 150w, ${variants.card || settings.hero_background_url} 400w, ${variants.medium || settings.hero_background_url} 800w, ${variants.large || settings.hero_background_url} 1600w`;
+          preloadLink.imageSizes = "100vw";
+        } else {
+          preloadLink.href = settings.hero_background_url;
+        }
+        
+        document.head.appendChild(preloadLink);
+      }
+    }
+  }, [settings?.favicon_url, settings?.apple_touch_icon_url, settings?.social_sharing_image_url, settings?.hero_background_url, settings?.hero_background_variants]);
 
   return (
     <SiteSettingsContext.Provider value={settings}>

@@ -127,6 +127,8 @@ const ProductDetail = () => {
               <img
                 src={productImages[activeImage]}
                 alt={product.name}
+                fetchpriority="high"
+                decoding="async"
                 className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-105"
               />
               <div className="absolute top-8 left-8 flex flex-col gap-3">
@@ -469,6 +471,8 @@ const ProductDetail = () => {
                     src={item.primary_image?.image_url || "https://placehold.co/400x533?text=No+Image"}
                     alt={item.name}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
                 <div className="space-y-1">

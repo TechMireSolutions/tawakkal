@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { fetchSiteSettings, fetchTikTokReels } from '../api';
+import { fetchTikTokReels } from '../api';
+import { useSiteSettings } from '../context/SiteSettingsContext';
 
 // ── Fallback: reel cards from database ───────────────────────────────────────
 const ReelCard = ({ reel }) => {
@@ -123,15 +124,22 @@ const ReelsGallery = () => {
   const [reels, setReels] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const siteSettings = useSiteSettings();
+
   useEffect(() => {
-    Promise.all([fetchSiteSettings(), fetchTikTokReels()])
-      .then(([settings, reelData]) => {
-        setEmbedCode(settings?.tiktok_embed_code || null);
+    fetchTikTokReels()
+      .then((reelData) => {
         setReels(reelData || []);
       })
       .catch(() => { })
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (siteSettings) {
+      setEmbedCode(siteSettings.tiktok_embed_code || null);
+    }
+  }, [siteSettings]);
 
   if (!loading && !embedCode && reels.length === 0) return null;
 

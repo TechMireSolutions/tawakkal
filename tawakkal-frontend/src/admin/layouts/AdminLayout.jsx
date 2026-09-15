@@ -38,6 +38,17 @@ export default function AdminLayout() {
     closeMobileSidebar();
   }, [location.pathname, closeMobileSidebar]);
 
+  // Load Admin Fonts Dynamically to avoid blocking Storefront LCP
+  useEffect(() => {
+    if (!document.getElementById('admin-fonts')) {
+      const link = document.createElement('link');
+      link.id = 'admin-fonts';
+      link.rel = 'stylesheet';
+      link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&display=swap';
+      document.head.appendChild(link);
+    }
+  }, []);
+
   // Auto-collapse sidebar on smaller screens
   useEffect(() => {
     if (window.innerWidth < 1200 && !isMobile) {

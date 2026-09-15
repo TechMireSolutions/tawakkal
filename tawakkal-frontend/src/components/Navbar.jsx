@@ -43,10 +43,17 @@ const Navbar = () => {
   );
 
   useEffect(() => {
+    let ticking = false;
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          setScrolled(window.scrollY > 20);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
-    window.addEventListener("scroll", handleScroll);
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
     const loadData = async () => {
       try {
@@ -54,17 +61,17 @@ const Navbar = () => {
         // Instead, ensure ALL imports are at the top of your file:
         // import { fetchCategories, fetchPages, fetchBrands, fetchBadges } from "../api";
 
-        const catData = await fetchCategories();
-        setCategories(catData.filter((cat) => cat.status === true));
+        const [catData, brandData, badgeData, pagesData] = await Promise.all([
+          fetchCategories(),
+          fetchBrands(),
+          fetchBadges(),
+          fetchPages()
+        ]);
 
-        const brandData = await fetchBrands();
-        setBrands(brandData.filter((b) => b.status === true || b.status === 'true' || b.status === 1));
-
-        const badgeData = await fetchBadges();
-        setBadges(badgeData.filter((b) => b.status === true || b.status === 'true' || b.status === 1));
-
-        const pagesData = await fetchPages();
-        setPages(pagesData.filter((p) => p.status === "published" || p.status === true || p.status === 'true' || p.status === 1));
+        setCategories((catData || []).filter((cat) => cat.status === true));
+        setBrands((brandData || []).filter((b) => b.status === true || b.status === 'true' || b.status === 1));
+        setBadges((badgeData || []).filter((b) => b.status === true || b.status === 'true' || b.status === 1));
+        setPages((pagesData || []).filter((p) => p.status === "published" || p.status === true || p.status === 'true' || p.status === 1));
       } catch (err) {
         console.error("Error fetching data for navbar:", err);
       }
