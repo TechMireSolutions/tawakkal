@@ -138,15 +138,15 @@ const ProductMarquee = ({ id, limit = 8 }) => {
         .product-slider .swiper-pagination-bullet {
           width: 8px;
           height: 8px;
-          background: #d1d5db;
-          opacity: 1;
-          transition: all 0.3s ease;
+          background: #e6a13b;
+          border-radius: 4px;
+          opacity: 0.3;
+          transition: transform 0.3s ease, opacity 0.3s ease;
         }
         
         .product-slider .swiper-pagination-bullet-active {
-          background: #e6a13b;
-          width: 24px;
-          border-radius: 4px;
+          opacity: 1;
+          transform: scaleX(3);
         }
 
         @media (max-width: 640px) {
