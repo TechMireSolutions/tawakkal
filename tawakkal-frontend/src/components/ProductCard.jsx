@@ -53,7 +53,7 @@ const ProductCard = ({ product, className = '', priority = false }) => {
               ? `${product.primary_image.variants.thumb || product.primary_image.image_url} 150w, ${product.primary_image.variants.card || product.primary_image.image_url} 360w, ${product.primary_image.variants.medium || product.primary_image.image_url} 720w, ${product.primary_image.variants.large || product.primary_image.image_url} 1600w`
               : undefined
           }
-          sizes="(max-width: 1023px) 50vw, 33vw"
+          sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
           alt={product.name}
           loading={priority ? undefined : "lazy"}
           fetchpriority={priority ? "high" : "auto"}

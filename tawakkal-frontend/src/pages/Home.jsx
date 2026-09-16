@@ -25,7 +25,7 @@ const Home = () => {
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-0 bg-charcoal/80 z-10" />
           <img
-            src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&q=80&w=1200"
+            src="https://images.unsplash.com/photo-1558769132-cb1aea458c5e?auto=format&fit=crop&q=70&w=640"
             className="w-full h-full object-cover grayscale opacity-50"
             alt="Background"
             loading="lazy"
