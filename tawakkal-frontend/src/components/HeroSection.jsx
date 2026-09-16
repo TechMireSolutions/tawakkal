@@ -258,8 +258,16 @@ const HeroSection = () => {
                 <div className="product-card-reveal relative mx-auto lg:ml-0">
                   <div className="relative aspect-[3/4] overflow-hidden shadow-2xl transition-shadow duration-700">
                     <img
-                      src={leftImage}
+                      src={siteSettings?.hero_left_image_variants?.card || leftImage}
+                      srcSet={
+                        siteSettings?.hero_left_image_variants
+                          ? `${siteSettings.hero_left_image_variants.thumb || leftImage} 150w, ${siteSettings.hero_left_image_variants.card || leftImage} 360w, ${siteSettings.hero_left_image_variants.medium || leftImage} 720w`
+                          : undefined
+                      }
+                      sizes="(max-width: 1023px) 50vw, 25vw"
                       alt=""
+                      fetchpriority="high"
+                      decoding="async"
                       className="w-full h-full object-cover transition-transform duration-[2s] ease-out group-hover:scale-110"
                     />
                   </div>
@@ -293,8 +301,16 @@ const HeroSection = () => {
                 <div className="product-card-reveal relative mx-auto lg:mr-0">
                   <div className="relative aspect-[3/4] overflow-hidden shadow-2xl transition-shadow duration-700">
                     <img
-                      src={rightImage}
+                      src={siteSettings?.hero_right_image_variants?.card || rightImage}
+                      srcSet={
+                        siteSettings?.hero_right_image_variants
+                          ? `${siteSettings.hero_right_image_variants.thumb || rightImage} 150w, ${siteSettings.hero_right_image_variants.card || rightImage} 360w, ${siteSettings.hero_right_image_variants.medium || rightImage} 720w`
+                          : undefined
+                      }
+                      sizes="(max-width: 1023px) 50vw, 25vw"
                       alt=""
+                      fetchpriority="high"
+                      decoding="async"
                       className="w-full h-full object-cover transition-transform duration-[2s] ease-out group-hover:scale-110"
                     />
                   </div>

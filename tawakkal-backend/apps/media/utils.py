@@ -8,8 +8,8 @@ from django.core.files.storage import default_storage
 # width sizes in pixels
 VARIANTS = {
     'thumb': 150,    # Cart, small lists
-    'card': 400,     # Product grids, category listings
-    'medium': 800,   # Product detail, medium banners
+    'card': 360,     # Product grids, category listings
+    'medium': 720,   # Product detail, medium banners
     'large': 1600    # Hero banners, full width
 }
 
@@ -69,7 +69,7 @@ def generate_variants(media_instance):
             
             # Save to memory buffer as WebP
             buffer = io.BytesIO()
-            resized_img.save(buffer, format='WEBP', quality=85, method=4)
+            resized_img.save(buffer, format='WEBP', quality=80, method=6)
             buffer.seek(0)
             
             # Construct deterministic variant filename
