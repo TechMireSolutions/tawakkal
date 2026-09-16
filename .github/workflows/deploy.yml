@@ -41,6 +41,24 @@ jobs:
             # Downscale overly large logos
             ./venv/bin/python -c "import glob, PIL.Image as I; [I.open(f).resize((440, int(I.open(f).size[1]*440/I.open(f).size[0])), I.Resampling.LANCZOS).save(f, format='WEBP', quality=85) for f in glob.glob('media/uploads/**/tawakkal-logo.webp', recursive=True) if I.open(f).size[0]>440]"
 
+            # Downscale specific LCP assets in-place
+            ./venv/bin/python -c "
+            import glob, os; from PIL import Image
+            def resize_lcp(path_pattern, max_w, q):
+                for f in glob.glob(path_pattern, recursive=True):
+                    try:
+                        img = Image.open(f)
+                        if img.size[0] > max_w:
+                            new_h = int(img.size[1] * (max_w / img.size[0]))
+                            img = img.resize((max_w, new_h), Image.Resampling.LANCZOS)
+                        img.save(f, 'WEBP', quality=q)
+                        print('Optimized ' + f)
+                    except Exception as e:
+                        print('Error ' + f + ': ' + str(e))
+            resize_lcp('media/uploads/**/vol787-6*.webp', 640, 75)
+            resize_lcp('media/uploads/7b1974d6-9992-4440-8c46-b9bea91c7c88/ELAYA_PRI*.webp', 640, 75)
+            resize_lcp('media/uploads/0cc5ba0d-5f83-4992-af77-5f9ca20b5e52/ChatGPT_I*.webp', 1280, 72)
+            "
             # Restart Backend on PM2
             pm2 reload tawakkal-backend || pm2 restart tawakkal-backend
 

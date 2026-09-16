@@ -50,7 +50,12 @@ const ProductCard = ({ product, className = '', priority = false }) => {
           src={product.primary_image?.variants?.card || product.primary_image?.image_url || 'https://placehold.co/400x533?text=No+Image'}
           srcSet={
             product.primary_image?.variants 
-              ? `${product.primary_image.variants.thumb || product.primary_image.image_url} 150w, ${product.primary_image.variants.card || product.primary_image.image_url} 360w, ${product.primary_image.variants.medium || product.primary_image.image_url} 720w, ${product.primary_image.variants.large || product.primary_image.image_url} 1600w`
+              ? [
+                  product.primary_image.variants.thumb && `${product.primary_image.variants.thumb} 150w`,
+                  product.primary_image.variants.card && `${product.primary_image.variants.card} 360w`,
+                  product.primary_image.variants.medium && `${product.primary_image.variants.medium} 720w`,
+                  product.primary_image.variants.large && `${product.primary_image.variants.large} 1600w`
+                ].filter(Boolean).join(', ') || undefined
               : undefined
           }
           sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 320px"
