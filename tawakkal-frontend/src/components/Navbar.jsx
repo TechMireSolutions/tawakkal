@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { ShoppingBag, Menu, X, Search, Heart, User, Globe } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Link } from "react-router-dom";
@@ -6,6 +6,8 @@ import { useCart } from "../pages/CartContext";
 import { fetchCategories, fetchPages, fetchBrands, fetchBadges } from "../api";
 import { useCurrency, currencies } from "../context/CurrencyContext";
 import { useSiteSettings } from "../context/SiteSettingsContext";
+
+const MobileMenu = lazy(() => import("./MobileMenu"));
 
 const Navbar = () => {
   const { cartItems, wishlistItems } = useCart();
@@ -107,6 +109,10 @@ const Navbar = () => {
     closeTimeout.current = setTimeout(() => {
       setActiveMenu(null);
     }, 200);
+  };
+
+  const preloadMobileMenu = () => {
+    import("./MobileMenu").catch(() => {});
   };
 
   return (
@@ -460,6 +466,8 @@ const Navbar = () => {
               <div className="md:hidden">
                 <button
                   onClick={() => setIsOpen(!isOpen)}
+                  onMouseEnter={preloadMobileMenu}
+                  onTouchStart={preloadMobileMenu}
                   className={`${scrolled || isDarkHeroPage ? "text-white" : "text-charcoal"}`}
                   aria-label="Toggle Mobile Menu"
                 >
@@ -471,126 +479,19 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* Mobile Menu - Full Screen Overlay */}
-      <div
-        className={`md:hidden fixed inset-0 bg-black z-40 transition-all duration-300 ${isOpen ? "opacity-100 visible pointer-events-auto" : "opacity-0 invisible pointer-events-none"}`}
-        style={{ top: scrolled ? "56px" : "80px" }}
-      >
-        <div className="px-6 py-8 space-y-6 h-full overflow-y-auto bg-black text-white">
-          <Link
-            to="/"
-            onClick={() => setIsOpen(false)}
-            className="block text-white hover:text-gold uppercase text-sm font-semibold tracking-widest py-2 border-b border-white/10"
-          >
-            Home
-          </Link>
-          {brands.map((brand) => (
-            <Link
-              key={brand.id}
-              to={`/brand/${encodeURIComponent(brand.slug)}`}
-              onClick={() => setIsOpen(false)}
-              className="block text-white hover:text-gold uppercase text-sm font-semibold tracking-widest py-2 border-b border-white/10"
-            >
-              {brand.name}
-            </Link>
-          ))}
-
-          {categories.map((cat) => (
-            <Link
-              key={cat.id}
-              to={`/category/${encodeURIComponent(cat.slug)}`}
-              onClick={() => setIsOpen(false)}
-              className="block text-white hover:text-gold uppercase text-sm font-semibold tracking-widest py-2 border-b border-white/10"
-            >
-              {cat.name}
-            </Link>
-          ))}
-
-          {badges.map((badge) => (
-            <Link
-              key={badge.id}
-              to={`/badge/${encodeURIComponent(badge.slug)}`}
-              onClick={() => setIsOpen(false)}
-              className="block text-white hover:text-gold uppercase text-sm font-semibold tracking-widest py-2 border-b border-white/10"
-            >
-              {badge.name}
-            </Link>
-          ))}
-
-          <Link
-            to="/about"
-            onClick={() => setIsOpen(false)}
-            className="block text-white hover:text-gold uppercase text-sm font-semibold tracking-widest py-2 border-b border-white/10"
-          >
-            About Us
-          </Link>
-          <Link
-            to="/contact"
-            onClick={() => setIsOpen(false)}
-            className="block text-white hover:text-gold uppercase text-sm font-semibold tracking-widest py-2 border-b border-white/10"
-          >
-            Contact
-          </Link>
-          <Link
-            to="/products?sale=true"
-            onClick={() => setIsOpen(false)}
-            className="block text-[#FEBE59] hover:text-gold uppercase text-sm font-semibold tracking-widest py-2 border-b border-white/10"
-          >
-            Sale
-          </Link>
-
-          {/* Mobile Menu Footer - Country, Account, Wishlist */}
-          <div className="pt-6 mt-6 border-t border-white/20">
-            <p className="text-white/50 text-xs uppercase tracking-widest mb-4">
-              Settings & Account
-            </p>
-            <div className="flex flex-wrap gap-6">
-              {/* Country Selector */}
-              <div className="flex items-center gap-2 text-white">
-                <Globe size={20} className="text-gold" />
-                <span className="text-sm font-bold uppercase">PK</span>
-              </div>
-              <Link
-                to="/auth"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-2 text-white hover:text-gold transition-colors"
-              >
-                <User size={20} />
-                <span className="text-sm">Account</span>
-              </Link>
-              <Link
-                to="/wishlist"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-2 text-white hover:text-gold transition-colors relative"
-              >
-                <Heart size={20} />
-                <span className="text-sm">Wishlist</span>
-                {wishlistItems.length > 0 && (
-                  <span className="bg-gold text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1">
-                    {wishlistItems.length}
-                  </span>
-                )}
-              </Link>
-              <Link
-                to="/cart"
-                onClick={() => setIsOpen(false)}
-                className="flex items-center gap-2 text-white hover:text-gold transition-colors relative"
-              >
-                <ShoppingBag size={20} />
-                <span className="text-sm">Cart</span>
-                {cartItems.length > 0 && (
-                  <span className="bg-white text-charcoal text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1">
-                    {cartItems.reduce(
-                      (total, item) => total + item.quantity,
-                      0,
-                    )}
-                  </span>
-                )}
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Mobile Menu - Full Screen Overlay (Lazy Loaded) */}
+      <Suspense fallback={null}>
+        <MobileMenu 
+          isOpen={isOpen}
+          setIsOpen={setIsOpen}
+          scrolled={scrolled}
+          brands={brands}
+          categories={categories}
+          badges={badges}
+          wishlistItems={wishlistItems}
+          cartItems={cartItems}
+        />
+      </Suspense>
     </>
   );
 };

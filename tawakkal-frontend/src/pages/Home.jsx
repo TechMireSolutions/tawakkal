@@ -1,10 +1,12 @@
+import React, { lazy, Suspense } from 'react';
 import HeroSection from '../components/HeroSection';
-import OurStory from '../components/OurStory';
 import CategoryGallery from '../components/CategoryGallery';
 import ProductMarquee from '../components/ProductMarquee';
-import WhyChooseUs from '../components/WhyChooseUs';
-import Testimonials from '../components/Testimonials';
-import ReelsGallery from '../components/ReelsGallery';
+
+const OurStory = lazy(() => import('../components/OurStory'));
+const WhyChooseUs = lazy(() => import('../components/WhyChooseUs'));
+const Testimonials = lazy(() => import('../components/Testimonials'));
+const ReelsGallery = lazy(() => import('../components/ReelsGallery'));
 
 const Home = () => {
   return (
@@ -12,7 +14,10 @@ const Home = () => {
       <HeroSection />
       <CategoryGallery />
       <ProductMarquee id="shop" limit={8} />
-      <WhyChooseUs />
+      
+      <Suspense fallback={<div className="min-h-[400px] w-full bg-ivory" />}>
+        <WhyChooseUs />
+      </Suspense>
 
       {/* Quote & Statistics Combined Section */}
       <section className="relative py-16 md:py-28 bg-charcoal overflow-hidden text-white">
@@ -46,11 +51,17 @@ const Home = () => {
         </div>
       </section>
 
-      <OurStory id="about" />
+      <Suspense fallback={<div className="min-h-[400px] w-full bg-ivory" />}>
+        <OurStory id="about" />
+      </Suspense>
 
-      <Testimonials />
+      <Suspense fallback={<div className="min-h-[400px] w-full bg-ivory" />}>
+        <Testimonials />
+      </Suspense>
 
-      <ReelsGallery />
+      <Suspense fallback={<div className="min-h-[400px] w-full bg-ivory" />}>
+        <ReelsGallery />
+      </Suspense>
     </main>
   );
 };

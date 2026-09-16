@@ -2,9 +2,9 @@ import { useEffect, Suspense, lazy } from "react";
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import SmoothScroll from "./components/SmoothScroll";
 import Navbar from "./components/Navbar";
-import Footer from "./components/Footer";
-import WhatsAppButton from "./components/WhatsAppButton";
-import NotificationToast from "./components/NotificationToast";
+const Footer = lazy(() => import("./components/Footer"));
+const WhatsAppButton = lazy(() => import("./components/WhatsAppButton"));
+const NotificationToast = lazy(() => import("./components/NotificationToast"));
 
 // Critical Eager Routes
 import Home from "./pages/Home";
@@ -116,9 +116,11 @@ function AppContent() {
                 <Route path="*" element={<DynamicPage />} />
               </Routes>
             </Suspense>
-            <Footer />
-            <WhatsAppButton />
-            <NotificationToast />
+            <Suspense fallback={null}>
+              <Footer />
+              <WhatsAppButton />
+              <NotificationToast />
+            </Suspense>
           </div>
         </SmoothScroll>
       )}
