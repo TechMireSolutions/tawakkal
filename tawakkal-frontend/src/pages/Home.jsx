@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from 'react';
+import { lazy, Suspense } from 'react';
 import HeroSection from '../components/HeroSection';
 import CategoryGallery from '../components/CategoryGallery';
 import ProductMarquee from '../components/ProductMarquee';
@@ -14,7 +14,7 @@ const Home = () => {
       <HeroSection />
       <CategoryGallery />
       <ProductMarquee id="shop" limit={8} />
-      
+
       <Suspense fallback={<div className="min-h-[400px] w-full bg-ivory" />}>
         <WhyChooseUs />
       </Suspense>
