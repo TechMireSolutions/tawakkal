@@ -1,6 +1,5 @@
-import { useState, useEffect, Suspense, lazy } from "react";
+import { useEffect, Suspense, lazy } from "react";
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
-import Preloader from "./components/Preloader";
 import SmoothScroll from "./components/SmoothScroll";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
@@ -50,7 +49,6 @@ function App() {
 }
 
 function AppContent() {
-  const [loading, setLoading] = useState(true);
   const location = useLocation();
   const isAdminLegacyPath = location.pathname.startsWith("/admin-panel");
   const isNewAdminPath = location.pathname.startsWith("/admin");
@@ -76,8 +74,6 @@ function AppContent() {
 
   return (
     <>
-      {loading && <Preloader onComplete={() => setLoading(false)} />}
-
       {isAdminLegacyPath || isNewAdminPath || isLoginPage ? (
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-charcoal"><div className="w-8 h-8 border-2 border-gold border-t-transparent rounded-full animate-spin"></div></div>}>
           <Routes>
