@@ -7,6 +7,7 @@ import Badge from '../../components/ui/Badge';
 import Input from '../../components/ui/Input';
 import Pagination from '../../components/ui/Pagination';
 import Modal from '../../components/ui/Modal';
+import Button from '../../components/ui/Button';
 import { TableSkeleton } from '../../components/ui/Skeleton';
 import { EmptyState } from '../../components/ui/EmptyState';
 import { getOrders, getOrder, updateOrderStatus, deleteOrder } from '../../services/api';
