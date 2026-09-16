@@ -38,31 +38,11 @@ jobs:
             # Backfill Missing Image Variants
             ./venv/bin/python manage.py generate_variants --force
 
-            # Downscale overly large logos & LCP assets safely
-            cat << 'EOF' > /tmp/optimize_lcp_assets.py
-            import glob
-            from PIL import Image
-
-            def optimize_file(pattern, max_w, quality=80):
-                for f in glob.glob(pattern, recursive=True):
-                    try:
-                        img = Image.open(f)
-                        if img.size[0] > max_w:
-                            new_h = int(img.size[1] * (max_w / img.size[0]))
-                            img = img.resize((max_w, new_h), Image.Resampling.LANCZOS)
-                        img.save(f, format='WEBP', quality=quality)
-                        print(f"Optimized: {f}")
-                    except Exception as err:
-                        print(f"Skipping {f}: {err}")
-
-            optimize_file('media/uploads/**/tawakkal-logo.webp', 440, 85)
-            optimize_file('media/uploads/**/vol787-6*.webp', 640, 75)
-            optimize_file('media/uploads/7b1974d6-9992-4440-8c46-b9bea91c7c88/ELAYA_PRI*.webp', 640, 75)
-            optimize_file('media/uploads/0cc5ba0d-5f83-4992-af77-5f9ca20b5e52/ChatGPT_I*.webp', 1280, 72)
-            EOF
-
-            ./venv/bin/python /tmp/optimize_lcp_assets.py
-            rm -f /tmp/optimize_lcp_assets.py
+            # Downscale overly large logos & LCP assets safely (single-line commands)
+            ./venv/bin/python -c "import glob; from PIL import Image; [Image.open(f).resize((440, int(Image.open(f).size[1]*440/Image.open(f).size[0])), Image.Resampling.LANCZOS).save(f, format='WEBP', quality=85) for f in glob.glob('media/uploads/**/tawakkal-logo.webp', recursive=True) if Image.open(f).size[0] > 440]"
+            ./venv/bin/python -c "import glob; from PIL import Image; [Image.open(f).resize((640, int(Image.open(f).size[1]*640/Image.open(f).size[0])), Image.Resampling.LANCZOS).save(f, format='WEBP', quality=75) for f in glob.glob('media/uploads/**/vol787-6*.webp', recursive=True) if Image.open(f).size[0] > 640]"
+            ./venv/bin/python -c "import glob; from PIL import Image; [Image.open(f).resize((640, int(Image.open(f).size[1]*640/Image.open(f).size[0])), Image.Resampling.LANCZOS).save(f, format='WEBP', quality=75) for f in glob.glob('media/uploads/7b1974d6-9992-4440-8c46-b9bea91c7c88/ELAYA_PRI*.webp', recursive=True) if Image.open(f).size[0] > 640]"
+            ./venv/bin/python -c "import glob; from PIL import Image; [Image.open(f).resize((1280, int(Image.open(f).size[1]*1280/Image.open(f).size[0])), Image.Resampling.LANCZOS).save(f, format='WEBP', quality=72) for f in glob.glob('media/uploads/0cc5ba0d-5f83-4992-af77-5f9ca20b5e52/ChatGPT_I*.webp', recursive=True) if Image.open(f).size[0] > 1280]"
 
             # Restart Backend on PM2
             pm2 reload tawakkal-backend || pm2 restart tawakkal-backend
