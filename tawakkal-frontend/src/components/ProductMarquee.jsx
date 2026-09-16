@@ -96,9 +96,9 @@ const ProductMarquee = ({ id, limit = 8 }) => {
           }}
           className="product-slider"
         >
-          {products.map((product) => (
+          {products.map((product, index) => (
             <SwiperSlide key={product.id}>
-              <ProductCard product={product} className="h-full" />
+              <ProductCard product={product} className="h-full" priority={index < 4} />
             </SwiperSlide>
           ))}
         </Swiper>

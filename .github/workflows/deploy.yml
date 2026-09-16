@@ -35,6 +35,9 @@ jobs:
             ./venv/bin/python manage.py migrate
             ./venv/bin/python manage.py collectstatic --noinput
 
+            # Backfill Missing Image Variants
+            ./venv/bin/python manage.py generate_variants
+
             # Restart Backend on PM2
             pm2 reload tawakkal-backend || pm2 restart tawakkal-backend
 

@@ -111,7 +111,7 @@ const ProductGrid = ({
         >
           {sortedProducts.map((product, index) => (
             <div key={product.id} ref={(el) => (itemsRef.current[index] = el)}>
-              <ProductCard product={product} />
+              <ProductCard product={product} priority={index < 2} />
             </div>
           ))}
         </div>

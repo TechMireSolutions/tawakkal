@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useCart } from '../pages/CartContext';
 import { useCurrency } from '../context/CurrencyContext';
 
-const ProductCard = ({ product, className = '' }) => {
+const ProductCard = ({ product, className = '', priority = false }) => {
   const navigate = useNavigate();
   const { addToCart, toggleWishlist, wishlistItems } = useCart();
   const { convertPrice } = useCurrency();
@@ -55,7 +55,8 @@ const ProductCard = ({ product, className = '' }) => {
           }
           sizes="(max-width: 1023px) 50vw, 33vw"
           alt={product.name}
-          loading="lazy"
+          loading={priority ? undefined : "lazy"}
+          fetchpriority={priority ? "high" : "auto"}
           decoding="async"
           className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
         />
