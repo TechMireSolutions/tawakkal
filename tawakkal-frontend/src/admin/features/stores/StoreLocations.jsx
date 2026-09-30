@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { HiOutlinePlus, HiOutlineMapPin, HiOutlinePhone, HiOutlineClock, HiOutlinePencilSquare, HiOutlineTrash } from 'react-icons/hi2';
+import { useState, useEffect, useCallback } from 'react';
+import { HiOutlinePlus, HiOutlineMapPin, HiOutlinePhone, HiOutlinePencilSquare, HiOutlineTrash } from 'react-icons/hi2';
 import { PageContainer, PageHeader } from '../../components/ui/PageLayout';
 import { Card } from '../../components/ui/Card';
 import Badge from '../../components/ui/Badge';
@@ -28,22 +28,44 @@ export default function StoreLocations() {
     country: 'Pakistan',
     postal_code: '38000',
     state: 'Punjab',
+    map_link: '',
+    timing: '',
+    latitude: '',
+    longitude: ''
   });
   const [editingStoreId, setEditingStoreId] = useState(null);
 
-  const fetchStores = async () => {
-    setLoading(true);
+  const fetchStores = useCallback(async () => {
     try {
       const data = await getStores();
       setStores(data);
-    } catch (err) {
+    } catch {
       toast.error('Failed to load stores');
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
 
-  useEffect(() => { fetchStores(); }, []);
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadData = async () => {
+      try {
+        const data = await getStores();
+        if (isMounted) setStores(data);
+      } catch {
+        if (isMounted) toast.error('Failed to load stores');
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    loadData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [toast]);
 
   const handleSave = async () => {
     if (!formData.name || !formData.address) {
@@ -58,6 +80,9 @@ export default function StoreLocations() {
         slug: formData.slug || formData.name.toLowerCase().replace(/[^a-z0-9]/g, '-'),
       };
       
+      if (payload.latitude === '') payload.latitude = null;
+      if (payload.longitude === '') payload.longitude = null;
+
       if (editingStoreId) {
         await updateStore(editingStoreId, payload);
         toast.success('Store updated successfully');
@@ -65,10 +90,23 @@ export default function StoreLocations() {
         await createStore(payload);
         toast.success('Store added');
       }
-      
+
       setShowModal(false);
       setEditingStoreId(null);
-      setFormData({ name: '', address: '', phone: '', code: '', city: 'Faisalabad', country: 'Pakistan', postal_code: '38000', state: 'Punjab' });
+      setFormData({
+        name: '',
+        address: '',
+        phone: '',
+        code: '',
+        city: 'Faisalabad',
+        country: 'Pakistan',
+        postal_code: '38000',
+        state: 'Punjab',
+        map_link: '',
+        timing: '',
+        latitude: '',
+        longitude: ''
+      });
       fetchStores();
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to save store');
@@ -87,7 +125,11 @@ export default function StoreLocations() {
       city: store.city || '',
       country: store.country || '',
       postal_code: store.postal_code || '',
-      state: store.state || ''
+      state: store.state || '',
+      map_link: store.map_link || '',
+      timing: store.timing || '',
+      latitude: store.latitude || '',
+      longitude: store.longitude || ''
     });
     setEditingStoreId(store.id);
     setShowModal(true);
@@ -96,14 +138,14 @@ export default function StoreLocations() {
   const handleDelete = (id) => {
     setConfirmConfig({
       isOpen: true,
-      title: "Delete Store",
-      message: "Are you sure you want to delete this store?",
+      title: 'Delete Store',
+      message: 'Are you sure you want to delete this store?',
       onConfirm: async () => {
         try {
           await deleteStore(id);
           toast.success('Store deleted');
           fetchStores();
-        } catch (err) {
+        } catch {
           toast.error('Failed to delete store');
         }
       }
@@ -113,8 +155,8 @@ export default function StoreLocations() {
   const handleDeleteAll = () => {
     setConfirmConfig({
       isOpen: true,
-      title: "Delete All Stores",
-      message: "Are you sure you want to delete ALL stores? This action cannot be undone.",
+      title: 'Delete All Stores',
+      message: 'Are you sure you want to delete ALL stores? This action cannot be undone.',
       onConfirm: async () => {
         try {
           setLoading(true);
@@ -123,7 +165,7 @@ export default function StoreLocations() {
           }
           toast.success('All stores deleted');
           fetchStores();
-        } catch (err) {
+        } catch {
           toast.error('Failed to delete some stores');
         } finally {
           setLoading(false);
@@ -134,45 +176,112 @@ export default function StoreLocations() {
 
   return (
     <PageContainer>
-      <PageHeader title="Store Locations" subtitle={`${stores.length} stores`} breadcrumbs={[{ label: 'Stores' }]} actionLabel="Add Store" actionIcon={HiOutlinePlus} onAction={() => { setEditingStoreId(null); setFormData({ name: '', address: '', phone: '', code: '', city: 'Faisalabad', country: 'Pakistan', postal_code: '38000', state: 'Punjab' }); setShowModal(true); }} secondaryAction={<Button variant="danger" icon={HiOutlineTrash} size="sm" onClick={handleDeleteAll}>Delete All</Button>} />
+      <PageHeader
+        title="Store Locations"
+        subtitle={`${stores.length} stores`}
+        breadcrumbs={[{ label: 'Stores' }]}
+        actionLabel="Add Store"
+        actionIcon={HiOutlinePlus}
+        onAction={() => {
+          setEditingStoreId(null);
+          setFormData({
+            name: '',
+            address: '',
+            phone: '',
+            code: '',
+            city: 'Faisalabad',
+            country: 'Pakistan',
+            postal_code: '38000',
+            state: 'Punjab',
+            map_link: '',
+            timing: '',
+            latitude: '',
+            longitude: ''
+          });
+          setShowModal(true);
+        }}
+        secondaryAction={
+          <Button variant="danger" icon={HiOutlineTrash} size="sm" onClick={handleDeleteAll}>
+            Delete All
+          </Button>
+        }
+      />
 
       {loading ? (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
-          {[1,2,3].map(i => <CardSkeleton key={i} />)}
+          {[1, 2, 3].map((i) => (
+            <CardSkeleton key={i} />
+          ))}
         </div>
       ) : stores.length === 0 ? (
         <EmptyState title="No stores yet" actionLabel="Add Store" onAction={() => setShowModal(true)} />
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '16px' }}>
-          {stores.map(store => (
+          {stores.map((store) => (
             <Card key={store.id}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
-                <h4 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--admin-text)', margin: 0, fontFamily: 'var(--admin-font-display)' }}>{store.name}</h4>
-                <Badge variant={store.status === 'ACTIVE' ? 'success' : 'neutral'} size="xs">{store.status === 'ACTIVE' ? 'Open' : 'Closed'}</Badge>
+                <h4 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--admin-text)', margin: 0, fontFamily: 'var(--admin-font-display)' }}>
+                  {store.name}
+                </h4>
+                <Badge variant={store.status === 'ACTIVE' ? 'success' : 'neutral'} size="xs">
+                  {store.status === 'ACTIVE' ? 'Open' : 'Closed'}
+                </Badge>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}><HiOutlineMapPin size={15} style={{ color: 'var(--admin-text-muted)', marginTop: 2, flexShrink: 0 }} /><span style={{ fontSize: '13px', color: 'var(--admin-text-secondary)' }}>{store.address}</span></div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><HiOutlinePhone size={15} style={{ color: 'var(--admin-text-muted)' }} /><span style={{ fontSize: '13px', color: 'var(--admin-text-secondary)' }}>{store.phone}</span></div>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
+                  <HiOutlineMapPin size={15} style={{ color: 'var(--admin-text-muted)', marginTop: 2, flexShrink: 0 }} />
+                  <span style={{ fontSize: '13px', color: 'var(--admin-text-secondary)' }}>{store.address}</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <HiOutlinePhone size={15} style={{ color: 'var(--admin-text-muted)' }} />
+                  <span style={{ fontSize: '13px', color: 'var(--admin-text-secondary)' }}>{store.phone}</span>
+                </div>
               </div>
               <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end', borderTop: '1px solid var(--admin-border-light)', paddingTop: '12px' }}>
-                <Button variant="ghost" size="xs" icon={HiOutlinePencilSquare} onClick={() => handleEditClick(store)}>Edit</Button>
-                <Button variant="ghost" size="xs" icon={HiOutlineTrash} onClick={() => handleDelete(store.id)}>Delete</Button>
+                <Button variant="ghost" size="xs" icon={HiOutlinePencilSquare} onClick={() => handleEditClick(store)}>
+                  Edit
+                </Button>
+                <Button variant="ghost" size="xs" icon={HiOutlineTrash} onClick={() => handleDelete(store.id)}>
+                  Delete
+                </Button>
               </div>
             </Card>
           ))}
         </div>
       )}
 
-      <Modal isOpen={showModal} onClose={() => setShowModal(false)} title={editingStoreId ? "Edit Store" : "Add Store"} footer={<><Button variant="secondary" onClick={() => setShowModal(false)}>Cancel</Button><Button onClick={handleSave} disabled={isSubmitting}>{isSubmitting ? 'Saving...' : 'Save'}</Button></>}>
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title={editingStoreId ? 'Edit Store' : 'Add Store'}
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setShowModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={isSubmitting}>
+              {isSubmitting ? 'Saving...' : 'Save'}
+            </Button>
+          </>
+        }
+      >
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          <Input label="Store Name" placeholder="e.g. Tawakkal — Lahore" required value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
-          <Input label="Address" placeholder="Full street address" required value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} />
+          <Input label="Store Name" placeholder="e.g. Tawakkal — Lahore" required value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} />
+          <Input label="Address" placeholder="Full street address" required value={formData.address} onChange={(e) => setFormData({ ...formData, address: e.target.value })} />
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            <Input label="Phone" placeholder="+92 42 3571234" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} />
-            <Input label="City" placeholder="Faisalabad" value={formData.city} onChange={(e) => setFormData({...formData, city: e.target.value})} />
+            <Input label="Phone" placeholder="+92 42 3571234" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} />
+            <Input label="City" placeholder="Faisalabad" value={formData.city} onChange={(e) => setFormData({ ...formData, city: e.target.value })} />
           </div>
+          <Input label="Map Link" placeholder="https://maps.app.goo.gl/..." value={formData.map_link} onChange={(e) => setFormData({ ...formData, map_link: e.target.value })} />
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+            <Input label="Latitude" type="number" step="any" placeholder="31.573152" value={formData.latitude} onChange={(e) => setFormData({ ...formData, latitude: e.target.value })} />
+            <Input label="Longitude" type="number" step="any" placeholder="74.307858" value={formData.longitude} onChange={(e) => setFormData({ ...formData, longitude: e.target.value })} />
+          </div>
+          <p style={{ fontSize: '12px', color: 'var(--admin-text-muted)', marginTop: '-12px' }}>Required for the embedded map. Enter the coordinates for this store location.</p>
+          <Input label="Store Timings" placeholder="10:00 AM - 8:00 PM" value={formData.timing} onChange={(e) => setFormData({ ...formData, timing: e.target.value })} />
         </div>
       </Modal>
+
       <ConfirmModal
         isOpen={confirmConfig.isOpen}
         onClose={() => setConfirmConfig({ ...confirmConfig, isOpen: false })}

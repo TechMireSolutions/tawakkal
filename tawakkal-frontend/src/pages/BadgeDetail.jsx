@@ -13,7 +13,7 @@ const BadgeDetail = () => {
   const [showSortDropdown, setShowSortDropdown] = useState(false);
   const [gridView, setGridView] = useState('4col');
   const dropdownRef = useRef(null);
-  
+
   const [badge, setBadge] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -64,12 +64,12 @@ const BadgeDetail = () => {
           {badge.icon_details && badge.icon_details.file ? (
             <img src={badge.icon_details.file} alt="" className="w-16 h-16 object-contain" />
           ) : (
-             <div 
-               className="w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold"
-               style={{ background: badge.background_color || '#000', color: badge.text_color || '#fff' }}
-             >
-                {badge.name.charAt(0)}
-             </div>
+            <div
+              className="w-16 h-16 rounded-xl flex items-center justify-center text-2xl font-bold"
+              style={{ background: badge.background_color || '#000', color: badge.text_color || '#fff' }}
+            >
+              {badge.name.charAt(0)}
+            </div>
           )}
           <h1 className="text-4xl md:text-5xl font-bold text-charcoal uppercase tracking-widest">
             {badge.name}
@@ -78,7 +78,7 @@ const BadgeDetail = () => {
       </div>
 
       {/* Filters Bar */}
-      <div className="sticky top-16 md:top-20 z-20 bg-white/80 backdrop-blur-md border-b border-gray-100">
+      <div className="sticky top-[52px] md:top-[56px] z-20 bg-white/80 backdrop-blur-md border-b border-gray-100">
         <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-3 md:py-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 md:gap-4">
             {/* Badge Info */}

@@ -55,12 +55,15 @@ class Store(BaseModel):
     state = models.CharField(max_length=100)
     postal_code = models.CharField(max_length=20)
     country = models.CharField(max_length=100)
+    map_link = models.URLField(max_length=500, blank=True, null=True, help_text="Google Maps authoritative link")
+    timing = models.CharField(max_length=255, blank=True, null=True, help_text="Store timings (e.g. 10:00 AM - 8:00 PM)")
     
     is_default = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
     class Meta:
         ordering = ['name']
+
 
     def __str__(self):
         return self.name

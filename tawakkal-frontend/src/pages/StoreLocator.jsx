@@ -89,10 +89,12 @@ const StoreLocator = () => {
                         </a>
                       </div>
 
-                      <div className="flex items-center gap-4">
-                        <Clock className="w-5 h-5 text-gold flex-shrink-0" />
-                        <span>{store.hours || "10:00 AM - 8:00 PM"}</span>
-                      </div>
+                      {store.timing && (
+                        <div className="flex items-center gap-4">
+                          <Clock className="w-5 h-5 text-gold flex-shrink-0" />
+                          <span>{store.timing}</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="mt-6 pt-6 border-t border-gray-100">
@@ -116,38 +118,47 @@ const StoreLocator = () => {
                       </div>
                     </div>
 
-                    <a
-                      href={
-                        store.latitude && store.longitude
-                          ? `https://google.com{store.latitude},${store.longitude}`
-                          : `https://google.com{encodeURIComponent(store.name + ' ' + store.address + ' ' + store.city)}`
-                      }
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="mt-6 inline-flex items-center gap-2 bg-charcoal text-white px-6 py-3 text-[11px] font-bold uppercase tracking-widest hover:bg-gold transition-colors"
-                    >
-                      <Navigation size={14} />
-                      Get Directions
-                    </a>
+                    {store.map_link || (store.latitude && store.longitude) ? (
+                      <a
+                        href={store.map_link || `https://maps.google.com/maps?q=${store.latitude},${store.longitude}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="mt-6 inline-flex items-center gap-2 bg-charcoal text-white px-6 py-3 text-[11px] font-bold uppercase tracking-widest hover:bg-gold transition-colors"
+                      >
+                        <Navigation size={14} />
+                        Get Directions
+                      </a>
+                    ) : (
+                      <button
+                        disabled
+                        className="mt-6 inline-flex items-center gap-2 bg-gray-300 text-gray-500 px-6 py-3 text-[11px] font-bold uppercase tracking-widest cursor-not-allowed"
+                      >
+                        <Navigation size={14} />
+                        Get Directions
+                      </button>
+                    )}
                   </div>
 
                   {/* Individual Store Map */}
                   <div className="aspect-square lg:aspect-auto lg:h-full min-h-[300px] bg-gray-100 relative shadow-lg">
-                    <iframe
-                      src={
-                        store.latitude && store.longitude
-                          ? `https://google.com{store.latitude},${store.longitude}&output=embed`
-                          : `https://google.com{encodeURIComponent(store.name + ' ' + store.address + ' ' + store.city)}&output=embed`
-                      }
-                      width="100%"
-                      height="100%"
-                      style={{ border: 0 }}
-                      allowFullScreen
-                      loading="lazy"
-                      referrerPolicy="no-referrer-when-downgrade"
-                      title={`${store.name} Location`}
-                      className="grayscale hover:grayscale-0 transition-all duration-500 w-full h-full object-cover"
-                    />
+                    {store.latitude && store.longitude ? (
+                      <iframe
+                        src={`https://maps.google.com/maps?q=${store.latitude},${store.longitude}&output=embed`}
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        allowFullScreen
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        title={`${store.name} Location`}
+                        className="grayscale hover:grayscale-0 transition-all duration-500 w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 p-6 text-center">
+                        <MapPin className="w-12 h-12 mb-4 opacity-30" />
+                        <p className="font-medium">Map location unavailable</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))

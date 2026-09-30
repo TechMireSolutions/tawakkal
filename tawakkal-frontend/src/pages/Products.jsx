@@ -9,7 +9,7 @@ const sortOptions = ['Featured', 'Price: Low to High', 'Price: High to Low', 'Ne
 const Products = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const [allCategories, setAllCategories] = useState([]);
-  
+
   const activeCategory = searchParams.get('category') || 'All';
   const activeSort = searchParams.get('sort') || 'Featured';
   const activeBadge = searchParams.get('badge') || null;
@@ -34,7 +34,7 @@ const Products = () => {
   const minLevel = allCategories.length > 0 ? Math.min(...allCategories.map(c => c.level)) : 0;
   const rootCategories = allCategories.filter(cat => cat.level === minLevel);
   const activeCatObj = allCategories.find(c => c.name === activeCategory);
-  
+
   let activeRootCategory = 'All';
   if (activeCatObj) {
     if (activeCatObj.level === minLevel) {
@@ -47,10 +47,10 @@ const Products = () => {
 
   let subCategories = [];
   if (activeRootCategory !== 'All') {
-      const rootCat = rootCategories.find(rc => rc.name === activeRootCategory);
-      if (rootCat) {
-          subCategories = allCategories.filter(c => c.level === rootCat.level + 1 && c.path.startsWith(rootCat.path));
-      }
+    const rootCat = rootCategories.find(rc => rc.name === activeRootCategory);
+    if (rootCat) {
+      subCategories = allCategories.filter(c => c.level === rootCat.level + 1 && c.path.startsWith(rootCat.path));
+    }
   }
 
   const handleCategoryChange = (cat) => {
@@ -193,26 +193,26 @@ const Products = () => {
       {/* Products Grid */}
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 md:py-12">
         {subCategories.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-6 lg:mb-8 pt-4 border-t border-gray-100/50">
-                <button 
-                   onClick={() => handleCategoryChange(activeRootCategory)}
-                   className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all shadow-sm ${activeCategory === activeRootCategory ? 'bg-gold text-white border-gold' : 'bg-white border border-gray-200 text-gray-600 hover:border-gold'}`}
-                >
-                   All {activeRootCategory}
-                </button>
-                {subCategories.map(sub => (
-                    <button 
-                       key={sub.id}
-                       onClick={() => handleCategoryChange(sub.name)}
-                       className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all shadow-sm ${activeCategory === sub.name ? 'bg-gold text-white border-gold' : 'bg-white border border-gray-200 text-gray-600 hover:border-gold'}`}
-                    >
-                       {sub.name}
-                    </button>
-                ))}
-            </div>
+          <div className="flex flex-wrap gap-2 mb-6 lg:mb-8 pt-4 border-t border-gray-100/50">
+            <button
+              onClick={() => handleCategoryChange(activeRootCategory)}
+              className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all shadow-sm ${activeCategory === activeRootCategory ? 'bg-gold text-white border-gold' : 'bg-white border border-gray-200 text-gray-600 hover:border-gold'}`}
+            >
+              All {activeRootCategory}
+            </button>
+            {subCategories.map(sub => (
+              <button
+                key={sub.id}
+                onClick={() => handleCategoryChange(sub.name)}
+                className={`px-4 py-1.5 rounded-full text-xs font-semibold transition-all shadow-sm ${activeCategory === sub.name ? 'bg-gold text-white border-gold' : 'bg-white border border-gray-200 text-gray-600 hover:border-gold'}`}
+              >
+                {sub.name}
+              </button>
+            ))}
+          </div>
         )}
         <div className="-mx-4 sm:mx-0">
-            <ProductGrid category={activeCategory} sortBy={activeSort} badge={activeBadge} search={activeSearch} gridView={gridView} />
+          <ProductGrid category={activeCategory} sortBy={activeSort} badge={activeBadge} search={activeSearch} gridView={gridView} />
         </div>
       </div>
     </div>

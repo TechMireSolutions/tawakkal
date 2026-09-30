@@ -6,7 +6,7 @@ export const otherService = {
   getDashboardStats: async () => api.get('/analytics/dashboard-stats/'),
   getRecentActivity: async () => api.get('/analytics/recent-activity/'),
   getAnalyticsData: async () => api.get('/analytics/overview/'),
-  
+
   getMessages: async () => {
     try {
       const res = await api.get('/cms/inquiries/');
@@ -79,14 +79,14 @@ export const otherService = {
     const surveys = await otherService.getSurveys();
     const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
     let totalRating = 0;
-    
+
     surveys.forEach(s => {
       if (s.rating >= 1 && s.rating <= 5) {
         distribution[s.rating]++;
         totalRating += s.rating;
       }
     });
-    
+
     return {
       totalResponses: surveys.length,
       averageRating: surveys.length ? totalRating / surveys.length : 0,
